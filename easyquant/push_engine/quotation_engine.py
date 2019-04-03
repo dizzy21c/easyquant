@@ -13,4 +13,7 @@ class DefaultQuotationEngine(BaseEngine):
         self.source = easyquotation.use('sina')
 
     def fetch_quotation(self):
-        return self.source.all
+        out=self.source.all_market
+        if len(out) == 0:
+            out = self.source.all_market
+        return out
