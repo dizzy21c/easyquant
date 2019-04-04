@@ -30,12 +30,12 @@ class MainEngine:
     """主引擎，负责行情 / 事件驱动引擎 / 交易"""
 
     def __init__(self, broker=None, need_data=None, quotation_engines=None,
-                 log_handler=DefaultLogHandler(), tzinfo=None, mdb=None):
+                 log_handler=DefaultLogHandler(), tzinfo=None, db=None):
         """初始化事件 / 行情 引擎并启动事件引擎
         """
         self.log = log_handler
         self.broker = broker
-        self.mdb = mdb
+        self.db = db
 
         # 登录账户
         if (broker is not None) and (need_data is not None):
@@ -153,7 +153,7 @@ class MainEngine:
             if names is None or strategy_class.name in names:
                 self.strategies[strategy_module_name] = strategy_class
                 # 缓存加载信息
-                new_strategy = strategy_class(user=self.user, log_handler=self.log, main_engine=self, mdb= self.mdb)
+                new_strategy = strategy_class(user=self.user, log_handler=self.log, main_engine=self, db= self.db)
                 self.strategy_list.append(new_strategy)
                 self._cache[strategy_file] = mtime
                 self.strategy_listen_event(new_strategy, "listen")

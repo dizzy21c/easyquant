@@ -8,15 +8,17 @@ import pandas as pd
 import talib
 
 class calcStrategy(Thread):
-    def __init__(self, code, data, log, chkv, mdb):
+    def __init__(self, code, data, log, chkv, hdata):
         Thread.__init__(self)
         self._data = data
         self._code = code
         self._log = log
         self._chkv = chkv
         # log.info("code=%s, code=%s"%(code, code[2:]))
-        data=mdb['index_day'].find({'code':code[2:]})
-        self._df = pd.DataFrame(list(data))
+        # data=mdb['index_day'].find({'code':code[2:]})
+        # self._df = pd.DataFrame(list(data))
+        self.ddata = hdata[0]
+        self.rdata = hdata[1]
 
 
         # self.redis = redis.Redis(host='localhost', port=6379, db=0)
@@ -35,10 +37,14 @@ class calcStrategy(Thread):
         lp = self._data['low'] - self._data['close']
         cp= self._data['now'] - self._data['close']
         cs = pd.Series({'close':self._data['close']})
-        df2 = self._df.append(cs, ignore_index=True) 
-        idx = self._df.index.values.size - 1
-        ma20 = talib.MA(self._df.close,20)
+        df2 = self.ddata.append(cs, ignore_index=True) 
+        save_csv= self.rdata.append(cs, ignore_index=True)
+        idx = self.ddata.index.values.size - 1
+        ma20 = talib.MA(self.ddata.close,20)
         ma202 = talib.MA(df2.close,20)
+        path='/home/zhangjx/backup/bk/easyquant/datas/%s-%d.txt'
+        df2.to_csv(path % (self._code, 1),index=False,sep=',')
+        save_csv.to_csv(path % (self._code, 2),index=False,sep=',')
         # print ("code=%s now=%6.2f pct=%6.2f hl=%6.2f" % ( self._code, self._data['now'], pct, downPct))
         # self._log.info("code=%s now=%6.2f pct=%6.2f pctv2=%6.2f" % ( self._code, self._data['now'], pct, chkVPct))
         #if pct > 0.2 or pct < -0.2 :
@@ -48,17 +54,23 @@ class calcStrategy(Thread):
 class Strategy(StrategyTemplate):
     name = 'index'
 
-    def __init__(self, user, log_handler, main_engine, mdb):
-        StrategyTemplate.__init__(self, user, log_handler, main_engine, mdb)
+    def __init__(self, user, log_handler, main_engine, db):
+        StrategyTemplate.__init__(self, user, log_handler, main_engine, db)
         self.log.info('init event index.')
         self.chks=[]
-        self.mdb = mdb
+        self.hdata= {}
+        start_date = '2018-01-01'
         config_name = './config/chklist.json'
         with open(config_name, 'r') as f:
             data = json.load(f)
             # print data
             for d in data['chk-index']:
                 self.chks.append((d['c'], d['p']))
+                #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})
+                #dfd=pd.DataFrame(list(dtd))
+                dfd=[]
+                rda=pd.DataFrame(columns=('time','price','vol'))
+                self.hdata[d['c']] = [dfd,rda]
                 # print d['c']
 
     def strategy(self, event):
@@ -72,7 +84,7 @@ class Strategy(StrategyTemplate):
 
         for td in self.chks:
             if td[0] in event.data:
-                threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td[1], self.mdb))
+                threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td[1], self.hdata[td[0]]))
             # else:
             #     self.log.info("\n\nnot in data:" + td[0])
 
