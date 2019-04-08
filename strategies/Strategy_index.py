@@ -3,22 +3,22 @@ from threading import Thread, current_thread, Lock
 import json
 import redis
 import time
-import pymongo
+#import pymongo
 import pandas as pd
+import numpy as np
 import talib
 
 class calcStrategy(Thread):
-    def __init__(self, code, data, log, chkv, hdata):
+    def __init__(self, code, data, log, chkv):
         Thread.__init__(self)
         self._data = data
         self._code = code
         self._log = log
-        self._chkv = chkv
+        self._chkv = chkv[1]
         # log.info("code=%s, code=%s"%(code, code[2:]))
         # data=mdb['index_day'].find({'code':code[2:]})
         # self._df = pd.DataFrame(list(data))
-        self.ddata = hdata[0]
-        self.rdata = hdata[1]
+        self.rdata = chkv[2]
 
 
         # self.redis = redis.Redis(host='localhost', port=6379, db=0)
@@ -28,7 +28,7 @@ class calcStrategy(Thread):
         # time.sleep(1)
         # print (type(self._data))
         # self.redis.hmset(self._code, self._data)
-
+        cc=self._data['now']
         chgValue = (self._data['now'] - self._data['close'])
         # downPct = (self._data['high'] - self._data['now']) * 100 / self._data['now']
         # chkVPct =  ( self._data['now'] - self._chkv  ) * 100 / self._chkv
@@ -37,19 +37,21 @@ class calcStrategy(Thread):
         lp = self._data['low'] - self._data['close']
         cp= self._data['now'] - self._data['close']
         cs = pd.Series({'close':self._data['close']})
-        df2 = self.ddata.append(cs, ignore_index=True) 
-        save_csv= self.rdata.append(cs, ignore_index=True)
-        idx = self.ddata.index.values.size - 1
-        ma20 = talib.MA(self.ddata.close,20)
-        ma202 = talib.MA(df2.close,20)
-        path='/home/zhangjx/backup/bk/easyquant/datas/%s-%d.txt'
-        df2.to_csv(path % (self._code, 1),index=False,sep=',')
-        save_csv.to_csv(path % (self._code, 2),index=False,sep=',')
+        ma20 = talib.MA(np.array(self.rdata),20)
+        self.rdata.append(cc) 
+        #save_csv= self.rdata.append(cs, ignore_index=True)
+        #idx = self.ddata.index.values.size - 1
+        ma202 = talib.MA(np.array(self.rdata),20)
+        #ma202 = talib.MA(np.array(df2),20)
+        self.rdata.pop()
+        #path='/home/zhangjx/backup/bk/easyquant/datas/%s-%d.txt'
+        #df2.to_csv(path % (self._code, 1),index=False,sep=',')
+        #save_csv.to_csv(path % (self._code, 2),index=False,sep=',')
         # print ("code=%s now=%6.2f pct=%6.2f hl=%6.2f" % ( self._code, self._data['now'], pct, downPct))
         # self._log.info("code=%s now=%6.2f pct=%6.2f pctv2=%6.2f" % ( self._code, self._data['now'], pct, chkVPct))
         #if pct > 0.2 or pct < -0.2 :
         # self._log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self._code, self._data['now'], pct, cp, hp, lp))
-        self._log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self._code, self._data['now'], pct, ma20[idx], ma202[idx], ma202[idx+1]))
+        self._log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self._code, self._data['now'], pct, ma20[-1], ma202[-1], 0))
 
 class Strategy(StrategyTemplate):
     name = 'index'
@@ -65,12 +67,14 @@ class Strategy(StrategyTemplate):
             data = json.load(f)
             # print data
             for d in data['chk-index']:
-                self.chks.append((d['c'], d['p']))
+                rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
+                rlist=[json.loads(v.decode()) for v in rdata]
+                self.chks.append((d['c'], d['p'],rlist))
                 #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})
                 #dfd=pd.DataFrame(list(dtd))
-                dfd=[]
-                rda=pd.DataFrame(columns=('time','price','vol'))
-                self.hdata[d['c']] = [dfd,rda]
+                #dfd=[]
+                #rda=pd.DataFrame(columns=('time','price','vol'))
+                #self.hdata[d['c']] = [dfd,rda]
                 # print d['c']
 
     def strategy(self, event):
@@ -84,7 +88,7 @@ class Strategy(StrategyTemplate):
 
         for td in self.chks:
             if td[0] in event.data:
-                threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td[1], self.hdata[td[0]]))
+                threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td))
             # else:
             #     self.log.info("\n\nnot in data:" + td[0])
 
