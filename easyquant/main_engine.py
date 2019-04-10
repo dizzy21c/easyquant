@@ -30,12 +30,11 @@ class MainEngine:
     """主引擎，负责行情 / 事件驱动引擎 / 交易"""
 
     def __init__(self, broker=None, need_data=None, quotation_engines=None,
-                 log_handler=DefaultLogHandler(), tzinfo=None, db=None):
+                 log_handler=DefaultLogHandler(), tzinfo=None):
         """初始化事件 / 行情 引擎并启动事件引擎
         """
         self.log = log_handler
         self.broker = broker
-        self.db = db
 
         # 登录账户
         if (broker is not None) and (need_data is not None):
@@ -44,10 +43,12 @@ class MainEngine:
             if need_data_file.exists():
                 self.user.prepare(need_data)
             else:
-                log_handler.warn("券商账号信息文件 %s 不存在, easytrader 将不可用" % need_data)
+                #log_handler.warn("券商账号信息文件 %s 不存在, easytrader 将不可用" % need_data)
+                log_handler.warn("no trade info%s , easytrader not used" % need_data)
         else:
             self.user = None
-            self.log.info('选择了无交易模式')
+            #self.log.info('选择了无交易模式')
+            self.log.info('no trade mode')
 
         self.event_engine = EventEngine()
         self.clock_engine = ClockEngine(self.event_engine, tzinfo)
@@ -99,7 +100,8 @@ class MainEngine:
             # 捕获退出信号后的要调用的,唯一的 shutdown 接口
             signal.signal(s, self._shutdown)
 
-        self.log.info('启动主引擎')
+        #self.log.info('启动主引擎')
+        self.log.info('start main engine')
 
     def start(self):
         """启动主引擎"""
@@ -107,7 +109,8 @@ class MainEngine:
         self._add_main_shutdown(self.event_engine.stop)
 
         if self.broker == 'gf':
-            self.log.warn("sleep 10s 等待 gf 账户加载")
+            #self.log.warn("sleep 10s 等待 gf 账户加载")
+            self.log.warn("sleep 10s wait gf account loading")
             time.sleep(10)
         for quotation_engine in self.quotation_engines:
             quotation_engine.start()
@@ -139,7 +142,8 @@ class MainEngine:
                 if old_strategy is None:
                     for s in self.strategy_list:
                         print(s.name)
-                self.log.warn(u'卸载策略: %s' % old_strategy.name)
+                #self.log.warn(u'卸载策略: %s' % old_strategy.name)
+                self.log.warn(u'unload strategy: %s' % old_strategy.name)
                 self.strategy_listen_event(old_strategy, "unlisten")
                 time.sleep(2)
                 reload = True
@@ -153,11 +157,12 @@ class MainEngine:
             if names is None or strategy_class.name in names:
                 self.strategies[strategy_module_name] = strategy_class
                 # 缓存加载信息
-                new_strategy = strategy_class(user=self.user, log_handler=self.log, main_engine=self, db= self.db)
+                new_strategy = strategy_class(user=self.user, log_handler=self.log, main_engine=self)
                 self.strategy_list.append(new_strategy)
                 self._cache[strategy_file] = mtime
                 self.strategy_listen_event(new_strategy, "listen")
-                self.log.info(u'加载策略: %s' % strategy_module_name)
+                #self.log.info(u'加载策略: %s' % strategy_module_name)
+                self.log.info(u'load strtegy: %s' % strategy_module_name)
 
     def strategy_listen_event(self, strategy, _type="listen"):
         """
@@ -190,7 +195,8 @@ class MainEngine:
             self.load(self._names, strategy_file)
         # 如果线程没有启动，就启动策略监视线程
         if self.is_watch_strategy and not self._watch_thread.is_alive():
-            self.log.warn("启用了动态加载策略功能")
+            #self.log.warn("启用了动态加载策略功能")
+            self.log.warn("start dynamic load strategy function")
             self._watch_thread.start()
 
     def _load_strategy(self):

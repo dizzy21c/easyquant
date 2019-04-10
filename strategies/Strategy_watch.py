@@ -1,4 +1,5 @@
 from easyquant import StrategyTemplate
+from easyquant import RedisIo
 from threading import Thread, current_thread, Lock
 import json
 import redis
@@ -32,21 +33,21 @@ class calcStrategy(Thread):
 
         flg="cur"
         dtype="now"
-        self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
+        self.redis.push_day_c(self._code[2:], data[dtype])
         dtype="open"
-        self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
+        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
         dtype="high"
-        self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
+        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
         dtype="low"
-        self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
+        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
         dtype="volume"
-        self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
+        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
         dtype="date"
         ddate=data[dtype]
         dtype="time"
         dtime=data[dtype]
         dtype="datetime"
-        self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), "%s %s"%(ddate,dtime))
+        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), "%s %s"%(ddate,dtime))
 
     def run(self):
         # pass
@@ -71,19 +72,20 @@ class calcStrategy(Thread):
 class Strategy(StrategyTemplate):
     name = 'test2'
 
-    def __init__(self, user, log_handler, main_engine, db):
-        StrategyTemplate.__init__(self, user, log_handler, main_engine, db)
+    def __init__(self, user, log_handler, main_engine):
+        StrategyTemplate.__init__(self, user, log_handler, main_engine)
         self.log.info('init event.')
         self.chks=[]
         config_name = './config/chklist.json'
-        self._db = db
+        self.rio = RedisIo('./redis.conf')
         #self.redis = redis.Redis(host='localhost', port=6379, db=0)
         with open(config_name, 'r') as f:
             data = json.load(f)
             # print data
             for d in data['chk']:
-                rdata=self._db.lrange(d['c'][2:],0,-1)
-                clist=[json.loads(v.decode()) for v in rdata]
+                #rdata=self._db.lrange(d['c'][2:],0,-1)
+                #clist=[json.loads(v.decode()) for v in rdata]
+                clist=[]
                 self.chks.append((d['c'], d['p'], clist))
                 # print d['c']
 
@@ -95,7 +97,7 @@ class Strategy(StrategyTemplate):
         # [calcStrategy(l) for i in range(5)]
         for td in self.chks:
             if td[0] in event.data:
-                threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td, self._db))
+                threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td, self.rio))
             # else:
             #     self.log.info("\n\nnot in data:" + td[0])
         #code print

@@ -91,9 +91,9 @@ log_handler = DefaultLogHandler(name='strategy', log_type=log_type, filepath=log
 
 #client= pymongo.MongoClient('localhost',27017)
 #db = client.quantaxis
-rdb = redis.Redis(host='localhost', port=6379, db=0)
+#rdb = redis.Redis(host='localhost', port=6379, db=0)
 #print(rdb)
-m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler, db=rdb)
+m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler)
 m.is_watch_strategy = True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 m.load_strategy()
 m.start()

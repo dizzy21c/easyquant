@@ -1,4 +1,5 @@
 from easyquant import StrategyTemplate
+from easyquant import RedisIo
 from threading import Thread, current_thread, Lock
 import json
 import redis
@@ -58,19 +59,21 @@ class calcStrategy(Thread):
 class Strategy(StrategyTemplate):
     name = 'index'
 
-    def __init__(self, user, log_handler, main_engine, db):
-        StrategyTemplate.__init__(self, user, log_handler, main_engine, db)
+    def __init__(self, user, log_handler, main_engine):
+        StrategyTemplate.__init__(self, user, log_handler, main_engine)
         self.log.info('init event index.')
         self.chks=[]
         self.hdata= {}
         start_date = '2018-01-01'
         config_name = './config/chklist.json'
+        rio=RedisIo('redis.conf')
         with open(config_name, 'r') as f:
             data = json.load(f)
             # print data
             for d in data['chk-index']:
-                rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
-                rlist=[json.loads(v.decode()) for v in rdata]
+                #rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
+                #rlist=[json.loads(v.decode()) for v in rdata]
+                rlist=rio.get_iday_c(d['c'][2:])
                 self.chks.append((d['c'], d['p'],rlist))
                 #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})
                 #dfd=pd.DataFrame(list(dtd))
@@ -80,7 +83,8 @@ class Strategy(StrategyTemplate):
                 # print d['c']
 
     def strategy(self, event):
-        self.log.info('\n\nStrategy index event')
+        #self.log.info('\n\nStrategy index event')
+        self.log.info('\nStrategy index event')
         # chklist = ['002617','600549','300275','000615']
         # print  (type(event.data))
         threads = []
@@ -90,7 +94,7 @@ class Strategy(StrategyTemplate):
 
         for td in self.chks:
             if td[0] in event.data:
-                threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td))
+                threads.append(calcStrategy(td[0][2:], event.data[td[0]], self.log, td))
             # else:
             #     self.log.info("\n\nnot in data:" + td[0])
 
