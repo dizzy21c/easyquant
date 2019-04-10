@@ -12,7 +12,7 @@ account.json
 # C extensions
 *.so
 tmp/
-log/
+logs/
 
 # Distribution / packaging
 .Python
