@@ -107,13 +107,18 @@ class LFEngine(PushBaseEngine):
 # quotation_choose = input('Please input engine 1: sina 2: leverfun \n:')
 
 # quotation_engine = DefaultQuotationEngine if quotation_choose == '1' else LFEngine
-#quotation_engine = SinaEngine
+
+data_engine = DataSinaEngine
+index_engine = IndexSinaEngine
+worker_engine = WorkerEngine
 
 # quotation_engine = LFEngine
 
 #push_interval = int(input('please input interval(s)\n:'))
 push_interval = 10
-quotation_engine.PushInterval = push_interval
+data_engine.PushInterval = push_interval
+index_engine.PushInterval = push_interval
+worker_engine.PushInterval = push_interval
 
 # log_type_choose = '2' #input('请输入 log 记录方式: 1: 显示在屏幕 2: 记录到指定文件\n: ')
 log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
@@ -127,8 +132,8 @@ log_handler = DefaultLogHandler(name='strategy', log_type=log_type, filepath=log
 #rdb = redis.Redis(host='localhost', port=6379, db=0)
 #print(rdb)
 #m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler)
-data_engines=[IndexSinaEngine, DataSinaEngine, WorkerEngine]
-m = easyquant.MainEngine(broker, need_data, quotation_engines=data_engines, log_handler=log_handler)
+qe_list=[data_engine, index_engine, worker_engine]
+m = easyquant.MainEngine(broker, need_data, quotation_engines=qe_list, log_handler=log_handler)
 m.is_watch_strategy = True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 m.load_strategy()
 m.start()
