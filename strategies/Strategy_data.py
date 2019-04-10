@@ -70,11 +70,11 @@ class calcStrategy(Thread):
         #self._log.info("  end." )
 
 class Strategy(StrategyTemplate):
-    name = 'watch'
+    name = 'save data'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
-        self.log.info('init watch event.')
+        self.log.info('init event:%s'% self.name)
         self.chks=[]
         config_name = './config/chklist.json'
         self.rio = RedisIo('./redis.conf')
@@ -90,10 +90,13 @@ class Strategy(StrategyTemplate):
                 # print d['c']
 
     def strategy(self, event):
-        if event.event_type != 'worker':
+        #if event.event_type != 'data-sina':
+        if event.event_type != 'sina':
             return
 
-        self.log.info('\n\nStrategy 2 event')
+        self.log.info('\n\ndata  event:%s' % self.name)
+
+        
         # chklist = ['002617','600549','300275','000615']
         # print  (type(event.data))
         threads = []

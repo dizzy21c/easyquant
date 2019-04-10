@@ -4,7 +4,7 @@ import json
 import easyquant
 from easyquant import DefaultQuotationEngine, DefaultLogHandler, PushBaseEngine
 #import pymongo
-import redis
+#import redis
 # print('easyquant 测试 DEMO')
 # print('请输入你使用的券商:')
 # choose = input('1: 华泰 2: 佣金宝 3: 银河 4: 雪球模拟组合 5: 广发\n:')
@@ -53,6 +53,15 @@ class SinaEngine(PushBaseEngine):
             return out
             # return self.source.stocks(data['pos'])
 
+class WorkerEngine(PushBaseEngine):
+    EventType = 'worker'
+
+    def init(self):
+        self.source = easyquotation.use('sina')
+
+    def fetch_quotation(self):
+        return []
+
 class LFEngine(PushBaseEngine):
     EventType = 'lf'
 
@@ -76,6 +85,7 @@ class LFEngine(PushBaseEngine):
 
 # quotation_engine = DefaultQuotationEngine if quotation_choose == '1' else LFEngine
 quotation_engine = SinaEngine
+
 # quotation_engine = LFEngine
 
 #push_interval = int(input('please input interval(s)\n:'))
@@ -93,7 +103,9 @@ log_handler = DefaultLogHandler(name='strategy', log_type=log_type, filepath=log
 #db = client.quantaxis
 #rdb = redis.Redis(host='localhost', port=6379, db=0)
 #print(rdb)
-m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler)
+#m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler)
+data_engines=[SinaEngine,WorkerEngine]
+m = easyquant.MainEngine(broker, need_data, quotation_engines=data_engines, log_handler=log_handler)
 m.is_watch_strategy = True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 m.load_strategy()
 m.start()
