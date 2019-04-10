@@ -90,8 +90,7 @@ class Strategy(StrategyTemplate):
                 # print d['c']
 
     def strategy(self, event):
-        #if event.event_type != 'data-sina':
-        if event.event_type != 'sina':
+        if event.event_type != 'data-sina':
             return
 
         self.log.info('\n\ndata  event:%s' % self.name)

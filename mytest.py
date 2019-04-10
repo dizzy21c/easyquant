@@ -30,8 +30,31 @@ broker = None
 need_data = '' #get_broker_need_data(broker)
 
 
-class SinaEngine(PushBaseEngine):
-    EventType = 'sina'
+class DataSinaEngine(PushBaseEngine):
+    EventType = 'data-sina'
+
+    def init(self):
+        self.source = easyquotation.use('sina')
+
+    def fetch_quotation_all(self):
+        #print("fetch %s " % datetime.datetime.now())
+        out = self.source.market_snapshot(prefix=True) 
+        return out
+
+    def fetch_quotation(self):
+        config_name = './config/st_list.json'
+        with open(config_name, 'r') as f:
+            data = json.load(f)
+            out = self.source.stocks(data['pos'])
+            # print (out)
+            while len(out) == 0:
+                out = self.source.stocks(data['pos'])
+            # print (out)
+            return out
+            # return self.source.stocks(data['pos'])
+
+class IndexSinaEngine(PushBaseEngine):
+    EventType = 'index-sina'
 
     def init(self):
         self.source = easyquotation.use('sina')
@@ -84,7 +107,7 @@ class LFEngine(PushBaseEngine):
 # quotation_choose = input('Please input engine 1: sina 2: leverfun \n:')
 
 # quotation_engine = DefaultQuotationEngine if quotation_choose == '1' else LFEngine
-quotation_engine = SinaEngine
+#quotation_engine = SinaEngine
 
 # quotation_engine = LFEngine
 
@@ -104,7 +127,7 @@ log_handler = DefaultLogHandler(name='strategy', log_type=log_type, filepath=log
 #rdb = redis.Redis(host='localhost', port=6379, db=0)
 #print(rdb)
 #m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler)
-data_engines=[SinaEngine,WorkerEngine]
+data_engines=[IndexSinaEngine, DataSinaEngine, WorkerEngine]
 m = easyquant.MainEngine(broker, need_data, quotation_engines=data_engines, log_handler=log_handler)
 m.is_watch_strategy = True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 m.load_strategy()

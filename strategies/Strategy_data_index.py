@@ -84,8 +84,7 @@ class Strategy(StrategyTemplate):
 
     def strategy(self, event):
         #self.log.info('\n\nStrategy index event')
-        #if event.event_type != 'index-sina':
-        if event.event_type != 'sina':
+        if event.event_type != 'index-sina':
             return
 
         self.log.info('\nStrategy index event')
