@@ -247,7 +247,8 @@ class MainEngine:
         关闭进程前的处理
         :return:
         """
-        self.log.debug("开始关闭进程...")
+        #self.log.debug("开始关闭进程...")
+        self.log.debug("begin close process...")
         # 所有 shutdown 前的触发点
         for st in self.before_shutdown:
             st()
@@ -262,7 +263,8 @@ class MainEngine:
             time.sleep(2)
 
         # 调用策略的 shutdown
-        self.log.debug("开始关闭策略...")
+        #self.log.debug("开始关闭策略...")
+        self.log.debug("begin close strategy...")
         for s in self.strategy_list:
             s.shutdown()
 
