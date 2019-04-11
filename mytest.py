@@ -36,13 +36,13 @@ class DataSinaEngine(PushBaseEngine):
     def init(self):
         self.source = easyquotation.use('sina')
 
-    def fetch_quotation_all(self):
+    def fetch_quotation(self):
         #print("fetch %s " % datetime.datetime.now())
         out = self.source.market_snapshot(prefix=True) 
         return out
 
-    def fetch_quotation(self):
-        config_name = './config/st_list.json'
+    def fetch_quotation_sub(self):
+        config_name = './config/stock_list.json'
         with open(config_name, 'r') as f:
             data = json.load(f)
             out = self.source.stocks(data['pos'])
@@ -65,7 +65,7 @@ class IndexSinaEngine(PushBaseEngine):
         return out
 
     def fetch_quotation2(self):
-        config_name = './config/chklist.json'
+        config_name = './config/index_list.json'
         with open(config_name, 'r') as f:
             data = json.load(f)
             out = self.source.stocks(data['pos'])

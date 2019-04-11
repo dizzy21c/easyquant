@@ -65,7 +65,7 @@ class Strategy(StrategyTemplate):
         self.chks=[]
         self.hdata= {}
         start_date = '2018-01-01'
-        config_name = './config/chklist.json'
+        config_name = './config/worker_list.json'
         rio=RedisIo('redis.conf')
         with open(config_name, 'r') as f:
             data = json.load(f)

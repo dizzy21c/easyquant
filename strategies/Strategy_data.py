@@ -76,7 +76,7 @@ class Strategy(StrategyTemplate):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
         self.log.info('init event:%s'% self.name)
         self.chks=[]
-        config_name = './config/chklist.json'
+        config_name = './config/worker_list.json'
         self.rio = RedisIo('./redis.conf')
         #self.redis = redis.Redis(host='localhost', port=6379, db=0)
         with open(config_name, 'r') as f:
