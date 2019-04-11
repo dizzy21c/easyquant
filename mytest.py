@@ -32,6 +32,7 @@ need_data = '' #get_broker_need_data(broker)
 
 class DataSinaEngine(PushBaseEngine):
     EventType = 'data-sina'
+    PushInterval = 10
 
     def init(self):
         self.source = easyquotation.use('sina')
@@ -45,16 +46,17 @@ class DataSinaEngine(PushBaseEngine):
         config_name = './config/stock_list.json'
         with open(config_name, 'r') as f:
             data = json.load(f)
-            out = self.source.stocks(data['pos'])
+            out = self.source.stocks(data['code'])
             # print (out)
             while len(out) == 0:
-                out = self.source.stocks(data['pos'])
+                out = self.source.stocks(data['code'])
             # print (out)
             return out
             # return self.source.stocks(data['pos'])
 
 class IndexSinaEngine(PushBaseEngine):
     EventType = 'index-sina'
+    PushInterval = 10
 
     def init(self):
         self.source = easyquotation.use('sina')
@@ -68,16 +70,17 @@ class IndexSinaEngine(PushBaseEngine):
         config_name = './config/index_list.json'
         with open(config_name, 'r') as f:
             data = json.load(f)
-            out = self.source.stocks(data['pos'])
+            out = self.source.stocks(data['code'])
             # print (out)
             while len(out) == 0:
-                out = self.source.stocks(data['pos'])
+                out = self.source.stocks(data['code'])
             # print (out)
             return out
             # return self.source.stocks(data['pos'])
 
 class WorkerEngine(PushBaseEngine):
     EventType = 'worker'
+    PushInterval = 10
 
     def init(self):
         self.source = easyquotation.use('sina')
@@ -108,17 +111,17 @@ class LFEngine(PushBaseEngine):
 
 # quotation_engine = DefaultQuotationEngine if quotation_choose == '1' else LFEngine
 
-data_engine = DataSinaEngine
-index_engine = IndexSinaEngine
-worker_engine = WorkerEngine
+#data_engine = DataSinaEngine
+#index_engine = IndexSinaEngine
+#worker_engine = WorkerEngine
 
 # quotation_engine = LFEngine
 
 #push_interval = int(input('please input interval(s)\n:'))
-push_interval = 10
-data_engine.PushInterval = push_interval
-index_engine.PushInterval = push_interval
-worker_engine.PushInterval = push_interval
+#push_interval = 10
+#data_engine.PushInterval = push_interval
+#index_engine.PushInterval = push_interval
+#worker_engine.PushInterval = push_interval
 
 # log_type_choose = '2' #input('请输入 log 记录方式: 1: 显示在屏幕 2: 记录到指定文件\n: ')
 log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
@@ -132,7 +135,7 @@ log_handler = DefaultLogHandler(name='strategy', log_type=log_type, filepath=log
 #rdb = redis.Redis(host='localhost', port=6379, db=0)
 #print(rdb)
 #m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler)
-qe_list=[data_engine, index_engine, worker_engine]
+qe_list=[DataSinaEngine, IndexSinaEngine, WorkerEngine]
 m = easyquant.MainEngine(broker, need_data, quotation_engines=qe_list, log_handler=log_handler)
 m.is_watch_strategy = True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 m.load_strategy()
