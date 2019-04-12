@@ -6,8 +6,8 @@ from easyquant import DefaultQuotationEngine, DefaultLogHandler, PushBaseEngine
 #import pymongo
 #import redis
 # print('easyquant 测试 DEMO')
-# print('请输入你使用的券商:')
-# choose = input('1: 华泰 2: 佣金宝 3: 银河 4: 雪球模拟组合 5: 广发\n:')
+# print('trader:')
+# choose = input('1: \n:')
 
 broker = None
 # if choose == '2':
@@ -29,64 +29,64 @@ broker = None
 
 need_data = '' #get_broker_need_data(broker)
 
+class SinaEngine(PushBaseEngine):
+    # EventType = 'data-sina'
+    # PushInterval = 10
+    config = None
 
-class DataSinaEngine(PushBaseEngine):
+    def init(self):
+        self.source = easyquotation.use('sina')
+
+    def fetch_quotation(self):
+        if self.EventType == "worker":
+            return []
+
+        if self.config is None:
+            return self.fetch_quotation_all()
+        else:
+            return self.fetch_quotation_config()
+
+    def fetch_quotation_all(self):
+        #print("fetch %s " % datetime.datetime.now())
+        out = self.source.market_snapshot(prefix=True) 
+        return out
+
+    def fetch_quotation_config(self):
+        config_name = './config/%s.json' % self.config
+        with open(config_name, 'r') as f:
+            data = json.load(f)
+            out = self.source.stocks(data['code'])
+            # print (out)
+            while len(out) == 0:
+                out = self.source.stocks(data['code'])
+            # print (out)
+            return out
+            # return self.source.stocks(data['pos'])
+
+class DataSinaEngine(SinaEngine):
     EventType = 'data-sina'
     PushInterval = 10
+    config = "stock_list"
 
-    def init(self):
-        self.source = easyquotation.use('sina')
 
-    def fetch_quotation(self):
-        #print("fetch %s " % datetime.datetime.now())
-        out = self.source.market_snapshot(prefix=True) 
-        return out
+class BlockSinaEngine(SinaEngine):
+    EventType = 'block-sina'
+    PushInterval = 10
+    config = "bk_list"
 
-    def fetch_quotation_sub(self):
-        config_name = './config/stock_list.json'
-        with open(config_name, 'r') as f:
-            data = json.load(f)
-            out = self.source.stocks(data['code'])
-            # print (out)
-            while len(out) == 0:
-                out = self.source.stocks(data['code'])
-            # print (out)
-            return out
-            # return self.source.stocks(data['pos'])
-
-class IndexSinaEngine(PushBaseEngine):
+class IndexSinaEngine(SinaEngine):
     EventType = 'index-sina'
     PushInterval = 10
+    config = "index_list"
 
-    def init(self):
-        self.source = easyquotation.use('sina')
-
-    def fetch_quotation(self):
-        #print("fetch %s " % datetime.datetime.now())
-        out = self.source.market_snapshot(prefix=True) 
-        return out
-
-    def fetch_quotation2(self):
-        config_name = './config/index_list.json'
-        with open(config_name, 'r') as f:
-            data = json.load(f)
-            out = self.source.stocks(data['code'])
-            # print (out)
-            while len(out) == 0:
-                out = self.source.stocks(data['code'])
-            # print (out)
-            return out
-            # return self.source.stocks(data['pos'])
-
-class WorkerEngine(PushBaseEngine):
+class WorkerEngine(SinaEngine):
     EventType = 'worker'
     PushInterval = 10
 
-    def init(self):
-        self.source = easyquotation.use('sina')
-
-    def fetch_quotation(self):
-        return []
+# worker_engine = DataEngine
+# worker_engine.EventType = "worker"
+# worker_engine.PushInterval = 10
+# worker_engine.config = "worker"
 
 class LFEngine(PushBaseEngine):
     EventType = 'lf'
@@ -135,7 +135,8 @@ log_handler = DefaultLogHandler(name='strategy', log_type=log_type, filepath=log
 #rdb = redis.Redis(host='localhost', port=6379, db=0)
 #print(rdb)
 #m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler)
-qe_list=[DataSinaEngine, IndexSinaEngine, WorkerEngine]
+# qe_list=[data_engine, IndexSinaEngine, WorkerEngine]
+qe_list=[DataSinaEngine, IndexSinaEngine, BlockSinaEngine, WorkerEngine]
 m = easyquant.MainEngine(broker, need_data, quotation_engines=qe_list, log_handler=log_handler)
 m.is_watch_strategy = True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 m.load_strategy()

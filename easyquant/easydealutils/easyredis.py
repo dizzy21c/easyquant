@@ -62,6 +62,10 @@ class RedisIo(object):
         #获取队列长度
         return self.r.llen(listname)
 
+    def push_day_all(self, code, data):
+        #listname=self._get_skey(code,'day','close')
+        self.push_day_c(code, data['now'])
+    
     def push_day_c(self, code, data):
         #listname=self._get_skey(code,'day','close')
         listname=self._get_skey(code)
