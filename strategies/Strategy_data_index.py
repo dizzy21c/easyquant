@@ -10,11 +10,13 @@ import numpy as np
 import talib
 
 class calcStrategy(Thread):
-    def __init__(self, code, data, log):
+    def __init__(self, code, ndata, log, redisIo, hdata):
         Thread.__init__(self)
-        self.data = data
+        self.data = ndata
         self.code = code
         self.log = log
+        self.rio = redisIo
+        self.hdata = hdata
         # self._chkv = hdata[1]
         # log.info("code=%s, code=%s"%(code, code[2:]))
         # data=mdb['index_day'].find({'code':code[2:]})
@@ -53,8 +55,15 @@ class calcStrategy(Thread):
         # print ("code=%s now=%6.2f pct=%6.2f hl=%6.2f" % ( self._code, self._data['now'], pct, downPct))
         # self._log.info("code=%s now=%6.2f pct=%6.2f pctv2=%6.2f" % ( self._code, self._data['now'], pct, chkVPct))
         #if pct > 0.2 or pct < -0.2 :
-        # self._log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self._code, self._data['now'], pct, cp, hp, lp))
-        # self._log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self._code, self._data['now'], pct, ma20[-1], ma202[-1], 0))
+        # self.log.info(self.code)
+        # self.log.info(self.hdata.keys())
+        if self.code in self.hdata.keys():
+            hd = self.hdata[self.code]
+            # ma20 = talib.MA(np.array(hd),20)
+            # self.log.info(hd)
+            ma20 = 0
+            self.log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self.code, self.data['now'], pct, cp, hp, ma20))
+            # self._log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self._code, self._data['now'], pct, ma20[-1], ma202[-1], 0))
 
 class Strategy(StrategyTemplate):
     name = 'index-save'
@@ -62,19 +71,20 @@ class Strategy(StrategyTemplate):
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
         self.log.info('init event:%s'% self.name)
-        self.chks=[]
-        self.hdata= {}
+        self.hdata={}
+        # self.hdata= {}
         # start_date = '2018-01-01'
         config_name = './config/worker_list.json'
-        rio=RedisIo('redis.conf')
+        self.rio=RedisIo('redis.conf')
         with open(config_name, 'r') as f:
             data = json.load(f)
             # print data
             for d in data['chk-index']:
                 #rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
                 #rlist=[json.loads(v.decode()) for v in rdata]
-                rlist=rio.get_iday_c(d['c'])
-                self.chks.append((d['c'], d['p'],rlist))
+                rlist=self.rio.get_iday_c(d['c'])
+                self.hdata[d['c']] = rlist
+                # self.chks.append((d['c'], d['p'],rlist))
                 #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})
                 #dfd=pd.DataFrame(list(dtd))
                 #dfd=[]
@@ -94,10 +104,16 @@ class Strategy(StrategyTemplate):
         # [calcStrategy(l) for i in range(5)]
         #for td in event.data:
         #    self.log.info(td)
+        for stcode in event.data:
+            # self.log.info(event.data)
+            stdata= event.data[stcode]
+            # self.log.info(stdata)
+            # rtn=self.summary(data=stdata,org=rtn)
+            threads.append(calcStrategy(stcode, stdata, self.log, self.rio, self.hdata))
 
-        for td in self.chks:
-            if td[0] in event.data:
-                threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td))
+        # for td in self.chks:
+            # if td[0] in event.data:
+                # threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td))
             # else:
             #     self.log.info("\n\nnot in data:" + td[0])
 

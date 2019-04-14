@@ -79,12 +79,12 @@ class RedisIo(object):
         return "%s:idx:%s:%s"%(code, dtype, vtype)
 
     def get_day_c(self, code, startpos=0, endpos=-1):
-        listname=_get_skey(code)
+        listname=self._get_skey(code)
         rl = self.pull_list_range(listname, startpos, endpos) 
         return [json.loads(v.decode()) for v in rl]
    
     def get_day_v(self, code, startpos=0, endpos=-1):
-        listname=_get_skey(code, vtype='vol')
+        listname=self._get_skey(code, vtype='vol')
         return self.pull_list_range(listname, startpos, endpos) 
    
     def get_day_h(self, code, startpos=0, endpos=-1):
