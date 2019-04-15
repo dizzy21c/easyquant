@@ -4,3 +4,4 @@ from .push_engine.quotation_engine import DefaultQuotationEngine
 from .log_handler.default_handler import DefaultLogHandler
 from .main_engine import MainEngine
 from .easydealutils.easyredis import RedisIo
+from .easydealutils.datautil import DataUtil

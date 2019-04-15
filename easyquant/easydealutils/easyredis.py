@@ -3,6 +3,8 @@ import os
 import sys
 import redis
 import json
+import pandas as pd
+import numpy as np
 
 class RedisIo(object):
     """Redis操作类"""
@@ -78,27 +80,73 @@ class RedisIo(object):
     def _get_ikey(self, code, dtype='day', vtype='close'):
         return "%s:idx:%s:%s"%(code, dtype, vtype)
 
-    def get_day_c(self, code, startpos=0, endpos=-1):
-        listname=self._get_skey(code)
+    def _get_str_data(self, listname, startpos=0, endpos=-1):
+        rl = self.pull_list_range(listname, startpos, endpos) 
+        return [v.decode() for v in rl]
+
+    def _get_num_data(self, listname, startpos=0, endpos=-1):
         rl = self.pull_list_range(listname, startpos, endpos) 
         return [json.loads(v.decode()) for v in rl]
+
+    def get_day_df(self, code, startpos=0, endpos=-1):
+        c = self.get_day_c(code, startpos, endpos)
+        h = self.get_day_h(code, startpos, endpos)
+        l = self.get_day_l(code, startpos, endpos)
+        o = self.get_day_o(code, startpos, endpos)
+        v = self.get_day_v(code, startpos, endpos)
+        d = self.get_day_d(code, startpos, endpos)
+        #return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l, 'open':o})
+        return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l})
+
+   
+    def get_day_c(self, code, startpos=0, endpos=-1):
+        listname=self._get_skey(code)
+        return self._get_num_data(listname, startpos, endpos)
    
     def get_day_v(self, code, startpos=0, endpos=-1):
         listname=self._get_skey(code, vtype='vol')
-        return self.pull_list_range(listname, startpos, endpos) 
+        return self._get_num_data(listname, startpos, endpos)
+   
+    def get_day_o(self, code, startpos=0, endpos=-1):
+        listname=self._get_skey(code, vtype='open')
+        return self._get_num_data(listname, startpos, endpos)
    
     def get_day_h(self, code, startpos=0, endpos=-1):
-        listname="%s:%s:%s"%(code, 'day', 'high')
-        return self.pull_list_range(listname, startpos, endpos) 
+        listname=self._get_skey(code, vtype='high')
+        return self._get_num_data(listname, startpos, endpos)
    
     def get_day_l(self, code, startpos=0, endpos=-1):
-        listname="%s:%s:%s"%(code, 'day', 'low')
-        return self.pull_list_range(listname, startpos, endpos) 
+        listname=self._get_skey(code, vtype='low')
+        return self._get_num_data(listname, startpos, endpos)
+   
+    def get_day_d(self, code, startpos=0, endpos=-1):
+        listname=self._get_skey(code, vtype='date')
+        return self._get_str_data(listname, startpos, endpos)
    
     def get_iday_c(self, code, startpos=0, endpos=-1):
         listname=self._get_ikey(code)
-        rl = self.pull_list_range(listname, startpos, endpos) 
-        return [json.loads(v.decode()) for v in rl]
+        return self._get_num_data(listname, startpos, endpos)
+
+    def get_iday_v(self, code, startpos=0, endpos=-1):
+        listname=self._get_ikey(code, vtype='vol')
+        return self._get_num_data(listname, startpos, endpos)
+   
+    def get_iday_c(self, code, startpos=0, endpos=-1):
+        listname=self._get_ikey(code, vtype='open')
+        return self._get_num_data(listname, startpos, endpos)
+   
+    def get_iday_h(self, code, startpos=0, endpos=-1):
+        listname=self._get_ikey(code, vtype='high')
+        return self._get_num_data(listname, startpos, endpos)
+   
+    def get_iday_l(self, code, startpos=0, endpos=-1):
+        listname=self._get_ikey(code, vtype='low')
+        return self._get_num_data(listname, startpos, endpos)
+   
+    def get_iday_dt(self, code, startpos=0, endpos=-1):
+        listname=self._get_ikey(code, vtype='dt')
+        return self._get_str_data(listname, startpos, endpos)
+   
    
 def main():
     ri = RedisIo('redis.conf')

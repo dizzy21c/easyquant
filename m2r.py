@@ -18,6 +18,7 @@ def rpush(code, flg, dtype, data):
 def allpush(code,flg, tbl_data, dtype=0):
   for x in tbl_data:
     rpush(code,flg,'close',x)
+    rpush(code,flg,'open',x)
     rpush(code,flg,'high',x)
     rpush(code,flg,'low',x)
     rpush(code,flg,'vol',x)
@@ -28,7 +29,7 @@ def allpush(code,flg, tbl_data, dtype=0):
 
 def convert_min(code, flg, st_date, col, mtype):
   dtd=col.find({'code':code,'date':{'$gt':st_date}, 'type':mtype})
-  allpush(code, flg, dtd)
+  allpush(code, flg, dtd, 1)
 
 def convert(code, flg, st_date, col):
   dtd=col.find({'code':code,'date':{'$gt':st_date}})
@@ -40,6 +41,7 @@ def date_conv(st_date):
   col_s =db.stock_day
   for x in st_list:
     convert(x['code'],'day', st_date, col_s)
+    #break
 
   #col_s_m = db.stock_min
   idx_info=db.index_list
@@ -47,10 +49,12 @@ def date_conv(st_date):
   col_i=db.index_day
   for x in idx_list:
     convert(x['code'], 'idx:day', st_date, col_i)
+    #break
 
   col_idx_min=db.index_min
   for x in idx_list:
     convert_min(x['code'], 'idx:15min',st_date,col_idx_min,'15min') 
+    #break
 
 #convert('600718','2018-01-01')
 st_date='2018-01-01'

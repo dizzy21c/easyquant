@@ -57,12 +57,14 @@ class calcStrategy(Thread):
         #if pct > 0.2 or pct < -0.2 :
         # self.log.info(self.code)
         # self.log.info(self.hdata.keys())
-
-        if self.code in self.hdata.keys():
-            hd = self.hdata[self.code]
+        
+        # if self.code in self.hdata.keys():
+        #     hd = self.hdata[self.code]
             # ma20 = talib.MA(np.array(hd),20)
-            ma20 = 0
-            self.log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self.code, self.data['now'], pct, cp, hp, ma20))
+            # self.log.info(hd)
+            # ma20 = 0
+            # self.log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self.code, self.data['now'], pct, cp, hp, ma20))
+            # self._log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self._code, self._data['now'], pct, ma20[-1], ma202[-1], 0))
 
 class Strategy(StrategyTemplate):
     name = 'index-save'
