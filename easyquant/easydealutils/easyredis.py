@@ -123,6 +123,16 @@ class RedisIo(object):
         listname=self._get_skey(code, vtype='date')
         return self._get_str_data(listname, startpos, endpos)
    
+    def get_iday_df(self, code, startpos=0, endpos=-1):
+        c = self.get_iday_c(code, startpos, endpos)
+        h = self.get_iday_h(code, startpos, endpos)
+        l = self.get_iday_l(code, startpos, endpos)
+        # o = self.get_iday_o(code, startpos, endpos)
+        v = self.get_iday_v(code, startpos, endpos)
+        d = self.get_iday_d(code, startpos, endpos)
+        #return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l, 'open':o})
+        return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l})
+
     def get_iday_c(self, code, startpos=0, endpos=-1):
         listname=self._get_ikey(code)
         return self._get_num_data(listname, startpos, endpos)
@@ -131,7 +141,7 @@ class RedisIo(object):
         listname=self._get_ikey(code, vtype='vol')
         return self._get_num_data(listname, startpos, endpos)
    
-    def get_iday_c(self, code, startpos=0, endpos=-1):
+    def get_iday_o(self, code, startpos=0, endpos=-1):
         listname=self._get_ikey(code, vtype='open')
         return self._get_num_data(listname, startpos, endpos)
    
@@ -143,8 +153,8 @@ class RedisIo(object):
         listname=self._get_ikey(code, vtype='low')
         return self._get_num_data(listname, startpos, endpos)
    
-    def get_iday_dt(self, code, startpos=0, endpos=-1):
-        listname=self._get_ikey(code, vtype='dt')
+    def get_iday_d(self, code, startpos=0, endpos=-1):
+        listname=self._get_ikey(code, vtype='date')
         return self._get_str_data(listname, startpos, endpos)
    
    
