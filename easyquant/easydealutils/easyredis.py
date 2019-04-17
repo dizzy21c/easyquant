@@ -64,21 +64,49 @@ class RedisIo(object):
         #获取队列长度
         return self.r.llen(listname)
 
-    def push_day_all(self, code, data):
-        #listname=self._get_skey(code,'day','close')
-        self.push_day_c(code, data['now'])
+    def push_cur_data(self, code, data, idx=0):
+        self.push_day_vtype(code, data, 'close', idx)
+        self.push_day_vtype(code, data, 'high', idx)
+        self.push_day_vtype(code, data, 'low', idx)
+        self.push_day_vtype(code, data, 'vol', idx)
+        #for backup
+        self.push_day_vtype(code, data, 'volume', idx)
+        self.push_day_vtype(code, data, 'open', idx)
+        self.push_day_vtype(code, data, 'datetime', idx)
     
-    def push_day_c(self, code, data):
-        #listname=self._get_skey(code,'day','close')
-        listname=self._get_skey(code)
-        value=data
-        return self.push_list_rvalue(listname, value)
+    def push_day_data(self, code, data, idx=0):
+        self.push_day_vtype(code, data, 'close', idx)
+        self.push_day_vtype(code, data, 'high', idx)
+        self.push_day_vtype(code, data, 'low', idx)
+        self.push_day_vtype(code, data, 'vol', idx)
+        #for backup
+        self.push_day_vtype(code, data, 'volume', idx)
+        self.push_day_vtype(code, data, 'open', idx)
+        self.push_day_vtype(code, data, 'date', idx)
     
-    def _get_skey(self, code, dtype='day', vtype='close'):
-        return "%s:%s:%s"%(code, dtype, vtype)
+    def push_data_value(self, code, data, dtype='day', vtype='close', idx=0):
+        #listname=self._get_key(code,'day','close')
+        if idx==0:
+            listname=self._get_key(code, dtype='day', vtype=vtype, idx=0)
+        else:
+            listname=self._get_key(code, dtype='day', vtype=vtype, idx=idx)
 
-    def _get_ikey(self, code, dtype='day', vtype='close'):
-        return "%s:idx:%s:%s"%(code, dtype, vtype)
+        if vtype == 'close':
+            value=data['now']
+        elif vtype == 'vol':
+            value = data['volume']
+        elf vtype == 'datetime':
+            value = "%s %s"%(data['date'], data['time'])
+        else:
+            value=data[type]
+
+        self.push_list_rvalue(listname, value)
+    
+    def _get_key(self, code, dtype='day', vtype='close', idx=0):
+        if idx==0:
+            return "%s:%s:%s"%(code, dtype, vtype)
+        else:
+            return "%s:idx:%s:%s"%(code, dtype, vtype)
 
     def _get_str_data(self, listname, startpos=0, endpos=-1):
         rl = self.pull_list_range(listname, startpos, endpos) 
@@ -99,65 +127,40 @@ class RedisIo(object):
         return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l})
 
    
-    def get_day_c(self, code, startpos=0, endpos=-1):
-        listname=self._get_skey(code)
+    def get_day_c(self, code, startpos=0, endpos=-1, idx=0):
+        listname=self._get_key(code, vtype='close', idx=idx)
         return self._get_num_data(listname, startpos, endpos)
    
-    def get_day_v(self, code, startpos=0, endpos=-1):
-        listname=self._get_skey(code, vtype='vol')
+    def get_day_v(self, code, startpos=0, endpos=-1, idx=0):
+        listname=self._get_key(code, vtype='vol', idx=idx)
         return self._get_num_data(listname, startpos, endpos)
    
-    def get_day_o(self, code, startpos=0, endpos=-1):
-        listname=self._get_skey(code, vtype='open')
+    def get_day_o(self, code, startpos=0, endpos=-1, idx=0):
+        listname=self._get_key(code, vtype='open', idx=idx)
         return self._get_num_data(listname, startpos, endpos)
    
-    def get_day_h(self, code, startpos=0, endpos=-1):
-        listname=self._get_skey(code, vtype='high')
+    def get_day_h(self, code, startpos=0, endpos=-1, idx=0):
+        listname=self._get_key(code, vtype='high', idx=idx)
         return self._get_num_data(listname, startpos, endpos)
    
-    def get_day_l(self, code, startpos=0, endpos=-1):
-        listname=self._get_skey(code, vtype='low')
+    def get_day_l(self, code, startpos=0, endpos=-1, idx=0):
+        listname=self._get_key(code, vtype='low', idx=idx)
         return self._get_num_data(listname, startpos, endpos)
    
-    def get_day_d(self, code, startpos=0, endpos=-1):
-        listname=self._get_skey(code, vtype='date')
+    def get_day_d(self, code, startpos=0, endpos=-1, idx=0):
+        listname=self._get_key(code, vtype='date', idx=idx)
         return self._get_str_data(listname, startpos, endpos)
    
     def get_iday_df(self, code, startpos=0, endpos=-1):
-        c = self.get_iday_c(code, startpos, endpos)
-        h = self.get_iday_h(code, startpos, endpos)
-        l = self.get_iday_l(code, startpos, endpos)
-        # o = self.get_iday_o(code, startpos, endpos)
-        v = self.get_iday_v(code, startpos, endpos)
-        d = self.get_iday_d(code, startpos, endpos)
+        c = self.get_day_c(code, startpos, endpos, 1)
+        h = self.get_day_h(code, startpos, endpos, 1)
+        l = self.get_day_l(code, startpos, endpos, 1)
+        # o = self.get_day_o(code, startpos, endpos, 1)
+        v = self.get_day_v(code, startpos, endpos, 1)
+        d = self.get_day_d(code, startpos, endpos, 1)
         #return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l, 'open':o})
         return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l})
 
-    def get_iday_c(self, code, startpos=0, endpos=-1):
-        listname=self._get_ikey(code)
-        return self._get_num_data(listname, startpos, endpos)
-
-    def get_iday_v(self, code, startpos=0, endpos=-1):
-        listname=self._get_ikey(code, vtype='vol')
-        return self._get_num_data(listname, startpos, endpos)
-   
-    def get_iday_o(self, code, startpos=0, endpos=-1):
-        listname=self._get_ikey(code, vtype='open')
-        return self._get_num_data(listname, startpos, endpos)
-   
-    def get_iday_h(self, code, startpos=0, endpos=-1):
-        listname=self._get_ikey(code, vtype='high')
-        return self._get_num_data(listname, startpos, endpos)
-   
-    def get_iday_l(self, code, startpos=0, endpos=-1):
-        listname=self._get_ikey(code, vtype='low')
-        return self._get_num_data(listname, startpos, endpos)
-   
-    def get_iday_d(self, code, startpos=0, endpos=-1):
-        listname=self._get_ikey(code, vtype='date')
-        return self._get_str_data(listname, startpos, endpos)
-   
-   
 def main():
     ri = RedisIo('redis.conf')
     ri.lookup_redist_info()
