@@ -83,7 +83,7 @@ class Strategy(StrategyTemplate):
             for d in data['chk-index']:
                 #rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
                 #rlist=[json.loads(v.decode()) for v in rdata]
-                rlist=self.rio.get_iday_c(d['c'])
+                rlist=self.rio.get_day_c(d['c'])
                 self.hdata[d['c']] = rlist
                 # self.chks.append((d['c'], d['p'],rlist))
                 #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})

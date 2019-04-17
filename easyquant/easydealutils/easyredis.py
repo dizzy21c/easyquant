@@ -65,24 +65,24 @@ class RedisIo(object):
         return self.r.llen(listname)
 
     def push_cur_data(self, code, data, idx=0):
-        self.push_day_vtype(code, data, 'close', idx)
-        self.push_day_vtype(code, data, 'high', idx)
-        self.push_day_vtype(code, data, 'low', idx)
-        self.push_day_vtype(code, data, 'vol', idx)
+        self.push_data_value(code, data, vtype='close', idx=idx)
+        self.push_data_value(code, data, vtype='high', idx=idx)
+        self.push_data_value(code, data, vtype='low', idx=idx)
+        self.push_data_value(code, data, vtype='vol', idx=idx)
         #for backup
-        self.push_day_vtype(code, data, 'volume', idx)
-        self.push_day_vtype(code, data, 'open', idx)
-        self.push_day_vtype(code, data, 'datetime', idx)
+        self.push_data_value(code, data, vtype='volume', idx=idx)
+        self.push_data_value(code, data, vtype='open', idx=idx)
+        self.push_data_value(code, data, vtype='date', idx=idx)
     
     def push_day_data(self, code, data, idx=0):
-        self.push_day_vtype(code, data, 'close', idx)
-        self.push_day_vtype(code, data, 'high', idx)
-        self.push_day_vtype(code, data, 'low', idx)
-        self.push_day_vtype(code, data, 'vol', idx)
+        self.push_data_value(code, data, vtype='close', idx=idx)
+        self.push_data_value(code, data, vtype='high', idx=idx)
+        self.push_data_value(code, data, vtype='low', idx=idx)
+        self.push_data_value(code, data, vtype='vol', idx=idx)
         #for backup
-        self.push_day_vtype(code, data, 'volume', idx)
-        self.push_day_vtype(code, data, 'open', idx)
-        self.push_day_vtype(code, data, 'date', idx)
+        self.push_data_value(code, data, vtype='volume', idx=idx)
+        self.push_data_value(code, data, vtype='open', idx=idx)
+        self.push_data_value(code, data, vtype='date', idx=idx)
     
     def push_data_value(self, code, data, dtype='day', vtype='close', idx=0):
         #listname=self._get_key(code,'day','close')
@@ -95,7 +95,7 @@ class RedisIo(object):
             value=data['now']
         elif vtype == 'vol':
             value = data['volume']
-        elf vtype == 'datetime':
+        elif vtype == 'datetime':
             value = "%s %s"%(data['date'], data['time'])
         else:
             value=data[type]
