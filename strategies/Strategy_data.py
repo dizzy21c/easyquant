@@ -24,7 +24,7 @@ class calcStrategy(Thread):
     def redis_push(self, data):
         ct=time.strftime("%H:%M:%S", time.localtime()) 
         #dt=data['time']
-        if ct < "09:30:00":
+        if ct < "09:25:00":
             return
 
         if ct > "11:30:10" and ct < "12:59:59":
@@ -33,23 +33,7 @@ class calcStrategy(Thread):
         if ct > "15:00:10":
             return
 
-        flg="cur"
-        dtype="now"
-        self.redis.push_day_c(self.code, data[dtype])
-        dtype="open"
-        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
-        dtype="high"
-        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
-        dtype="low"
-        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
-        dtype="volume"
-        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), data[dtype])
-        dtype="date"
-        ddate=data[dtype]
-        dtype="time"
-        dtime=data[dtype]
-        dtype="datetime"
-        #self.redis.rpush("%s:%s:%s"%(self._code[2:], flg, dtype), "%s %s"%(ddate,dtime))
+        self.redis.push_cur_data(self.code, data)
 
     def run(self):
         # pass

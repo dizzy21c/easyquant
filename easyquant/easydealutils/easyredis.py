@@ -54,6 +54,7 @@ class RedisIo(object):
         return self.r.lpush(listname, value)
 
     def push_list_rvalue(self, list_name, value):
+        # print("%s=%s" %(list_name, value))
         return self.r.rpush(list_name, value)
 
     def pull_list_range(self, listname, starpos=0, endpos=-1):
@@ -65,14 +66,21 @@ class RedisIo(object):
         return self.r.llen(listname)
 
     def push_cur_data(self, code, data, idx=0):
-        self.push_data_value(code, data, vtype='close', idx=idx)
-        self.push_data_value(code, data, vtype='high', idx=idx)
-        self.push_data_value(code, data, vtype='low', idx=idx)
-        self.push_data_value(code, data, vtype='vol', idx=idx)
+        # print("put cur data")
+        self.push_data_value(code, data, dtype='cur', vtype='close', idx=idx)
+        self.push_data_value(code, data, dtype='cur', vtype='high', idx=idx)
+        self.push_data_value(code, data, dtype='cur', vtype='low', idx=idx)
+        self.push_data_value(code, data, dtype='cur', vtype='vol', idx=idx)
         #for backup
-        self.push_data_value(code, data, vtype='volume', idx=idx)
-        self.push_data_value(code, data, vtype='open', idx=idx)
-        self.push_data_value(code, data, vtype='date', idx=idx)
+        self.push_data_value(code, data, dtype='cur', vtype='volume', idx=idx)
+        self.push_data_value(code, data, dtype='cur', vtype='open', idx=idx)
+        self.push_data_value(code, data, dtype='cur', vtype='datetime', idx=idx)
+
+        if idx==0:
+            #{'name': '"', 'open': 11.19, 'close': 11.1, 'now': 11.47, 'high': 11.63, 'low': 11.19, 'buy': 11.46, 'sell': 11.47, 'turnover': 54845630, 'volume': 629822482.49, 'bid1_volume': 52700, 'bid1': 11.46, 'bid2_volume': 94600, 'bid2': 11.45, 'bid3_volume': 10900, 'bid3': 11.44, 'bid4_volume': 40700, 'bid4': 11.43, 'bid5_volume': 60500, 'bid5': 11.42, 'ask1_volume': 5200, 'ask1': 11.47, 'ask2_volume': 70600, 'ask2': 11.48, 'ask3_volume': 116300, 'ask3': 11.49, 'ask4_volume': 248000, 'ask4': 11.5, 'ask5_volume': 26200, 'ask5': 11.51, 'date': '2019-04-08', 'time': '14:12:33'}
+            #{'name': '"', , 'buy': 11.46, 'sell': 11.47,  'bid1_volume': 52700, 'bid1': 11.46, 'bid2_volume': 94600, 'bid2': 11.45, 'bid3_volume': 10900, 'bid3': 11.44, 'bid4_volume': 40700, 'bid4': 11.43, 'bid5_volume': 60500, 'bid5': 11.42, 'ask1_volume': 5200, 'ask1': 11.47, 'ask2_volume': 70600, 'ask2': 11.48, 'ask3_volume': 116300, 'ask3': 11.49, 'ask4_volume': 248000, 'ask4': 11.5, 'ask5_volume': 26200, 'ask5': 11.51, 'date': '2019-04-08', 'time': '14:12:33'}
+            self.push_data_value(code, data, dtype='cur', vtype='buy')
+            self.push_data_value(code, data, dtype='cur', vtype='sell')
     
     def push_day_data(self, code, data, idx=0):
         self.push_data_value(code, data, vtype='close', idx=idx)
@@ -87,9 +95,9 @@ class RedisIo(object):
     def push_data_value(self, code, data, dtype='day', vtype='close', idx=0):
         #listname=self._get_key(code,'day','close')
         if idx==0:
-            listname=self._get_key(code, dtype='day', vtype=vtype, idx=0)
+            listname=self._get_key(code, dtype=dtype, vtype=vtype, idx=0)
         else:
-            listname=self._get_key(code, dtype='day', vtype=vtype, idx=idx)
+            listname=self._get_key(code, dtype=dtype, vtype=vtype, idx=idx)
 
         if vtype == 'close':
             value=data['now']
@@ -98,7 +106,7 @@ class RedisIo(object):
         elif vtype == 'datetime':
             value = "%s %s"%(data['date'], data['time'])
         else:
-            value=data[type]
+            value=data[vtype]
 
         self.push_list_rvalue(listname, value)
     
