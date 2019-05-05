@@ -25,9 +25,9 @@ class calcStrategy(Thread):
         # self.log.info("%s = %s"%(self.code, cl))
         # self.log.info(vl)
 
-        v = cl[-1]
+        # v = cl[-1]
 
-        vm20 = talib.MA(np.array(cl), 20)
+        #vm20 = talib.MA(np.array(cl), 20)
 
         # chgValue = (self.data['now'] - self.data['close'])
         # downPct = (self._data['high'] - self._data['now']) * 100 / self._data['now']
