@@ -20,6 +20,7 @@ class calcStrategy(Thread):
         # self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.redis = redis
         self.hdata = hdata
+        self.lasttm = ""
 
     def redis_push(self, data):
         ct=time.strftime("%H:%M:%S", time.localtime()) 

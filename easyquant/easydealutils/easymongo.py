@@ -18,7 +18,7 @@ class MongoIo(object):
         # else:
         #     self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'], password = self.config['passwd'])
     
-    def get_data(self, code, st_start="2017-01-01", st_end="2020-01-01"):
+    def get_data(self, code, st_start="2017-01-01", st_end="2030-01-01"):
         col =self.db.stock_day
         dtd=col.find({'code':code,'date':{'$gt':st_start}, 'date':{"$lt":st_end}})
         ptd=pd.DataFrame(list(dtd))
