@@ -24,6 +24,10 @@ class calcStrategy(Thread):
 
     def redis_push(self, data):
         ct=time.strftime("%H:%M:%S", time.localtime()) 
+        if self.lasttm == data['time']:
+            return
+        self.lasttm = data['time']
+
         #dt=data['time']
         if ct < "09:25:00":
             return
@@ -42,7 +46,7 @@ class calcStrategy(Thread):
         #print (type(self._data))
         #print (self._data)
         # self.redis.hmset(self._code, self._data)
-        self.redis_push(self.data)
+        #self.redis_push(self.data)
 
         # chgValue = (self.data['now'] - self.data['close'])
         # downPct = (self._data['high'] - self._data['now']) * 100 / self._data['now']
@@ -57,6 +61,7 @@ class calcStrategy(Thread):
             if pct > 3 or (pct < 0 and pct > -12) :
             # self.log.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( self.code, self.data['now'], pct, self.data['high'], self.data['low']))
                 self.log.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( self.code, self.data['now'], pct, self.data['high'], self.data['low']))
+            #self.log.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( self.code, self.data['now'], pct, self.data['high'], self.data['low']))
           #self._log.info("code=%s now=%6.2f pct=%6.2f pctv2=%6.2f" % ( self._code, self._data['now'], pct, chkVPct))
         #self._log.info("  end." )
 

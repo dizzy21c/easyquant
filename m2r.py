@@ -1,5 +1,6 @@
 import pymongo
 import redis
+from threading import Thread
 
 mhost='localhost'
 mport=27017
@@ -40,6 +41,8 @@ def date_conv(st_date):
   st_list = list(st_info.find())
   col_s =db.stock_day
   for x in st_list:
+    #t = Thread(target=convert,args=(x['code'],'day', st_date, col_s))
+    #t.start()
     convert(x['code'],'day', st_date, col_s)
     #break
 
@@ -48,15 +51,19 @@ def date_conv(st_date):
   idx_list=list(idx_info.find())
   col_i=db.index_day
   for x in idx_list:
+    #t = Thread(target=convert,args=(x['code'],'idx:day', st_date, col_i))
+    #t.start()
     convert(x['code'], 'idx:day', st_date, col_i)
     #break
 
   col_idx_min=db.index_min
   for x in idx_list:
-    convert_min(x['code'], 'idx:15min',st_date,col_idx_min,'15min') 
+    #t = Thread(target=onvert_min,args=(x['code'], 'idx:5min',st_date,col_idx_min,'5min'))
+    #t.start()
+    convert_min(x['code'], 'idx:5min',st_date,col_idx_min,'5min') 
     #break
 
 #convert('600718','2018-01-01')
-st_date='2018-01-01'
+st_date='2013-01-01'
 date_conv(st_date)
 

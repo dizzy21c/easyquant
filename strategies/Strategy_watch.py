@@ -55,7 +55,7 @@ class calcStrategy(Thread):
         #print (type(self._data))
         #print (self._data)
         # self.redis.hmset(self._code, self._data)
-        self._redis_push(self._data)
+        #self._redis_push(self._data)
 
         chgValue = (self._data['now'] - self._data['close'])
         # downPct = (self._data['high'] - self._data['now']) * 100 / self._data['now']
