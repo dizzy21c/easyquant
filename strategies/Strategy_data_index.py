@@ -15,7 +15,7 @@ class calcStrategy(Thread):
         self.data = ndata
         self.code = code
         self.log = log
-        self.rio = redisIo
+        self.redis = redisIo
         self.hdata = hdata
         # self._chkv = hdata[1]
         # log.info("code=%s, code=%s"%(code, code[2:]))
@@ -27,8 +27,16 @@ class calcStrategy(Thread):
 
 
         # self.redis = redis.Redis(host='localhost', port=6379, db=0)
+    def redis_push_day(self, data):
+        df = self.redis.get_day_df(self.code,idx=1)
+        ldata = data['date']
+        if list(df['date'])[-1] == ldata:
+            return
+            
+        self.redis.push_day_data(self.code, data, idx=1)
 
     def run(self):
+        # self.redis_push_day(self.data)
         # pass
         # time.sleep(1)
         # print (type(self._data))
@@ -81,7 +89,7 @@ class Strategy(StrategyTemplate):
             for d in data['chk-index']:
                 #rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
                 #rlist=[json.loads(v.decode()) for v in rdata]
-                rlist=self.rio.get_iday_df(d['c'])
+                rlist=self.rio.get_day_df(d['c'],idx=1)
                 self.hdata[d['c']] = rlist
                 # self.chks.append((d['c'], d['p'],rlist))
                 #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})

@@ -75,7 +75,8 @@ class RedisIo(object):
         self.push_data_value(code, data, dtype=dataType, vtype='close', idx=idx)
         self.push_data_value(code, data, dtype=dataType, vtype='high', idx=idx)
         self.push_data_value(code, data, dtype=dataType, vtype='low', idx=idx)
-        self.push_data_value(code, data, dtype=dataType, vtype='volume', idx=idx)
+        # self.push_data_value(code, data, dtype=dataType, vtype='volume', idx=idx)
+        self.push_data_value(code, data, dtype=dataType, vtype='vol', idx=idx)
         self.push_data_value(code, data, dtype=dataType, vtype='open', idx=idx)
         self.push_data_value(code, data, dtype=dataType, vtype='datetime', idx=idx)
 
@@ -89,7 +90,8 @@ class RedisIo(object):
         self.push_data_value(code, data, vtype='close', idx=idx)
         self.push_data_value(code, data, vtype='high', idx=idx)
         self.push_data_value(code, data, vtype='low', idx=idx)
-        self.push_data_value(code, data, vtype='volume', idx=idx)
+        # self.push_data_value(code, data, vtype='volume', idx=idx)
+        self.push_data_value(code, data, vtype='vol', idx=idx)
         self.push_data_value(code, data, vtype='open', idx=idx)
         self.push_data_value(code, data, vtype='date', idx=idx)
     
@@ -102,6 +104,8 @@ class RedisIo(object):
 
         if vtype == 'close':
             value=data['now']
+        elif vtype == 'vol':
+            value = data['volume'] - last_vol
         elif vtype == 'volume':
             value = data['volume'] - last_vol
         elif vtype == 'datetime':
@@ -125,13 +129,13 @@ class RedisIo(object):
         rl = self.pull_list_range(listname, startpos, endpos) 
         return [json.loads(v.decode()) for v in rl]
 
-    def get_day_df(self, code, startpos=0, endpos=-1):
-        c = self.get_day_c(code, startpos, endpos)
-        h = self.get_day_h(code, startpos, endpos)
-        l = self.get_day_l(code, startpos, endpos)
-        o = self.get_day_o(code, startpos, endpos)
-        v = self.get_day_v(code, startpos, endpos)
-        d = self.get_day_d(code, startpos, endpos)
+    def get_day_df(self, code, startpos=0, endpos=-1,idx=0):
+        c = self.get_day_c(code, startpos, endpos,idx)
+        h = self.get_day_h(code, startpos, endpos,idx)
+        l = self.get_day_l(code, startpos, endpos,idx)
+        o = self.get_day_o(code, startpos, endpos,idx)
+        v = self.get_day_v(code, startpos, endpos,idx)
+        d = self.get_day_d(code, startpos, endpos,idx)
         #return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l, 'open':o})
         return pd.DataFrame(data={'close':c, 'open':o, 'volume':v, 'high':h, 'low':l,'date':d})
 

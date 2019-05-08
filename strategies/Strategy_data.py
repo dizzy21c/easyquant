@@ -21,7 +21,14 @@ class calcStrategy(Thread):
         self.redis = redis
         self.hdata = hdata
         self.lasttm = ""
+    def redis_push_day(self, data):
+        df = self.redis.get_day_df(self.code)
+        ldata = data['date']
+        if list(df['date'])[-1] == ldata:
+            return
 
+        self.redis.push_day_data(self.code, data)
+        
     def redis_push(self, data):
         ct=time.strftime("%H:%M:%S", time.localtime()) 
         if self.lasttm == data['time']:
@@ -46,7 +53,7 @@ class calcStrategy(Thread):
         #print (type(self._data))
         #print (self._data)
         # self.redis.hmset(self._code, self._data)
-        #self.redis_push(self.data)
+        # self.redis_push_day(self.data)
 
         # chgValue = (self.data['now'] - self.data['close'])
         # downPct = (self._data['high'] - self._data['now']) * 100 / self._data['now']
