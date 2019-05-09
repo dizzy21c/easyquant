@@ -64,7 +64,7 @@ class Parallelism(object):
     def complete(self, result):
         self.results.extend(result)
         self.completed_processes += 1
-        print('Progress: {:.2f}%'.format((self.completed_processes / self.total_processes) * 100))
+        # print('Progress: {:.2f}%'.format((self.completed_processes / self.total_processes) * 100))
 
     def exception(self, exception = None):
         print(exception)

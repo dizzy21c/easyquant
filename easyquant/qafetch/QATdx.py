@@ -98,8 +98,7 @@ def ping(ip, port=7709, type_='stock'):
             print('Tushare内置的pytdx版本和QUANTAXIS使用的pytdx 版本不同, 请重新安装pytdx以解决此问题')
             print('pip uninstall pytdx')
             print('pip install pytdx')
-
-        else:
+        # else:
             # print('BAD RESPONSE {}'.format(ip))
         return datetime.timedelta(9, 9, 0)
 
