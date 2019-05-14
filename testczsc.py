@@ -181,6 +181,13 @@ class ChanMain:
   def high(self, index):
     return self.data_df.loc[index]['high']
 
+  def check_span(self, j, nSpan):
+    if ((self.high(j) >= self.high(j+1)) and (self.low(j) <= self.low(j+1))):
+      nSpan = nSpan - 1
+    elif (self.high(j) < self.high(j+1) and self.low(j) > self.low(j+1)):
+      nSpan = nSpan - 1
+    return nSpan
+
   # 顶底扫描定位函数
   def pd_parse1(self): #nCount,  pOut,  pHigh,  pLow):
     # data_df['out'] = 0
@@ -275,6 +282,8 @@ class ChanMain:
             # for (int j = nCurrBot; j < nCurrTop; j++):
               if (self.high(j) >= self.high(j+1) and self.low(j) <= self.low(j+1)):
                 nSpan = nSpan - 1
+              elif (self.high(j) < self.high(j+1) and self.low(j) > self.low(j+1)):
+                nSpan = nSpan - 1
                 # nSpan--;
             if (nSpan < 4):
               self.set_out(nCurrBot, 0)
@@ -286,6 +295,8 @@ class ChanMain:
             # for (int j = nPrevTop; j < nCurrBot; j++):
               if (self.high(j) >= self.high(j+1) and self.low(j) <= self.low(j+1)):
                 nSpan = nSpan - 1
+              elif (self.high(j) < self.high(j+1) and self.low(j) > self.low(j+1)):
+                nSpan = nSpan - 1
             if (nSpan < 4):
               self.set_out(nCurrBot, 0)
               self.set_out(nPrevTop, 0)
@@ -295,6 +306,8 @@ class ChanMain:
             for j in range(nPrevBot, nPrevTop):
             # for (int j = nPrevBot; j < nPrevTop; j++):
               if (self.high(j) >= self.high(j+1) and self.low(j) <= self.low(j+1)):
+                nSpan = nSpan - 1
+              elif (self.high(j) < self.high(j+1) and self.low(j) > self.low(j+1)):
                 nSpan = nSpan - 1
             if (nSpan < 4):
               self.set_out(nCurrBot, 0)
@@ -320,6 +333,8 @@ class ChanMain:
             # for (int j = nCurrTop; j < nCurrBot; j++):
               if ((self.high(j) >= self.high(j+1)) and (self.low(j) <= self.low(j+1))):
                 nSpan = nSpan - 1
+              elif (self.high(j) < self.high(j+1) and self.low(j) > self.low(j+1)):
+                nSpan = nSpan - 1
             if (nSpan < 4):
               self.set_out(nCurrTop, 0)
               self.set_out(nPrevBot, 0)
@@ -330,6 +345,8 @@ class ChanMain:
             # for (int j = nPrevBot; j < nCurrTop; j++):
               if ((self.high(j) >= self.high(j+1)) and (self.low(j) <= self.low(j+1))):
                 nSpan = nSpan - 1
+              elif (self.high(j) < self.high(j+1) and self.low(j) > self.low(j+1)):
+                nSpan = nSpan - 1
             if (nSpan < 4):
               self.set_out(nCurrTop, 0)
               self.set_out(nPrevBot, 0)
@@ -339,6 +356,8 @@ class ChanMain:
             for j in range(nPrevTop, nPrevBot):
             # for (int j = nPrevTop; j < nPrevBot; j++):
               if ((self.high(j) >= self.high(j+1)) and (self.low(j) <= self.low(j+1))):
+                nSpan = nSpan - 1
+              elif (self.high(j) < self.high(j+1) and self.low(j) > self.low(j+1)):
                 nSpan = nSpan - 1
             if (nSpan < 4):
               self.set_out(nCurrTop, 0)
