@@ -19,7 +19,7 @@ SIG = tf_p(0)
 BSP = tf_p(0)
 SLP = tf_p(0)
 
-vig=tf_p(5)
+vig=5
 
 nh=np.asarray(a1['high']).astype(np.float32)
 nl=np.asarray(a1['low']).astype(np.float32)
@@ -28,22 +28,16 @@ H=cast(nh.ctypes.data, POINTER(c_float))
 L=cast(nl.ctypes.data, POINTER(c_float))
 
 lib.Func1(ncount, DLL, H, L, vig)
+lib.Func2(ncount, HIB, DLL, H, L)
+lib.Func3(ncount, LOB, DLL, H, L)
+lib.Func4(ncount, SIG, DLL, H, L)
+lib.Func5(ncount, BSP, DLL, H, L)
+lib.Func8(ncount, SLP, DLL, H, L)
 
-lib.Func3(ncount, HIB, DLL, H, L)
-lib.Func3(ncount, HIB, DLL, H, L)
-lib.Func3(ncount, HIB, DLL, H, L)
-lib.Func5(ncount, DUANZG1, DUAN1, H, L)
-lib.Func6(ncount, DUANZD1, DUAN1, H, L)
-lib.Func7(ncount, DUANSE1, DUAN1, H, L)
-
-lib.Func3(ncount, DUAN2, FRAC1, H, L)
-lib.Func5(ncount, DUANZG2, DUAN2, H, L)
-lib.Func6(ncount, DUANZD2, DUAN2, H, L)
-lib.Func7(ncount, DUANSE2, DUAN2, H, L)
 
 for i in range(0,ncount):
-  print("f1=%d f2=%d d1=%d d2=%d zg1=%6.2f zd1=%6.2f se1=%6.2f zg2=%6.2f zd2=%6.2f se2=%6.2f" % \
-    (FRAC1[i], FRAC2[i], DUAN1[i], DUAN2[i],DUANZG1[i],DUANZD1[i],DUANSE1[i],DUANZG2[i],DUANZD2[i],DUANSE2[i]))
+  print("f1=%d hib=%6.2f lob=%6.2f sig=%6.2f bsp=%6.2f slp=%6.2f" % \
+    (DLL[i], HIB[i], LOB[i], SIG[i],BSP[i],SLP[i]))
 
 
 # DLL:=TDXDLL1(1,H,L,5);

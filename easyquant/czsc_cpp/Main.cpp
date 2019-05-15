@@ -114,6 +114,8 @@ int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
             if ((pHigh[j] >= pHigh[j+1]) && (pLow[j] <= pLow[j+1]))
             {
               nSpan--;
+            } else if ((pHigh[j] < pHigh[j+1]) && (pLow[j] > pLow[j+1])) {
+              nSpan--;
             }
           }
           if (nSpan < 4)
@@ -129,6 +131,8 @@ int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
             if ((pHigh[j] >= pHigh[j+1]) && (pLow[j] <= pLow[j+1]))
             {
               nSpan--;
+            } else if ((pHigh[j] < pHigh[j+1]) && (pLow[j] > pLow[j+1])) {
+              nSpan--;
             }
           }
           if (nSpan < 4)
@@ -143,6 +147,8 @@ int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
           {
             if ((pHigh[j] >= pHigh[j+1]) && (pLow[j] <= pLow[j+1]))
             {
+              nSpan--;
+            } else if ((pHigh[j] < pHigh[j+1]) && (pLow[j] > pLow[j+1])) {
               nSpan--;
             }
           }
@@ -182,6 +188,8 @@ int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
             if ((pHigh[j] >= pHigh[j+1]) && (pLow[j] <= pLow[j+1]))
             {
               nSpan--;
+            } else if ((pHigh[j] < pHigh[j+1]) && (pLow[j] > pLow[j+1])) {
+              nSpan--;
             }
           }
           if (nSpan < 4)
@@ -197,6 +205,8 @@ int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
             if ((pHigh[j] >= pHigh[j+1]) && (pLow[j] <= pLow[j+1]))
             {
               nSpan--;
+            } else if ((pHigh[j] < pHigh[j+1]) && (pLow[j] > pLow[j+1])) {
+              nSpan--;
             }
           }
           if (nSpan < 4)
@@ -211,6 +221,8 @@ int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
           {
             if ((pHigh[j] >= pHigh[j+1]) && (pLow[j] <= pLow[j+1]))
             {
+              nSpan--;
+            } else if ((pHigh[j] < pHigh[j+1]) && (pLow[j] > pLow[j+1])) {
               nSpan--;
             }
           }
@@ -229,13 +241,14 @@ int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
 // �������1�ţ��߶θߵ͵����ź�
 //=============================================================================
 
-void Func1(int nCount, float *pOut, float *pHigh, float *pLow, float *pTime)
+void Func1(int nCount, float *pOut, float *pHigh, float *pLow, int pTime)
+// void Func1(int nCount, float *pOut, float *pHigh, float *pLow, float *pTime)
 {
   // ��Ѱ���еĸߵ͵�
   Parse1(nCount, pOut, pHigh, pLow);
 
   // �������õı��������л��򣨵ڹ��㷨��
-  for (int i = 0; i < *pTime; i++)
+  for (int i = 0; i < pTime; i++)
   {
     Parse2(nCount, pOut, pHigh, pLow);
   }

@@ -28,7 +28,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  DLL_PUBLIC void Func1(int nCount, float *pOut, float *pHigh, float *pLow, float *pIgnore);
+  // DLL_PUBLIC void Func1(int nCount, float *pOut, float *pHigh, float *pLow, float *pIgnore);
+  DLL_PUBLIC void Func1(int nCount, float *pOut, float *pHigh, float *pLow, int pIgnore);
   
   DLL_PUBLIC void Func2(int nCount, float *pOut, float *pHigh, float *pLow, float *pIgnore);
 
