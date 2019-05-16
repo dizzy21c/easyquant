@@ -33,10 +33,10 @@ from threading import Thread, Timer
 import pandas as pd
 from pytdx.hq import TdxHq_API
 
-from QUANTAXIS.QAUtil.QADate_trade import QA_util_if_tradetime
-from QUANTAXIS.QAUtil.QASetting import DATABASE, stock_ip_list
-from QUANTAXIS.QAUtil.QASql import QA_util_sql_mongo_sort_ASCENDING
-from QUANTAXIS.QAUtil.QATransform import QA_util_to_json_from_pandas
+from easyquant.qafetch.qautil.QADate_trade import QA_util_if_tradetime
+from easyquant.qafetch.qautil.QASetting import DATABASE, stock_ip_list
+# from easyquant.qafetch.qautil.QASql import QA_util_sql_mongo_sort_ASCENDING
+# from easyquant.qafetch.qautil.QATransform import QA_util_to_json_from_pandas
 
 
 """
@@ -226,16 +226,18 @@ class QA_Tdx_Executor():
             raise e
 
     def save_mongo(self, data, client=DATABASE):
-        database = DATABASE.get_collection(
-            'realtime_{}'.format(datetime.date.today()))
+        #FIXME
+        pass
+        # database = DATABASE.get_collection(
+        #     'realtime_{}'.format(datetime.date.today()))
 
-        database.insert_many(QA_util_to_json_from_pandas(data))
+        # database.insert_many(QA_util_to_json_from_pandas(data))
 
 
 def get_bar(timeout=1, sleep=1):
     sleep = int(sleep)
     _time1 = datetime.datetime.now()
-    from QUANTAXIS.QAFetch.QAQuery_Advance import QA_fetch_stock_block_adv
+    #from QUANTAXIS.QAFetch.QAQuery_Advance import QA_fetch_stock_block_adv
     code = QA_fetch_stock_block_adv().code
     print(len(code))
     x = QA_Tdx_Executor(timeout=float(timeout))
@@ -264,7 +266,7 @@ def get_bar(timeout=1, sleep=1):
 def get_day_once():
 
     _time1 = datetime.datetime.now()
-    from QUANTAXIS.QAFetch.QAQuery_Advance import QA_fetch_stock_block_adv
+    #from QUANTAXIS.QAFetch.QAQuery_Advance import QA_fetch_stock_block_adv
     code = QA_fetch_stock_block_adv().code
     x = QA_Tdx_Executor()
     return x.get_security_bar_concurrent(code, 'day', 1)
@@ -276,7 +278,7 @@ def get_day_once():
 def bat(timeout=0.2, sleep=1):
     sleep = int(sleep)
     _time1 = datetime.datetime.now()
-    from QUANTAXIS.QAFetch.QAQuery_Advance import QA_fetch_stock_block_adv
+    #from QUANTAXIS.QAFetch.QAQuery_Advance import QA_fetch_stock_block_adv
     code = QA_fetch_stock_block_adv().code
     print(len(code))
     x = QA_Tdx_Executor(timeout=float(timeout))
@@ -316,7 +318,7 @@ def bat(timeout=0.2, sleep=1):
 if __name__ == '__main__':
     import time
     _time1 = datetime.datetime.now()
-    from QUANTAXIS.QAFetch.QAQuery_Advance import QA_fetch_stock_list_adv
+    #from QUANTAXIS.QAFetch.QAQuery_Advance import QA_fetch_stock_list_adv
     code = QA_fetch_stock_list_adv().code.tolist()
 
     # DATABASE.realtime.create_index([('code', QA_util_sql_mongo_sort_ASCENDING),

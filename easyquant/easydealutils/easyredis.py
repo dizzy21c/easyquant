@@ -49,6 +49,23 @@ class RedisIo(object):
         #删除某个键
         return self.r.delete(key)
 
+    def pop_list_value(self, listname):
+        #推入到队列
+        return self.r.lpop(listname)
+
+    def pop_list_rvalue(self, list_name):
+        # print("%s=%s" %(list_name, value))
+        return self.r.rpop(list_name)
+
+    def rpop(self, list_name):
+        # test only
+        # print("%s=%s" %(list_name, value))
+        value = self.r.rpop(list_name)
+        if value is None:
+            return ""
+        else:
+            return value.decode()
+
     def push_list_value(self, listname, value):
         #推入到队列
         return self.r.lpush(listname, value)
@@ -87,6 +104,17 @@ class RedisIo(object):
             self.push_data_value(code, data, dtype=dataType, vtype='sell')
     
     def push_day_data(self, code, data, idx=0):
+        listname=self._get_key(code,vtype='date',idx=idx)
+        last_date = self.rpop(listname)
+        if last_date == data['date']:
+            self.rpop(self._get_key(code,vtype="close",idx=idx))
+            self.rpop(self._get_key(code,vtype="high",idx=idx))
+            self.rpop(self._get_key(code,vtype="low",idx=idx))
+            self.rpop(self._get_key(code,vtype="volume",idx=idx))
+            self.rpop(self._get_key(code,vtype="open",idx=idx))
+        else:
+            self.push_list_rvalue(listname,last_date)
+
         self.push_data_value(code, data, vtype='close', idx=idx)
         self.push_data_value(code, data, vtype='high', idx=idx)
         self.push_data_value(code, data, vtype='low', idx=idx)

@@ -1,7 +1,9 @@
 # import pymongo
 import redis
 from threading import Thread
-from easyquant.qafetch.QATdx import QATdx as tdx
+from easyquant import RedisIo
+from codelist_utils import get_udf_code_list
+from easyquant import QATdx as tdx
 
 # mhost='localhost'
 # mport=27017
@@ -37,14 +39,27 @@ def convert(code, flg, st_date, col):
   dtd=col.find({'code':code,'date':{'$gt':st_date}})
   allpush(code, flg, dtd)
 
-def date_conv(st_date):
-  st_info = db.stock_list
-  st_list = list(st_info.find())
-  col_s =db.stock_day
-  for x in st_list:
+def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31"):
+  for x in codes:
+    if x[0:2] == "sh":
+      x = x[3:]
+    print("read data=%s" % x)
+    tmp_df = redis.get_day_df(x, idx)
+    l = len(tmp_df)
+    if l > 0:
+      st_date = tmp_df['date'][l-1]
+    if idx == 0:
+      new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
+    else:
+      new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
+      
+    for idx,row in new_df.iterrows():
+      data_dict={'code':row.code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol, 'vol':row.vol, 'now':row.close}
+      redis.push_day_data(row.code,data_dict)
+
     #t = Thread(target=convert,args=(x['code'],'day', st_date, col_s))
     #t.start()
-    convert(x['code'],'day', st_date, col_s)
+    #convert(x['code'],'day', st_date, col_s)
     #break
 
   #col_s_m = db.stock_min
@@ -65,11 +80,17 @@ def date_conv(st_date):
     #break
 
 #convert('600718','2018-01-01')
-st_date='2013-01-01'
-date_conv(st_date)
-
+# st_date='2013-01-01'
+# data_conv(st_date)
 def main():
-  pass
+  st_date="2013-01-01"
+  stock_list, index_list, _ = get_udf_code_list()
+  redis = RedisIo('redis.conf')
+  data_conv(st_date, stock_list, redis=redis, idx=0)
+  
+
+  # data_conv(st_date)
+  # pass
     # ri = RedisIo('redis.conf')
     # ri.lookup_redis_info()
     # ri.set_key_value('test1', 1)

@@ -8,4 +8,5 @@ from .easydealutils.easymongo import MongoIo
 from .easydealutils.datautil import DataUtil
 from .indicator import base
 from .indicator import talib_indicators as talib_qa
-from .qafetch import QATdx
+from .qafetch import QATdx #as qatdx
+# from .qafetch.QATdx_adv import QA_Tdx_Executor #as qatdxE
