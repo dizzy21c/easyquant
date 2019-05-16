@@ -4,6 +4,7 @@ from threading import Thread
 from easyquant import RedisIo
 from codelist_utils import get_udf_code_list
 from easyquant import QATdx as tdx
+import json
 
 # mhost='localhost'
 # mport=27017
@@ -39,6 +40,17 @@ def convert(code, flg, st_date, col):
   dtd=col.find({'code':code,'date':{'$gt':st_date}})
   allpush(code, flg, dtd)
 
+def readTdx(code, st_date, end_date, idx=0, re = 3):
+  if idx == 0:
+    new_df = tdx.QA_fetch_get_stock_day(code, st_date,end_date)
+  else:
+    new_df = tdx.QA_fetch_get_stock_day(code, st_date,end_date)
+
+  if new_df is None and re > 0:
+    return readTdx(code, st_date, end_date, idx, re)
+
+  return new_df
+    
 def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31"):
   for x in codes:
     if x[0:2] == "sh":
@@ -48,12 +60,18 @@ def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31"):
     l = len(tmp_df)
     if l > 0:
       st_date = tmp_df['date'][l-1]
-    if idx == 0:
-      new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
-    else:
-      new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
-      
-    for idx,row in new_df.iterrows():
+    # if idx == 0:
+    #   new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
+    # else:
+    #   new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
+    new_df = readTdx(x, st_date, end_date, idx) 
+    # if new_df is not None and len(new_df) > 0:
+    if new_df is None:
+      print("code=%s is none" % x)
+      continue
+
+    for _,row in new_df.iterrows():
+      # print(i) 
       data_dict={'code':row.code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol, 'vol':row.vol, 'now':row.close}
       redis.push_day_data(row.code,data_dict)
 
@@ -62,33 +80,71 @@ def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31"):
     #convert(x['code'],'day', st_date, col_s)
     #break
 
-  #col_s_m = db.stock_min
-  idx_info=db.index_list
-  idx_list=list(idx_info.find())
-  col_i=db.index_day
-  for x in idx_list:
-    #t = Thread(target=convert,args=(x['code'],'idx:day', st_date, col_i))
-    #t.start()
-    convert(x['code'], 'idx:day', st_date, col_i)
-    #break
+  # #col_s_m = db.stock_min
+  # idx_info=db.index_list
+  # idx_list=list(idx_info.find())
+  # col_i=db.index_day
+  # for x in idx_list:
+  #   #t = Thread(target=convert,args=(x['code'],'idx:day', st_date, col_i))
+  #   #t.start()
+  #   convert(x['code'], 'idx:day', st_date, col_i)
+  #   #break
 
-  col_idx_min=db.index_min
-  for x in idx_list:
-    #t = Thread(target=onvert_min,args=(x['code'], 'idx:5min',st_date,col_idx_min,'5min'))
-    #t.start()
-    convert_min(x['code'], 'idx:5min',st_date,col_idx_min,'5min') 
-    #break
+  # col_idx_min=db.index_min
+  # for x in idx_list:
+  #   #t = Thread(target=onvert_min,args=(x['code'], 'idx:5min',st_date,col_idx_min,'5min'))
+  #   #t.start()
+  #   convert_min(x['code'], 'idx:5min',st_date,col_idx_min,'5min') 
+  #   #break
 
 #convert('600718','2018-01-01')
 # st_date='2013-01-01'
 # data_conv(st_date)
-def main():
-  st_date="2013-01-01"
-  stock_list, index_list, _ = get_udf_code_list()
-  redis = RedisIo('redis.conf')
-  data_conv(st_date, stock_list, redis=redis, idx=0)
-  
 
+def get_code_list(idx=0):
+  stock_list=[]
+  if idx == 0:
+    config = "config/sh_list.json"
+    with open(config, "r") as f:
+      data = json.load(f)
+      stock_list = stock_list + data['code']
+
+    config = "config/sz_list.json"
+    with open(config, "r") as f:
+      data = json.load(f)
+      stock_list = stock_list + data['code']
+
+    config = "config/cyb_list.json"
+    with open(config, "r") as f:
+      data = json.load(f)
+      stock_list = stock_list + data['code']
+
+    config = "config/zxb_list.json"
+    with open(config, "r") as f:
+      data = json.load(f)
+      stock_list = stock_list + data['code']
+  else:
+    config = "config/index_list.json"
+    with open(config, "r") as f:
+      data = json.load(f)
+      stock_list = stock_list + data['code']
+
+    config = "config/bk_list.json"
+    with open(config, "r") as f:
+      data = json.load(f)
+      stock_list = stock_list + data['code']
+    
+  return stock_list
+
+def main():
+  redis = RedisIo('redis.conf')
+  st_date="2013-01-01"
+  idx=0
+  stock_list = get_code_list(idx)
+  data_conv(st_date, stock_list, idx=idx, redis=redis)
+  idx=1
+  stock_list = get_code_list(idx)
+  data_conv(st_date, stock_list, idx=idx, redis=redis)
   # data_conv(st_date)
   # pass
     # ri = RedisIo('redis.conf')

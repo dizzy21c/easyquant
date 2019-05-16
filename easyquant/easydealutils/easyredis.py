@@ -111,6 +111,7 @@ class RedisIo(object):
             self.rpop(self._get_key(code,vtype="high",idx=idx))
             self.rpop(self._get_key(code,vtype="low",idx=idx))
             self.rpop(self._get_key(code,vtype="volume",idx=idx))
+            self.rpop(self._get_key(code,vtype="vol",idx=idx))
             self.rpop(self._get_key(code,vtype="open",idx=idx))
         else:
             self.push_list_rvalue(listname,last_date)
