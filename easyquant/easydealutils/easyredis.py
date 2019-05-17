@@ -66,6 +66,13 @@ class RedisIo(object):
         else:
             return value.decode()
 
+    def get_last_date(self, code, idx=0):
+        list = self.get_data_value(code, dtype='day', vtype='date', startpos=-1, endpos=-1, idx=0)
+        if list == []:
+            return None
+        else:
+            return list[0]
+
     def push_list_value(self, listname, value):
         #推入到队列
         return self.r.lpush(listname, value)
@@ -165,8 +172,13 @@ class RedisIo(object):
         o = self.get_day_o(code, startpos, endpos,idx)
         v = self.get_day_v(code, startpos, endpos,idx)
         d = self.get_day_d(code, startpos, endpos,idx)
+        cn = len(c)
+        if cn == len(h) and cn == len(l) and cn == len(o) and cn == len(v) and cn == len(d):
         #return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l, 'open':o})
-        return pd.DataFrame(data={'close':c, 'open':o, 'volume':v, 'high':h, 'low':l,'date':d})
+          return pd.DataFrame(data={'close':c, 'open':o, 'volume':v, 'high':h, 'low':l,'date':d})
+        else:
+          print(" code=%s data error. " %code)
+          return None
 
     def get_cur_df(self, code, startpos=0, endpos=-1, idx=0):
         dataType = "cur"

@@ -44,22 +44,27 @@ def readTdx(code, st_date, end_date, idx=0, re = 3):
   if idx == 0:
     new_df = tdx.QA_fetch_get_stock_day(code, st_date,end_date)
   else:
-    new_df = tdx.QA_fetch_get_stock_day(code, st_date,end_date)
+    new_df = tdx.QA_fetch_get_index_day(code, st_date,end_date)
 
   if new_df is None and re > 0:
-    return readTdx(code, st_date, end_date, idx, re)
+    return readTdx(code, st_date, end_date, idx, re - 1)
 
   return new_df
     
-def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31"):
+def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31", last_date="2020-05-17"):
+  nc=len(codes)
+  i = 0
   for x in codes:
+    i = i + 1
     if x[0:2] == "sh":
-      x = x[3:]
-    print("read data=%s" % x)
-    tmp_df = redis.get_day_df(x, idx)
-    l = len(tmp_df)
-    if l > 0:
-      st_date = tmp_df['date'][l-1]
+      x = x[2:]
+    print("read data : %d/%d => %5.2f" % (i, nc,  i / nc * 100 ))
+    tmp_date = redis.get_last_date(x)
+    if tmp_date is not None:
+      st_date = tmp_date
+
+    if tmp_date == last_date:
+      continue
     # if idx == 0:
     #   new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
     # else:
@@ -67,7 +72,7 @@ def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31"):
     new_df = readTdx(x, st_date, end_date, idx) 
     # if new_df is not None and len(new_df) > 0:
     if new_df is None:
-      print("code=%s is none" % x)
+      print("tdx code %s is None." % x)
       continue
 
     for _,row in new_df.iterrows():

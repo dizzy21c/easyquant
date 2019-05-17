@@ -79,6 +79,14 @@ def get_stock_codes():
     with open(stock_code_path("sh_list.json"), "w") as f:
         f.write(json.dumps(dict(code=sh_stocks)))
 
+    with open(stock_code_path("stock_list.json"), "w") as f:
+        stock_list=[]
+        stock_list=stock_list + sh_stocks
+        stock_list=stock_list + sz_stocks
+        stock_list=stock_list + cyb_stocks
+        stock_list=stock_list + zxb_stocks
+        f.write(json.dumps(dict(code=stock_list)))
+
     # index_df = tdx.QA_fetch_get_index_list()
     with open(stock_code_path("index_list.json"), "w") as f:
         f.write(json.dumps(dict(code=index_list)))
