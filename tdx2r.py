@@ -5,6 +5,7 @@ from easyquant import RedisIo
 from codelist_utils import get_udf_code_list
 from easyquant import QATdx as tdx
 import json
+import sys
 
 # mhost='localhost'
 # mport=27017
@@ -141,15 +142,23 @@ def get_code_list(idx=0):
     
   return stock_list
 
-def main():
+def main(argv):
   redis = RedisIo('redis.conf')
   st_date="2013-01-01"
-  idx=0
-  stock_list = get_code_list(idx)
-  data_conv(st_date, stock_list, idx=idx, redis=redis)
-  idx=1
-  stock_list = get_code_list(idx)
-  data_conv(st_date, stock_list, idx=idx, redis=redis)
+  flg = 0
+  l = len(argv)
+  if l > 1:
+    flg = argv[1]
+  print(flg)
+  if flg == "1" or flg == 0:
+    idx=0
+    stock_list = get_code_list(idx)
+    data_conv(st_date, stock_list, idx=idx, redis=redis)
+
+  if flg == "2" or flg == 0:
+    idx=1
+    stock_list = get_code_list(idx)
+    data_conv(st_date, stock_list, idx=idx, redis=redis)
   # data_conv(st_date)
   # pass
     # ri = RedisIo('redis.conf')
@@ -159,4 +168,4 @@ def main():
     # ri.push_list_value('test2', 2)
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv)
