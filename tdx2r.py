@@ -60,17 +60,20 @@ def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31", last_
     if x[0:2] == "sh":
       x = x[2:]
     print("read data : %d/%d => %5.2f" % (i, nc,  i / nc * 100 ))
-    tmp_date = redis.get_last_date(x)
+    tmp_date = redis.get_last_date(x,idx=idx)
     if tmp_date is not None:
       st_date = tmp_date
 
     if tmp_date == last_date:
       continue
+
     # if idx == 0:
     #   new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
     # else:
     #   new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
-    new_df = readTdx(x, st_date, end_date, idx) 
+    new_df = readTdx(x, st_date, end_date, idx)
+    print("x=%s, n=%d" % (x, len(new_df)))
+    continue
     # if new_df is not None and len(new_df) > 0:
     if new_df is None:
       print("tdx code %s is None." % x)
@@ -79,7 +82,7 @@ def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31", last_
     for _,row in new_df.iterrows():
       # print(i) 
       data_dict={'code':row.code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol, 'vol':row.vol, 'now':row.close}
-      redis.push_day_data(row.code,data_dict)
+      redis.push_day_data(row.code,data_dict,idx)
 
     #t = Thread(target=convert,args=(x['code'],'day', st_date, col_s))
     #t.start()
@@ -135,10 +138,10 @@ def get_code_list(idx=0):
       data = json.load(f)
       stock_list = stock_list + data['code']
 
-    config = "config/bk_list.json"
-    with open(config, "r") as f:
-      data = json.load(f)
-      stock_list = stock_list + data['code']
+    # config = "config/bk_list.json"
+    # with open(config, "r") as f:
+    #   data = json.load(f)
+    #   stock_list = stock_list + data['code']
     
   return stock_list
 

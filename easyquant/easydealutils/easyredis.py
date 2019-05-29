@@ -67,7 +67,7 @@ class RedisIo(object):
             return value.decode()
 
     def get_last_date(self, code, idx=0):
-        list = self.get_data_value(code, dtype='day', vtype='date', startpos=-1, endpos=-1, idx=0)
+        list = self.get_data_value(code, dtype='day', vtype='date', startpos=-1, endpos=-1, idx=idx)
         if list == []:
             return None
         else:

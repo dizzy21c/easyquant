@@ -148,5 +148,6 @@ def get_stock_codes2():
 def stock_code_path(fileName):
     return os.path.join(os.path.dirname(__file__), "config", fileName)
 
-get_stock_codes()
+if __name__ == "__main__":
+    get_stock_codes()
 
