@@ -70,7 +70,7 @@ class calcStrategy(Thread):
             hd = self.hdata[self.code]
             # ma20 = talib.MA(np.array(hd),20)
             ma20 = 0
-            self.log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self.code, self.data['now'], pct, cp, hp, ma20))
+            # self.log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self.code, self.data['now'], pct, cp, hp, ma20))
 
 class Strategy(StrategyTemplate):
     name = 'index-save'

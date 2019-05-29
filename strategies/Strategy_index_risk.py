@@ -1,11 +1,13 @@
 from easyquant import StrategyTemplate
+from easyquant import StrategyTool
 from easyquant import RedisIo
 from threading import Thread, current_thread, Lock
 import json
 import redis
 import time
 #import pymongo
-#import pandas as pd
+from pandas import Series
+import pandas as pd
 import numpy as np
 import talib
 
@@ -16,25 +18,30 @@ class calcStrategy(Thread):
         self.code = code
         self.log = log
         self.redis = redisIo
+
+        self.pt = StrategyTool()
         # self.hdata = hdata
-        # rlist=self.rio.get_day_df(d['c'],idx=1)
-        rlist = self.redis.get_day_df(code, idx=idx)
-        if rlist is None:
-            self.nac = []
-            self.nah = []
-            self.nal = []
-            self.nao = []
-            self.nav = []
-            self.nad = []
-            self.pc = 0
+        # data_df=self.rio.get_day_df(d['c'],idx=1)
+        data_df = self.redis.get_day_df(code, idx=idx)
+        if data_df is None:
+            self.psc = Series()
+            self.psh = Series()
+            self.psl = Series()
+            self.pso = Series()
+            self.psv = Series()
+            self.psd = Series()
+
+            self.pre_c = 0
+            self.dsize = 0
         else:
-            self.nac = np.array(rlist['close'])
-            self.pc = self.nac[-1]
-            self.nah = np.array(rlist['high'])
-            self.nal = np.array(rlist['low'])
-            self.nao = np.array(rlist['open'])
-            self.nav = np.array(rlist['volume'])
-            self.nad = np.array(rlist['date'])
+            self.psc = data_df.close # rlist['close']
+            self.psh = data_df['high']
+            self.psl = data_df['low']
+            self.pso = data_df['open']
+            self.psv = data_df['volume']
+            self.psd = data_df['date']
+            self.dsize = len(self.psc)
+            self.pre_c = self.psc[self.dsize - 1]
 
         # self._chkv = hdata[1]
         # log.info("code=%s, code=%s"%(code, code[2:]))
@@ -48,22 +55,22 @@ class calcStrategy(Thread):
         # self.redis = redis.Redis(host='localhost', port=6379, db=0)
     def set_day_data(self, data):
         # df = self.redis.get_day_df(self.code,idx=1)
-        if self.nad == []:
+        if len(self.psd) == 0:
             return ([],[],[],[],[],0,[])
 
         ldata = data['date']
         # if list(df['date'])[-1] == ldata:
             # return
-        D = np.append(self.nad, data['date']) 
-        H = np.append(self.nah, data['high'])
-        L = np.append(self.nac, data['low'])
-        C = np.append(self.nac, data['now'])
-        O = np.append(self.nac, data['open'])
-        V = np.append(self.nac, data['volume'])
-        if self.pc == 0:
+        D = self.psd.append(Series([data['date']], index=[self.dsize])) 
+        H = self.psh.append(Series([data['high']], index=[self.dsize]))
+        L = self.psl.append(Series([data['low']], index=[self.dsize]))
+        C = self.psc.append(Series([data['now']], index=[self.dsize])) 
+        O = self.pso.append(Series([data['open']], index=[self.dsize]))
+        V = self.psv.append(Series([data['volume']], index=[self.dsize]))
+        if self.pre_c == 0:
             pct = 0
         else:
-            pct = (C[-1] - self.pc ) * 100 / self.pc
+            pct = (C[self.dsize] - self.pre_c ) * 100 / self.pre_c
 
         return (C,H,L,O,V,pct, D)
 
@@ -77,9 +84,12 @@ class calcStrategy(Thread):
         # self.redis.hmset(self._code, self._data)
         C,H,L,O,V,pct,D = self.set_day_data(self.data)
         # self.log.info("c=%s" % D[-1])
-        self.log.info("code = %s, now=%6.2f, pct=%6.2f" % (self.code, C[-1], pct))
+        # self.log.info("code = %s, now=%6.2f, pct=%6.2f" % (self.code, C[self.dsize], pct))
 
-
+        out = self.pt.chk_dpfk(C,H,L,O)
+        print(out)
+        # print ( V[-5:])
+        # self.log.info("C=" %)
         
         # cc=self.data['now']
         # chgValue = (self.data['now'] - self.data['close'])
@@ -129,10 +139,10 @@ class Strategy(StrategyTemplate):
             # print data
             # for d in data['chk-index']:
                 #rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
-                #rlist=[json.loads(v.decode()) for v in rdata]
-                # rlist=self.rio.get_day_df(d['c'],idx=1)
-                # self.hdata[d['c']] = rlist
-                # self.chks.append((d['c'], d['p'],rlist))
+                #data_df=[json.loads(v.decode()) for v in rdata]
+                # data_df=self.rio.get_day_df(d['c'],idx=1)
+                # self.hdata[d['c']] = data_df
+                # self.chks.append((d['c'], d['p'],data_df))
                 #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})
                 #dfd=pd.DataFrame(list(dtd))
                 #dfd=[]
