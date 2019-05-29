@@ -65,9 +65,10 @@ class calcStrategy(Thread):
         if self.code in self.hdata.keys():
             chgValue = (self.data['now'] - self.data['close'])
             pct = chgValue * 100 / self.data['close']
-            if pct > 3 or (pct < 0 and pct > -12) :
+            # if pct > 3 or (pct < 0 and pct > -12) :
             # self.log.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( self.code, self.data['now'], pct, self.data['high'], self.data['low']))
-                self.log.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( self.code, self.data['now'], pct, self.data['high'], self.data['low']))
+                # self.log.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( self.code, self.data['now'], pct, self.data['high'], self.data['low']))
+            
             #self.log.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( self.code, self.data['now'], pct, self.data['high'], self.data['low']))
           #self._log.info("code=%s now=%6.2f pct=%6.2f pctv2=%6.2f" % ( self._code, self._data['now'], pct, chkVPct))
         #self._log.info("  end." )
