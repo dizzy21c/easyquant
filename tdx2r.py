@@ -80,7 +80,7 @@ def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31", last_
       continue
 
     for _,row in new_df.iterrows():
-      print("code=%s, d=%s" % (row.code, row.date) )
+      # print("code=%s, d=%s" % (row.code, row.date) )
       data_dict={'code':row.code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol, 'vol':row.vol, 'now':row.close}
       redis.push_day_data(row.code,data_dict,idx)
 
@@ -138,10 +138,10 @@ def get_code_list(idx=0):
       data = json.load(f)
       stock_list = stock_list + data['code']
 
-    # config = "config/bk_list.json"
-    # with open(config, "r") as f:
-    #   data = json.load(f)
-    #   stock_list = stock_list + data['code']
+    config = "config/bk_list.json"
+    with open(config, "r") as f:
+      data = json.load(f)
+      stock_list = stock_list + data['code']
     
   return stock_list
 
