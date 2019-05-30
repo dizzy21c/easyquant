@@ -72,15 +72,15 @@ def data_conv(st_date, codes, idx=0, redis=redis, end_date = "2020-12-31", last_
     # else:
     #   new_df = tdx.QA_fetch_get_stock_day(x, st_date,end_date)
     new_df = readTdx(x, st_date, end_date, idx)
-    print("x=%s, n=%d" % (x, len(new_df)))
-    continue
+    # print("x=%s, n=%d" % (x, len(new_df)))
+    # continue
     # if new_df is not None and len(new_df) > 0:
     if new_df is None:
       print("tdx code %s is None." % x)
       continue
 
     for _,row in new_df.iterrows():
-      # print(i) 
+      print("code=%s, d=%s" % (row.code, row.date) )
       data_dict={'code':row.code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol, 'vol':row.vol, 'now':row.close}
       redis.push_day_data(row.code,data_dict,idx)
 

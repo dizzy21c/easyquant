@@ -22,6 +22,9 @@
 # SOFTWARE.
 from .indicators import *
 from .base import *
+# from .udf import StrategyBase
+from .udf_formula import *
+
 try:
     from .talib_series import *
     from easyquant.indicator import talib_indicators as talib_qa

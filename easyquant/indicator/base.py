@@ -138,6 +138,12 @@ def COUNT(COND, N):
 
 
 def IF(COND, V1, V2):
+    if isinstance(V1, np.int64) or isinstance(V1, np.int):
+        if COND:
+            return V1
+        else:
+            return V2
+
     var = np.where(COND, V1, V2)
     return pd.Series(var, index=V1.index)
 
@@ -219,6 +225,13 @@ def BBI(Series, N1, N2, N3, N4):
     VAR = pd.DataFrame(DICT)
     return VAR
 
+def BARSLAST(cond, yes=True):
+    # return BARLAST(cond, yes)
+    cond2 = cond[cond == yes]
+    if cond2 is None:
+        return 0
+    else:
+        return len(cond) - cond[cond==yes].index[-1]
 
 def BARLAST(cond, yes=True):
     """支持MultiIndex的cond和DateTimeIndex的cond

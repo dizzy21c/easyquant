@@ -111,8 +111,9 @@ class RedisIo(object):
             self.push_data_value(code, data, dtype=dataType, vtype='sell')
     
     def push_day_data(self, code, data, idx=0):
-        listname=self._get_key(code,vtype='date',idx=idx)
-        last_date = self.rpop(listname)
+        # listname=self._get_key(code,vtype='date',idx=idx)
+        # last_date = self.rpop(listname)
+        last_date = self.get_last_date(code, idx=idx)
         if last_date == data['date']:
             self.rpop(self._get_key(code,vtype="close",idx=idx))
             self.rpop(self._get_key(code,vtype="high",idx=idx))
@@ -120,8 +121,9 @@ class RedisIo(object):
             self.rpop(self._get_key(code,vtype="volume",idx=idx))
             self.rpop(self._get_key(code,vtype="vol",idx=idx))
             self.rpop(self._get_key(code,vtype="open",idx=idx))
-        else:
-            self.push_list_rvalue(listname,last_date)
+            self.rpop(self._get_key(code,vtype="date",idx=idx))
+        # else:
+        #     self.push_list_rvalue(listname,last_date)
 
         self.push_data_value(code, data, vtype='close', idx=idx)
         self.push_data_value(code, data, vtype='high', idx=idx)

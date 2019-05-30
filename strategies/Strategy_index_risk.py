@@ -1,5 +1,6 @@
 from easyquant import StrategyTemplate
-from easyquant import StrategyTool
+from easyquant import UdfIndexRisk
+from easyquant import DataUtil
 from easyquant import RedisIo
 from threading import Thread, current_thread, Lock
 import json
@@ -18,76 +19,34 @@ class calcStrategy(Thread):
         self.code = code
         self.log = log
         self.redis = redisIo
-
-        self.pt = StrategyTool()
-        # self.hdata = hdata
-        # data_df=self.rio.get_day_df(d['c'],idx=1)
-        data_df = self.redis.get_day_df(code, idx=idx)
-        if data_df is None:
-            self.psc = Series()
-            self.psh = Series()
-            self.psl = Series()
-            self.pso = Series()
-            self.psv = Series()
-            self.psd = Series()
-
-            self.pre_c = 0
-            self.dsize = 0
-        else:
-            self.psc = data_df.close # rlist['close']
-            self.psh = data_df['high']
-            self.psl = data_df['low']
-            self.pso = data_df['open']
-            self.psv = data_df['volume']
-            self.psd = data_df['date']
-            self.dsize = len(self.psc)
-            self.pre_c = self.psc[self.dsize - 1]
-
-        # self._chkv = hdata[1]
-        # log.info("code=%s, code=%s"%(code, code[2:]))
-        # data=mdb['index_day'].find({'code':code[2:]})
-        # self._df = pd.DataFrame(list(data))
-        # self.rdata = hdata[2]
-
+        self.data_util = DataUtil()
+        self.pt = UdfIndexRisk()
+        self.idx = idx
         #{'name': '"', 'open': 11.19, 'close': 11.1, 'now': 11.47, 'high': 11.63, 'low': 11.19, 'buy': 11.46, 'sell': 11.47, 'turnover': 54845630, 'volume': 629822482.49, 'bid1_volume': 52700, 'bid1': 11.46, 'bid2_volume': 94600, 'bid2': 11.45, 'bid3_volume': 10900, 'bid3': 11.44, 'bid4_volume': 40700, 'bid4': 11.43, 'bid5_volume': 60500, 'bid5': 11.42, 'ask1_volume': 5200, 'ask1': 11.47, 'ask2_volume': 70600, 'ask2': 11.48, 'ask3_volume': 116300, 'ask3': 11.49, 'ask4_volume': 248000, 'ask4': 11.5, 'ask5_volume': 26200, 'ask5': 11.51, 'date': '2019-04-08', 'time': '14:12:33'}
-
-
         # self.redis = redis.Redis(host='localhost', port=6379, db=0)
-    def set_day_data(self, data):
-        # df = self.redis.get_day_df(self.code,idx=1)
-        if len(self.psd) == 0:
-            return ([],[],[],[],[],0,[])
-
-        ldata = data['date']
-        # if list(df['date'])[-1] == ldata:
-            # return
-        D = self.psd.append(Series([data['date']], index=[self.dsize])) 
-        H = self.psh.append(Series([data['high']], index=[self.dsize]))
-        L = self.psl.append(Series([data['low']], index=[self.dsize]))
-        C = self.psc.append(Series([data['now']], index=[self.dsize])) 
-        O = self.pso.append(Series([data['open']], index=[self.dsize]))
-        V = self.psv.append(Series([data['volume']], index=[self.dsize]))
-        if self.pre_c == 0:
-            pct = 0
-        else:
-            pct = (C[self.dsize] - self.pre_c ) * 100 / self.pre_c
-
-        return (C,H,L,O,V,pct, D)
-
         # self.redis.push_day_data(self.code, data, idx=1)
 
     def run(self):
+        data_df = self.redis.get_day_df(self.code, idx=self.idx)
+        # self.psc, self.psh, self.psl,self.pso, self.psv, self.psd = 
+        data_map = self.data_util.df2series(data_df)
         # self.redis_push_day(self.data)
         # pass
         # time.sleep(1)
         # print (type(self._data))
         # self.redis.hmset(self._code, self._data)
-        C,H,L,O,V,pct,D = self.set_day_data(self.data)
+        # C,H,L,O,V,pct,D = self.set_day_data(self.data)
+        C, H, L, O, V, D = self.data_util.append2series(data_map, self.data)
         # self.log.info("c=%s" % D[-1])
         # self.log.info("code = %s, now=%6.2f, pct=%6.2f" % (self.code, C[self.dsize], pct))
 
-        out = self.pt.chk_dpfk(C,H,L,O)
-        print(out)
+        out = self.pt.check(C,H,L)
+        if out['flg']:
+            self.log.info(" code=%s , value= %s " %  (self.code, out))
+        # self.log.info(" code=%s , value= %s " %  (self.code, out))
+
+        # if out
+        # print(out)
         # print ( V[-5:])
         # self.log.info("C=" %)
         
