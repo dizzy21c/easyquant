@@ -53,7 +53,7 @@ class BaseFormula:
   #   return (Series(var, index=A.index).diff() < 0).apply(int)
 
   def check(self, C=Series(), H=Series(), L=Series(), O=Series(), sd=6, ld=12):
-    pass
+    return False
 
 class UdfIndexRisk(BaseFormula):
   name = "index-risk"
@@ -111,6 +111,9 @@ class UdfIndexRisk(BaseFormula):
 class UdfMarketStart(BaseFormula):
 
   def check(self, C=Series(), H=Series(), L=Series(), O=Series(), sd=20, ld=250):
+    if len(C) < ld:
+      return False
+
     A1 = (C-MA(C,ld))/MA(C,ld)*100
     N1 = BARSLAST(CROSS(C,MA(C,ld)), 1)
     N2 = BARSLAST(CROSS(MA(C,ld),C), 1)
@@ -120,15 +123,13 @@ class UdfMarketStart(BaseFormula):
     N3 = BARSLAST(CROSS(C,MA(C,sd)))
     N4 = BARSLAST(CROSS(MA(C,sd),C))
     AA = IF(N3<N4,N3+1,0)
-    BB = (C-REF(C,AA))/REF(C,AA)*100 #,COLORRED
+    BB = (C-REF(C,AA))/REF(C,AA)*100
     if self.cross(BB, 10.0) and C/REF(C,1) > 1.05:
       return True
     else:
       return False
-    # DRAWTEXT(CROSS(BB,10) AND C/REF(C,1)>1.05,8,'行情启动')
 
-
-    # return super().check(C=C, H=H, L=L, O=O, sd=sd, ld=ld)
+    return super().check(C=C, H=H, L=L, O=O, sd=sd, ld=ld)
 
 # if __name__ == '__main__':
 #   c = StrategyTool()

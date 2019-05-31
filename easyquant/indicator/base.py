@@ -79,10 +79,18 @@ def DIFF(Series, N=1):
 
 
 def HHV(Series, N):
+    # TODO
+    if N == 0:
+        return Series
+
     return pd.Series(Series).rolling(N).max()
 
 
 def LLV(Series, N):
+    # TODO
+    if N == 0:
+        return Series
+
     return pd.Series(Series).rolling(N).min()
 
 
@@ -231,7 +239,12 @@ def BARSLAST(cond, yes=True):
     if cond2 is None:
         return 0
     else:
-        return len(cond) - cond[cond==yes].index[-1]
+        ## TODO
+        cond2=cond[cond==yes]
+        if len(cond2) > 0:
+            return len(cond) - cond2.index[-1]
+        return 0
+        # return len(cond) - cond[cond==yes].index[-1]
 
 def BARLAST(cond, yes=True):
     """支持MultiIndex的cond和DateTimeIndex的cond
