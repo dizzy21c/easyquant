@@ -9,7 +9,7 @@ import numpy as np
 class RedisIo(object):
     """Redis操作类"""
     
-    def __init__(self, conf):
+    def __init__(self, conf='redis.conf'):
         self.config = self.file2dict(conf)
         if self.config['passwd'] is None:
             self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'])
@@ -66,6 +66,15 @@ class RedisIo(object):
         else:
             return value.decode()
 
+    def rpop_day_df(self, code, idx=0):
+        self.rpop(self._get_key(code,vtype="close",idx=idx))
+        self.rpop(self._get_key(code,vtype="high",idx=idx))
+        self.rpop(self._get_key(code,vtype="low",idx=idx))
+        self.rpop(self._get_key(code,vtype="volume",idx=idx))
+        self.rpop(self._get_key(code,vtype="vol",idx=idx))
+        self.rpop(self._get_key(code,vtype="open",idx=idx))
+        self.rpop(self._get_key(code,vtype="date",idx=idx))
+
     def get_last_date(self, code, idx=0):
         list = self.get_data_value(code, dtype='day', vtype='date', startpos=-1, endpos=-1, idx=idx)
         if list == []:
@@ -115,17 +124,18 @@ class RedisIo(object):
         # last_date = self.rpop(listname)
         last_date = self.get_last_date(code, idx=idx)
         if last_date == data['date']:
-            self.rpop(self._get_key(code,vtype="close",idx=idx))
-            self.rpop(self._get_key(code,vtype="high",idx=idx))
-            self.rpop(self._get_key(code,vtype="low",idx=idx))
-            self.rpop(self._get_key(code,vtype="volume",idx=idx))
-            self.rpop(self._get_key(code,vtype="vol",idx=idx))
-            self.rpop(self._get_key(code,vtype="open",idx=idx))
-            self.rpop(self._get_key(code,vtype="date",idx=idx))
+            self.rpop_day_df(code, idx=idx)
+            # self.rpop(self._get_key(code,vtype="close",idx=idx))
+            # self.rpop(self._get_key(code,vtype="high",idx=idx))
+            # self.rpop(self._get_key(code,vtype="low",idx=idx))
+            # self.rpop(self._get_key(code,vtype="volume",idx=idx))
+            # self.rpop(self._get_key(code,vtype="vol",idx=idx))
+            # self.rpop(self._get_key(code,vtype="open",idx=idx))
+            # self.rpop(self._get_key(code,vtype="date",idx=idx))
         # else:
         #     self.push_list_rvalue(listname,last_date)
-
         self.push_data_value(code, data, vtype='close', idx=idx)
+
         self.push_data_value(code, data, vtype='high', idx=idx)
         self.push_data_value(code, data, vtype='low', idx=idx)
         # self.push_data_value(code, data, vtype='volume', idx=idx)
