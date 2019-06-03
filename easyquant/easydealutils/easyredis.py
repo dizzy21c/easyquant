@@ -164,7 +164,7 @@ class RedisIo(object):
         vtype = "rwflg"
         listname=self._get_key(code,dtype,vtype,idx)
         value = self.get_key_value(listname)
-        return value is None or 1 == value
+        return value is None or "1" == value
     
     def push_data_value(self, code, data, dtype='day', vtype='close', idx=0, last_vol = 0):
         listname=self._get_key(code,dtype,vtype,idx)

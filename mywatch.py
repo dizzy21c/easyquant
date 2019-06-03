@@ -38,7 +38,7 @@ class SinaEngine(PushBaseEngine):
         self.source = easyquotation.use('sina')
 
     def fetch_quotation(self):
-        if self.EventType == "worker":
+        if self.EventType[0:6] == "worker":
             return []
 
         if self.config is None:
@@ -81,6 +81,10 @@ class IndexSinaEngine(SinaEngine):
 
 class WorkerEngine(SinaEngine):
     EventType = 'worker'
+    PushInterval = 10
+
+class Worker2Engine(SinaEngine):
+    EventType = 'worker2'
     PushInterval = 10
 
 # worker_engine = DataEngine
@@ -137,7 +141,7 @@ log_handler = DefaultLogHandler(name='strategy', log_type=log_type, filepath=log
 #m = easyquant.MainEngine(broker, need_data, quotation_engines=[quotation_engine], log_handler=log_handler)
 # qe_list=[data_engine, IndexSinaEngine, WorkerEngine]
 #qe_list=[DataSinaEngine, IndexSinaEngine, BlockSinaEngine, WorkerEngine]
-qe_list=[WorkerEngine]
+qe_list=[WorkerEngine, Worker2Engine]
 m = easyquant.MainEngine(broker, need_data, quotation_engines=qe_list, log_handler=log_handler)
 m.is_watch_strategy = True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 m.load_strategy(sdir="watch")
