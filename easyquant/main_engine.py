@@ -119,15 +119,16 @@ class MainEngine:
         self.clock_engine.start()
         self._add_main_shutdown(self.clock_engine.stop)
 
-    def load(self, names, strategy_file):
+    def load(self, names, strategy_file, sdir):
         with self.lock:
-            mtime = os.path.getmtime(os.path.join('strategies', strategy_file))
+            # mtime = os.path.getmtime(os.path.join('strategies', strategy_file))
+            mtime = os.path.getmtime(os.path.join(sdir, strategy_file))
 
             # 是否需要重新加载
             reload = False
 
             strategy_module_name = os.path.basename(strategy_file)[:-3]
-            new_module = lambda strategy_module_name: importlib.import_module('.' + strategy_module_name, 'strategies')
+            new_module = lambda strategy_module_name: importlib.import_module('.' + strategy_module_name, sdir)
             strategy_module = self._modules.get(
                 strategy_file,  # 从缓存中获取 module 实例
                 new_module(strategy_module_name)  # 创建新的 module 实例
@@ -183,16 +184,19 @@ class MainEngine:
         # 时钟事件
         func(ClockEngine.EventType, strategy.clock)
 
-    def load_strategy(self, names=None):
+    def load_strategy(self, names=None, sdir=None):
         """动态加载策略
         :param names: 策略名列表，元素为策略的 name 属性"""
         s_folder = 'strategies'
+        if sdir is not None:
+            s_folder = "%s%s" %(s_folder,sdir) 
+
         self._names = names
         strategies = os.listdir(s_folder)
         strategies = filter(lambda file: file.endswith('.py') and file != '__init__.py', strategies)
         importlib.import_module(s_folder)
         for strategy_file in strategies:
-            self.load(self._names, strategy_file)
+            self.load(self._names, strategy_file, s_folder)
         # 如果线程没有启动，就启动策略监视线程
         if self.is_watch_strategy and not self._watch_thread.is_alive():
             #self.log.warn("启用了动态加载策略功能")

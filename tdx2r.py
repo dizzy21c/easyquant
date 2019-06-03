@@ -58,7 +58,7 @@ def readTdx(code, st_date, end_date, idx=0, re = 3):
   return new_df
 
 
-def set_data(code, idx, st_date, end_date, last_date):
+def set_data(code, idx, st_date, end_date, last_date, fmt_str):
   tmp_date = redis.get_last_date(code, idx=idx)
   if tmp_date is not None:
     st_date = tmp_date
@@ -72,10 +72,10 @@ def set_data(code, idx, st_date, end_date, last_date):
     return 0
 
   for _,row in new_df.iterrows():
-    data_dict={'code':code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol, 'vol':row.vol, 'now':row.close}
+    data_dict={'code':code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol * 100, 'vol':row.vol * 100, 'now':row.close, 'turnover':row.vol * 100 , 'time':'tdxtime'}
     redis.push_day_data(row.code,data_dict,idx=idx)
   
-  print("do end: code=%s" % code)
+  print(fmt_str)
   return 1
 
 def data_conv(st_date, codes, idx=0, redis=redis, pool = None, end_date = "2020-12-31", last_date="2020-05-17"):
@@ -85,8 +85,8 @@ def data_conv(st_date, codes, idx=0, redis=redis, pool = None, end_date = "2020-
     i = i + 1
     if x[0:2] == "sh":
       x = x[2:]
-    print("read data : %d/%d => %5.2f" % (i, nc,  i / nc * 100 ))
-    pool.apply_async(set_data, args=(x, idx, st_date, end_date, last_date))
+    fmt_str = "read data : %d/%d => %5.2f" % (i, nc,  i / nc * 100 )
+    pool.apply_async(set_data, args=(x, idx, st_date, end_date, last_date, fmt_str))
     # set_data(x, idx, st_date, end_date, last_date)
     # pool.apply_async(work, args=(x,1,idx))
     # tmp_date = redis.get_last_date(x,idx=idx)

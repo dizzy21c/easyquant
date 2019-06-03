@@ -14,7 +14,7 @@ import numpy as np
 import talib
 
 class calcStrategy(Thread):
-    def __init__(self, code, log, redisIo, idx):
+    def __init__(self, code, new_data, log, redisIo, idx):
         Thread.__init__(self)
         # self.data = new_data
         # self.data_map = his_data
@@ -48,6 +48,40 @@ class calcStrategy(Thread):
         self.resume()
 
     def run(self):
+        data_df = None
+        try:
+            data_df = self.redis.get_day_df(self.code, idx=self.idx)
+        except Exception as e:
+            time.sleep(1)
+            try:
+                data_df = self.redis.get_day_df(self.code, idx=self.idx)
+            except Exception as e1:
+                data_df = None
+        if data_df is None:
+            self.log.info("data-data read error:code=%s" % self.code)
+            return
+
+        # finally:
+        #     self.log.info("data read error: code= %s" % self.code )
+        # data_df = self.redis.get_day_df(self.code, idx=self.idx)
+        # data_map = self.data_util.df2series(data_df)
+        # C, H, L, O, V, D = self.data_util.append2series(self.data_map, self.data)
+        # # C = H = L = []
+        out = self.pt.check(data_df.close,data_df.high, data_df.low)
+        if out['flg']:
+            self.log.info(" data risk => code=%s , value= %s " %  (self.code, out))
+
+        # self.log.info("begin calc %s" % self.code)
+        if self.qd.check(data_df.close):
+            self.log.info(" data market start=>code=%s" % self.code )
+
+    # def run(self):
+    #     data_df = self.redis.get_day_df(self.code, idx=self.idx)
+    #     out = self.pt.check(data_df.close,data_df.high, data_df.low)
+    #     if out['flg']:
+    #         self.log.info(" index risk => code=%s , value= %s " %  (self.code, out))
+
+    def run_old(self):
         while self.__running.isSet():
             self.__flag.wait()      # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回
 
@@ -73,12 +107,12 @@ class calcStrategy(Thread):
         out = self.pt.check(C,H,L)
         # out = {'flg':0}
         if out['flg']:
-            self.log.info(" index risk => code=%s , value= %s " %  (self.code, out))
+            self.log.info(" data risk => code=%s , value= %s " %  (self.code, out))
         # # self.log.info(" code=%s , value= %s " %  (self.code, out))
 
         # self.log.info("begin calc %s" % self.code)
         if self.qd.check(C):
-            self.log.info(" market start=>code=%s" % self.code )
+            self.log.info(" data market start=>code=%s" % self.code )
 
     def pause(self):
         self.__flag.clear()     # 设置为False, 让线程阻塞
@@ -92,6 +126,7 @@ class calcStrategy(Thread):
 
 class Strategy(StrategyTemplate):
     name = 'data-risk'
+    data_flg = "data-sina"
     config_name = './config/stock_list.json'
     idx=0
 
@@ -99,22 +134,23 @@ class Strategy(StrategyTemplate):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
         start_time = time.time()
         self.log.info('init event:%s' % (self.name))
-        self.hdata={}
+        # self.hdata={}
         self.threads = []
         # start_date = '2018-01-01'
         self.rio=RedisIo('redis.conf')
         self.data_util = DataUtil()
+        self.code_list = []
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
-                self.threads.append(calcStrategy(d, self.log, self.rio, idx=1))
-                # data_df = self.rio.get_day_df(d, idx=self.idx)
-                # data_map = data_util.df2series(data_df)
+                self.code_list.append(d)
+        #         # data_df = self.rio.get_day_df(d, idx=self.idx)
+        #         # data_map = data_util.df2series(data_df)
                 # self.hdata[d] = data_map
 
-            for t in self.threads:
-                # t.setDaemon(True)
-                t.start()
+        #     for t in self.threads:
+        #         # t.setDaemon(True)
+        #         t.start()
 
             # for t in self.threads:
             #     t.join()
@@ -133,7 +169,7 @@ class Strategy(StrategyTemplate):
         self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
         # chklist = ['002617','600549','300275','000615']
         # print  (type(event.data))
-        # threads = []
+        threads = []
         # [calcStrategy(l) for i in range(5)]
         #for td in event.data:
         #    self.log.info(td)
@@ -148,12 +184,13 @@ class Strategy(StrategyTemplate):
             # else:
             #     self.log.info("\n\nnot in data:" + td[0])
 
-        # for d in event.data:
-        #     threads.append(calcStrategy(d, event.data[d], self.log))
+        for stcode in self.code_list:
+            # stdata= event.data[stcode]
+            threads.append(calcStrategy(stcode, None, self.log, self.rio, self.idx))
 
-        for c in self.threads:
-            # c.start()
-            c.set_data_resume(event.data)
+        for c in threads:
+            c.start()
+        #     c.set_data_resume(event.data)
 
             # chgValue = (event.data[d]['now'] - event.data[d]['close'])
             # self.log.info( "code=%s pct=%6.2f now=%6.2f" % (d, ( chgValue * 100/ event.data[d]['now']), event.data[d]['now']))

@@ -27,28 +27,33 @@ class calcStrategy(Thread):
 
 
         # self.redis = redis.Redis(host='localhost', port=6379, db=0)
-    def redis_push_day(self, data):
-        df = self.redis.get_day_df(self.code,idx=1)
-        ldata = data['date']
-        if list(df['date'])[-1] == ldata:
-            return
+    # def redis_push_day(self, data):
+    #     df = self.redis.get_day_df(self.code, idx=1)
+    #     ldata = data['date']
+    #     if list(df['date'])[-1] == ldata:
+    #         return
             
-        self.redis.push_day_data(self.code, data, idx=1)
+    #     self.redis.push_day_data(self.code, data, idx=1)
 
     def run(self):
-        # self.redis_push_day(self.data)
-        # pass
-        # time.sleep(1)
-        # print (type(self._data))
-        # self.redis.hmset(self._code, self._data)
-        cc=self.data['now']
-        chgValue = (self.data['now'] - self.data['close'])
-        # downPct = (self._data['high'] - self._data['now']) * 100 / self._data['now']
-        # chkVPct =  ( self._data['now'] - self._chkv  ) * 100 / self._chkv
-        pct = chgValue * 100 / self.data['close']
-        hp = self.data['high'] - self.data['close']
-        lp = self.data['low'] - self.data['close']
-        cp= self.data['now'] - self.data['close']
+        # if self.code == "000001":
+        #     self.log.info("index data=%s" % self.data)
+        # self.log.info("code=%s" % self.code)
+        self.redis.push_day_data(self.code, self.data, idx = 1)
+
+        # # self.redis_push_day(self.data)
+        # # pass
+        # # time.sleep(1)
+        # # print (type(self._data))
+        # # self.redis.hmset(self._code, self._data)
+        # cc=self.data['now']
+        # chgValue = (self.data['now'] - self.data['close'])
+        # # downPct = (self._data['high'] - self._data['now']) * 100 / self._data['now']
+        # # chkVPct =  ( self._data['now'] - self._chkv  ) * 100 / self._chkv
+        # pct = chgValue * 100 / self.data['close']
+        # hp = self.data['high'] - self.data['close']
+        # lp = self.data['low'] - self.data['close']
+        # cp= self.data['now'] - self.data['close']
         #cs = pd.Series({'close':self._data['close']})
         # ma20 = talib.MA(np.array(self.rdata),20)
         # self.rdata.append(cc) 
@@ -66,10 +71,10 @@ class calcStrategy(Thread):
         # self.log.info(self.code)
         # self.log.info(self.hdata.keys())
 
-        if self.code in self.hdata.keys():
-            hd = self.hdata[self.code]
-            # ma20 = talib.MA(np.array(hd),20)
-            ma20 = 0
+        # if self.code in self.hdata.keys():
+        #     hd = self.hdata[self.code]
+        #     # ma20 = talib.MA(np.array(hd),20)
+        #     ma20 = 0
             # self.log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self.code, self.data['now'], pct, cp, hp, ma20))
 
 class Strategy(StrategyTemplate):
@@ -104,7 +109,7 @@ class Strategy(StrategyTemplate):
         if event.event_type != 'index-sina':
             return
 
-        self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+        # self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
         # chklist = ['002617','600549','300275','000615']
         # print  (type(event.data))
         threads = []

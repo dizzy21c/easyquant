@@ -67,7 +67,7 @@ class calcStrategy(Thread):
             # self._log.info("code=%s now=%6.2f pct=%6.2f cp=%6.2f hp=%6.2f  lp=%6.2f " % (self._code, self._data['now'], pct, ma20[-1], ma202[-1], 0))
 
 class Strategy(StrategyTemplate):
-    name = 'index-save'
+    name = 'watch-index-save'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
@@ -98,7 +98,7 @@ class Strategy(StrategyTemplate):
         if event.event_type != 'index-sina':
             return
 
-        self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+        # self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
         # chklist = ['002617','600549','300275','000615']
         # print  (type(event.data))
         threads = []

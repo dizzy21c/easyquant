@@ -3,6 +3,7 @@ import os
 import sys
 import redis
 import json
+import time
 import pandas as pd
 import numpy as np
 
@@ -123,6 +124,7 @@ class RedisIo(object):
         # listname=self._get_key(code,vtype='date',idx=idx)
         # last_date = self.rpop(listname)
         last_date = self.get_last_date(code, idx=idx)
+        self.set_read_flg(code, value=0)
         if last_date == data['date']:
             self.rpop_day_df(code, idx=idx)
             # self.rpop(self._get_key(code,vtype="close",idx=idx))
@@ -142,6 +144,27 @@ class RedisIo(object):
         self.push_data_value(code, data, vtype='vol', idx=idx)
         self.push_data_value(code, data, vtype='open', idx=idx)
         self.push_data_value(code, data, vtype='date', idx=idx)
+        self.set_read_flg(code)
+        self.set_log_date(code, data, idx = idx)
+
+    def set_log_date(self, code, data, dtype='day', idx=0):
+        vtype = "logtime"
+        listname=self._get_key(code,dtype,vtype,idx)
+
+        # if 'time' in data.keys():
+        value = "%s %s"%(data['date'], data['time'])
+        self.set_key_value(listname, value)
+    
+    def set_read_flg(self, code, value=1, dtype='day', idx=0):
+        vtype = "rwflg"
+        listname=self._get_key(code,dtype,vtype,idx)
+        self.set_key_value(listname, value)
+    
+    def is_read_flg(self, code, dtype='day', idx=0):
+        vtype = "rwflg"
+        listname=self._get_key(code,dtype,vtype,idx)
+        value = self.get_key_value(listname)
+        return value is None or 1 == value
     
     def push_data_value(self, code, data, dtype='day', vtype='close', idx=0, last_vol = 0):
         listname=self._get_key(code,dtype,vtype,idx)
@@ -153,9 +176,9 @@ class RedisIo(object):
         if vtype == 'close':
             value=data['now']
         elif vtype == 'vol':
-            value = data['volume'] - last_vol
+            value = data['turnover'] / 100 - last_vol
         elif vtype == 'volume':
-            value = data['volume'] - last_vol
+            value = data['turnover'] / 100 - last_vol
         elif vtype == 'datetime':
             value = "%s %s"%(data['date'], data['time'])
         else:
@@ -178,6 +201,10 @@ class RedisIo(object):
         return [json.loads(v.decode()) for v in rl]
 
     def get_day_df(self, code, startpos=0, endpos=-1,idx=0):
+        if not self.is_read_flg(code, dtype='day', idx=idx):
+            # time.sleep(1)
+            return None
+
         c = self.get_day_c(code, startpos, endpos,idx)
         h = self.get_day_h(code, startpos, endpos,idx)
         l = self.get_day_l(code, startpos, endpos,idx)

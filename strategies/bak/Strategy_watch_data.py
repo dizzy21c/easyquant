@@ -46,7 +46,7 @@ class calcStrategy(Thread):
         # #self._log.info("  end." )
 
 class Strategy(StrategyTemplate):
-    name = 'save data'
+    name = 'watch data'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
@@ -73,7 +73,7 @@ class Strategy(StrategyTemplate):
         if event.event_type != 'worker':
             return
 
-        self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+        # self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
         
         # chklist = ['002617','600549','300275','000615']
         # print  (type(event.data))

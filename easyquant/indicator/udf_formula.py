@@ -48,6 +48,14 @@ class BaseFormula:
 
     return False
 
+  def ref_pct(self, A, B, N = 1):
+    if len(A) < N + 1:
+      return False
+
+    C = A / REF(A, N)
+    lc = len(C)
+    return C[lc - 1] > B
+
   # def cross(self, A, B):
   #   var = np.where(A < B, 1, 0)
   #   return (Series(var, index=A.index).diff() < 0).apply(int)
@@ -124,7 +132,8 @@ class UdfMarketStart(BaseFormula):
     N4 = BARSLAST(CROSS(MA(C,sd),C))
     AA = IF(N3<N4,N3+1,0)
     BB = (C-REF(C,AA))/REF(C,AA)*100
-    if self.cross(BB, 10.0) and C/REF(C,1) > 1.05:
+    # if self.cross(BB, 10.0) and C/REF(C,1) > 1.05:
+    if self.cross(BB, 10.0) and self.ref_pct(C, 1.05):
       return True
     else:
       return False
