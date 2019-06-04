@@ -33,10 +33,12 @@ class FixedMainEngine(MainEngine):
         self.lock = Lock()
         # 加载线程
         self._watch_thread = Thread(target=self._load_strategy, name="FixedMainEngine.watch_reload_strategy")
-        positions = [p['stock_code'] for p in self.user.position]
-        positions.extend(ext_stocks)
+        # positions = [p['stock_code'] for p in self.user.position]
+        # positions.extend(ext_stocks)
+        # for quotation_engine in quotation_engines:
+        #     self.quotation_engines.append(quotation_engine(self.event_engine, self.clock_engine, positions))
         for quotation_engine in quotation_engines:
-            self.quotation_engines.append(quotation_engine(self.event_engine, self.clock_engine, positions))
+            self.quotation_engines.append(quotation_engine(self.event_engine, self.clock_engine))
 
     def load(self, names, strategy_file):
         with self.lock:

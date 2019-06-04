@@ -67,20 +67,20 @@ class Strategy(StrategyTemplate):
         start_date = '2018-01-01'
         config_name = './config/worker_list.json'
         rio=RedisIo('redis.conf')
-        with open(config_name, 'r') as f:
-            data = json.load(f)
-            # print data
-            for d in data['chk-index']:
-                #rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
-                #rlist=[json.loads(v.decode()) for v in rdata]
-                rlist=rio.get_day_c(d['c'][2:])
-                self.chks.append((d['c'], d['p'],rlist))
-                #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})
-                #dfd=pd.DataFrame(list(dtd))
-                #dfd=[]
-                #rda=pd.DataFrame(columns=('time','price','vol'))
-                #self.hdata[d['c']] = [dfd,rda]
-                # print d['c']
+        # with open(config_name, 'r') as f:
+        #     data = json.load(f)
+        #     # print data
+        #     for d in data['chk-index']:
+        #         #rdata=db.lrange("%s:idx:day:close"%d['c'][2:],0,-1)
+        #         #rlist=[json.loads(v.decode()) for v in rdata]
+        #         # rlist=rio.get_day_c(d['c'][2:])
+        #         self.chks.append((d['c'], d['p'],rlist))
+        #         #dtd=mdb['index_day'].find({'code':d['c'][2:],'date':{'$gt':start_date}})
+        #         #dfd=pd.DataFrame(list(dtd))
+        #         #dfd=[]
+        #         #rda=pd.DataFrame(columns=('time','price','vol'))
+        #         #self.hdata[d['c']] = [dfd,rda]
+        #         # print d['c']
 
     def strategy(self, event):
         #self.log.info('\n\nStrategy index event')

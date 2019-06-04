@@ -27,7 +27,7 @@ class calcStrategy(Thread):
         self.redis.push_day_data(self.code, self.data, idx = 0)
 
 class Strategy(StrategyTemplate):
-    name = 'save data'
+    name = 'save-data'
     idx = 0
     # event_type = "data-sina"
     EventType = 'data-sina'
