@@ -67,21 +67,23 @@ class RedisIo(object):
         else:
             return value.decode()
 
+    # def rpop_day_df(self, code, dtype="day", idx=0):
     def rpop_day_df(self, code, idx=0):
-        self.rpop(self._get_key(code,vtype="close",idx=idx))
-        self.rpop(self._get_key(code,vtype="high",idx=idx))
-        self.rpop(self._get_key(code,vtype="low",idx=idx))
-        self.rpop(self._get_key(code,vtype="volume",idx=idx))
-        self.rpop(self._get_key(code,vtype="vol",idx=idx))
-        self.rpop(self._get_key(code,vtype="open",idx=idx))
-        self.rpop(self._get_key(code,vtype="date",idx=idx))
+        dtype="day"
+        self.rpop(self._get_key(code, dtype=dtype, idx=idx))
+        # self.rpop(self._get_key(code,idx=idx))
+        # self.rpop(self._get_key(code,idx=idx))
+        # self.rpop(self._get_key(code,idx=idx))
+        # self.rpop(self._get_key(code,idx=idx))
+        # self.rpop(self._get_key(code,idx=idx))
+        # self.rpop(self._get_key(code,idx=idx))
 
-    def get_last_date(self, code, idx=0):
-        list = self.get_data_value(code, dtype='day', vtype='date', startpos=-1, endpos=-1, idx=idx)
+    def get_last_date(self, code, dtype="day", idx=0):
+        list = self.get_data_value(code, dtype=dtype, startpos=-1, endpos=-1, idx=idx)
         if list == []:
             return None
         else:
-            return list[0]
+            return self.list2ochlvd(list[0])[5]
 
     def push_list_value(self, listname, value):
         #推入到队列
@@ -106,30 +108,31 @@ class RedisIo(object):
     def push_cur_data(self, code, data, idx=0, last_vol = 0):
         # print("put cur data")
         dataType = "cur"
-        self.push_data_value(code, data, dtype=dataType, vtype='close', idx=idx)
-        self.push_data_value(code, data, dtype=dataType, vtype='high', idx=idx)
-        self.push_data_value(code, data, dtype=dataType, vtype='low', idx=idx)
-        # self.push_data_value(code, data, dtype=dataType, vtype='volume', idx=idx)
-        self.push_data_value(code, data, dtype=dataType, vtype='vol', idx=idx)
-        self.push_data_value(code, data, dtype=dataType, vtype='open', idx=idx)
-        self.push_data_value(code, data, dtype=dataType, vtype='datetime', idx=idx)
+        self.push_data_value(code, data, dtype=dataType, idx=idx)
+        # self.push_data_value(code, data, dtype=dataType, idx=idx)
+        # self.push_data_value(code, data, dtype=dataType, idx=idx)
+        # # self.push_data_value(code, data, dtype=dataType, idx=idx)
+        # self.push_data_value(code, data, dtype=dataType, idx=idx)
+        # self.push_data_value(code, data, dtype=dataType, idx=idx)
+        # self.push_data_value(code, data, dtype=dataType, idx=idx)
 
         if idx==0:
             #{'name': '"', 'open': 11.19, 'close': 11.1, 'now': 11.47, 'high': 11.63, 'low': 11.19, 'buy': 11.46, 'sell': 11.47, 'turnover': 54845630, 'volume': 629822482.49, 'bid1_volume': 52700, 'bid1': 11.46, 'bid2_volume': 94600, 'bid2': 11.45, 'bid3_volume': 10900, 'bid3': 11.44, 'bid4_volume': 40700, 'bid4': 11.43, 'bid5_volume': 60500, 'bid5': 11.42, 'ask1_volume': 5200, 'ask1': 11.47, 'ask2_volume': 70600, 'ask2': 11.48, 'ask3_volume': 116300, 'ask3': 11.49, 'ask4_volume': 248000, 'ask4': 11.5, 'ask5_volume': 26200, 'ask5': 11.51, 'date': '2019-04-08', 'time': '14:12:33'}
             #{'name': '"', , 'buy': 11.46, 'sell': 11.47,  'bid1_volume': 52700, 'bid1': 11.46, 'bid2_volume': 94600, 'bid2': 11.45, 'bid3_volume': 10900, 'bid3': 11.44, 'bid4_volume': 40700, 'bid4': 11.43, 'bid5_volume': 60500, 'bid5': 11.42, 'ask1_volume': 5200, 'ask1': 11.47, 'ask2_volume': 70600, 'ask2': 11.48, 'ask3_volume': 116300, 'ask3': 11.49, 'ask4_volume': 248000, 'ask4': 11.5, 'ask5_volume': 26200, 'ask5': 11.51, 'date': '2019-04-08', 'time': '14:12:33'}
-            self.push_data_value(code, data, dtype=dataType, vtype='buy')
-            self.push_data_value(code, data, dtype=dataType, vtype='sell')
+            ## "buy|sell"
+            self.push_data_value(code, data, dtype=dataType)
+            # self.push_data_value(code, data, dtype=dataType)
     
     def push_day_data(self, code, data, idx=0):
         # listname=self._get_key(code,vtype='date',idx=idx)
         # last_date = self.rpop(listname)
         last_date = self.get_last_date(code, idx=idx)
-        self.set_read_flg(code, value=0)
+        # self.set_read_flg(code, value=0)
         if last_date == data['date']:
             self.rpop_day_df(code, idx=idx)
 
         self.push_data_value(code, data, idx=idx)
-        self.set_log_date(code, data, idx = idx)
+        # self.set_log_date(code, data, idx = idx)
 
     # def push_day_data(self, code, data, idx=0):
     #     # listname=self._get_key(code,vtype='date',idx=idx)
@@ -138,46 +141,46 @@ class RedisIo(object):
     #     self.set_read_flg(code, value=0)
     #     if last_date == data['date']:
     #         self.rpop_day_df(code, idx=idx)
-    #         # self.rpop(self._get_key(code,vtype="close",idx=idx))
-    #         # self.rpop(self._get_key(code,vtype="high",idx=idx))
-    #         # self.rpop(self._get_key(code,vtype="low",idx=idx))
-    #         # self.rpop(self._get_key(code,vtype="volume",idx=idx))
-    #         # self.rpop(self._get_key(code,vtype="vol",idx=idx))
-    #         # self.rpop(self._get_key(code,vtype="open",idx=idx))
-    #         # self.rpop(self._get_key(code,vtype="date",idx=idx))
+    #         # self.rpop(self._get_key(code,idx=idx))
+    #         # self.rpop(self._get_key(code,idx=idx))
+    #         # self.rpop(self._get_key(code,idx=idx))
+    #         # self.rpop(self._get_key(code,idx=idx))
+    #         # self.rpop(self._get_key(code,idx=idx))
+    #         # self.rpop(self._get_key(code,idx=idx))
+    #         # self.rpop(self._get_key(code,idx=idx))
     #     # else:
     #     #     self.push_list_rvalue(listname,last_date)
-    #     self.push_data_value(code, data, vtype='close', idx=idx)
+    #     self.push_data_value(code, data, idx=idx)
 
-    #     self.push_data_value(code, data, vtype='high', idx=idx)
-    #     self.push_data_value(code, data, vtype='low', idx=idx)
-    #     # self.push_data_value(code, data, vtype='volume', idx=idx)
-    #     self.push_data_value(code, data, vtype='vol', idx=idx)
-    #     self.push_data_value(code, data, vtype='open', idx=idx)
-    #     self.push_data_value(code, data, vtype='date', idx=idx)
+    #     self.push_data_value(code, data, idx=idx)
+    #     self.push_data_value(code, data, idx=idx)
+    #     # self.push_data_value(code, data, idx=idx)
+    #     self.push_data_value(code, data, idx=idx)
+    #     self.push_data_value(code, data, idx=idx)
+    #     self.push_data_value(code, data, idx=idx)
     #     self.set_read_flg(code)
     #     self.set_log_date(code, data, idx = idx)
 
-    def set_log_date(self, code, data, dtype='day', idx=0):
-        vtype = "logtime"
-        listname=self._get_key(code,dtype,vtype,idx)
+    # def set_log_date(self, code, data, dtype='day', idx=0):
+    #     vtype = "logtime"
+    #     listname=self._get_key(code,dtype,vtype,idx)
 
-        # if 'time' in data.keys():
-        value = "%s %s"%(data['date'], data['time'])
-        self.set_key_value(listname, value)
+    #     # if 'time' in data.keys():
+    #     value = "%s %s"%(data['date'], data['time'])
+    #     self.set_key_value(listname, value)
     
-    def set_read_flg(self, code, value=1, dtype='day', idx=0):
-        vtype = "rwflg"
-        listname=self._get_key(code,dtype,vtype,idx)
-        self.set_key_value(listname, value)
+    # def set_read_flg(self, code, value=1, dtype='day', idx=0):
+    #     vtype = "rwflg"
+    #     listname=self._get_key(code,dtype,vtype,idx)
+    #     self.set_key_value(listname, value)
     
-    def is_read_flg(self, code, dtype='day', idx=0):
-        vtype = "rwflg"
-        listname=self._get_key(code,dtype,vtype,idx)
-        value = self.get_key_value(listname)
-        return value is None or "1" == value
+    # def is_read_flg(self, code, dtype='day', idx=0):
+    #     vtype = "rwflg"
+    #     listname=self._get_key(code,dtype,vtype,idx)
+    #     value = self.get_key_value(listname)
+    #     return value is None or "1" == value
     
-    def sdata2redis(self, data, last_vol = 0):
+    def dict2ochlvd(self, data, last_vol = 0):
         ##      O  C  H  L  V  #D#
         rtn = "%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol)
         if 'time' in data.keys():
@@ -186,29 +189,27 @@ class RedisIo(object):
             rtn = "%s|%s" % (rtn, data['date'])
         return rtn
 
-    def redis2sdata(self, data):
+    def list2ochlvd(self, data):
         rtn = []
         for ns in data.split('|'):
-            if "-" in ns:
+            if "-" in ns: # 2019-12-31 [12:59:59]
                 rtn.append(ns)
             else:
                 rtn.append(float(ns))
-
         return rtn
-
 
     def push_data_value(self, code, data, dtype='day', idx=0, last_vol = 0):
         listname=self._get_key(code,dtype,idx)
-        value = self.sdata2redis(data, last_vol)
+        value = self.dict2ochlvd(data, last_vol)
         self.push_list_rvalue(listname, value)
 
         #if idx==0:
-    # def push_data_value(self, code, data, dtype='day', vtype='close', idx=0, last_vol = 0):
+    # def push_data_value(self, code, data, dtype='day', idx=0, last_vol = 0):
     #     listname=self._get_key(code,dtype,vtype,idx)
     #     #if idx==0:
-    #     #    listname=self._get_key(code, dtype=dtype, vtype=vtype, idx=0)
+    #     #    listname=self._get_key(code, dtype=dtype, idx=0)
     #     #else:
-    #     #    listname=self._get_key(code, dtype=dtype, vtype=vtype, idx=idx)
+    #     #    listname=self._get_key(code, dtype=dtype, idx=idx)
 
     #     if vtype == 'close':
     #         value=data['now']
@@ -229,7 +230,7 @@ class RedisIo(object):
         else:
             return "%s:idx:%s"%(code, dtype)
 
-    # def _get_key(self, code, dtype='day', vtype='close', idx=0):
+    # def _get_key(self, code, dtype='day', idx=0):
     #     if idx==0:
     #         return "%s:%s:%s"%(code, dtype, vtype)
     #     else:
@@ -244,59 +245,67 @@ class RedisIo(object):
         return [json.loads(v.decode()) for v in rl]
 
     def get_day_df(self, code, startpos=0, endpos=-1,idx=0):
-        if not self.is_read_flg(code, dtype='day', idx=idx):
-            # time.sleep(1)
-            return None
+        return self.get_data_df(code, dtype="day", startpos=startpos, endpos=endpos, idx=idx)
+        # c = self.get_day_c(code, startpos, endpos,idx)
+        # h = self.get_day_h(code, startpos, endpos,idx)
+        # l = self.get_day_l(code, startpos, endpos,idx)
+        # o = self.get_day_o(code, startpos, endpos,idx)
+        # v = self.get_day_v(code, startpos, endpos,idx)
+        # d = self.get_day_d(code, startpos, endpos,idx)
+        # cn = len(c)
+        # if cn == len(h) and cn == len(l) and cn == len(o) and cn == len(v) and cn == len(d):
+        # #return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l, 'open':o})
+        #   return pd.DataFrame(data={'close':c, 'open':o, 'volume':v, 'high':h, 'low':l,'date':d})
+        # else:
+        #   print(" code=%s data error. " %code)
+        #   return None
 
-        c = self.get_day_c(code, startpos, endpos,idx)
-        h = self.get_day_h(code, startpos, endpos,idx)
-        l = self.get_day_l(code, startpos, endpos,idx)
-        o = self.get_day_o(code, startpos, endpos,idx)
-        v = self.get_day_v(code, startpos, endpos,idx)
-        d = self.get_day_d(code, startpos, endpos,idx)
-        cn = len(c)
-        if cn == len(h) and cn == len(l) and cn == len(o) and cn == len(v) and cn == len(d):
-        #return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l, 'open':o})
-          return pd.DataFrame(data={'close':c, 'open':o, 'volume':v, 'high':h, 'low':l,'date':d})
-        else:
-          print(" code=%s data error. " %code)
-          return None
-
-    def get_cur_df(self, code, startpos=0, endpos=-1, idx=0):
-        dataType = "cur"
-        c = self.get_data_value(code, dtype=dataType, vtype='close', startpos=startpos, endpos=endpos, idx=idx)
-        h = self.get_data_value(code, dtype=dataType, vtype='high', startpos=startpos, endpos=endpos, idx=idx)
-        l = self.get_data_value(code, dtype=dataType, vtype='low', startpos=startpos, endpos=endpos, idx=idx)
-        o = self.get_data_value(code, dtype=dataType, vtype='open', startpos=startpos, endpos=endpos, idx=idx)
-        v = self.get_data_value(code, dtype=dataType, vtype='volume', startpos=startpos, endpos=endpos, idx=idx)
-        d = self.get_data_value(code, dtype=dataType, vtype='datetime', startpos=startpos, endpos=endpos, idx=idx)
-        #return pd.DataFrame(index=d, data={'close':c, 'vol':v, 'high':h, 'low':l, 'open':o})
+    def get_data_df(self, code, dtype="day", startpos=0, endpos=-1, idx=0):
+        data = self.get_data_value(code, dtype=dtype, startpos=startpos, endpos=endpos, idx=idx)
+        c = []
+        o = []
+        v = []
+        h = []
+        l = []
+        d = []
+        for nd in data:
+            snd = self.list2ochlvd(nd)
+            o.append(snd[0])
+            c.append(snd[1])
+            h.append(snd[2])
+            l.append(snd[3])
+            v.append(snd[4])
+            d.append(snd[5])
         return pd.DataFrame(data={'close':c, 'open':o, 'volume':v, 'high':h, 'low':l,'date':d})
 
-    def get_data_value(self, code, dtype='day', vtype='close', startpos=0, endpos=-1, idx=0):
-        listname=self._get_key(code,dtype,vtype,idx)
-        if vtype == "date" or vtype == "datetime":
-            return self._get_str_data(listname, startpos, endpos)
-        else:
-            return self._get_num_data(listname, startpos, endpos)
+    def get_data_value(self, code, dtype='day', startpos=0, endpos=-1, idx=0):
+        listname=self._get_key(code,dtype,idx)
+        return self._get_str_data(listname, startpos, endpos)
    
-    def get_day_c(self, code, startpos=0, endpos=-1, idx=0):
-        return self.get_data_value(code, vtype='close', startpos=startpos, endpos=endpos, idx=idx)
+    # def get_data_value(self, code, dtype='day', startpos=0, endpos=-1, idx=0):
+    #     listname=self._get_key(code,dtype,vtype,idx)
+    #     if vtype == "date" or vtype == "datetime":
+    #         return self._get_str_data(listname, startpos, endpos)
+    #     else:
+    #         return self._get_num_data(listname, startpos, endpos)
    
-    def get_day_v(self, code, startpos=0, endpos=-1, idx=0):
-        return self.get_data_value(code, vtype='vol', startpos=startpos, endpos=endpos, idx=idx)
+    # def get_day_c(self, code, startpos=0, endpos=-1, idx=0):
+    #     return self.get_data_value(code, startpos=startpos, endpos=endpos, idx=idx)
    
-    def get_day_o(self, code, startpos=0, endpos=-1, idx=0):
-        return self.get_data_value(code, vtype='open', startpos=startpos, endpos=endpos, idx=idx)
+    # def get_day_v(self, code, startpos=0, endpos=-1, idx=0):
+    #     return self.get_data_value(code, startpos=startpos, endpos=endpos, idx=idx)
    
-    def get_day_h(self, code, startpos=0, endpos=-1, idx=0):
-        return self.get_data_value(code, vtype='high', startpos=startpos, endpos=endpos, idx=idx)
+    # def get_day_o(self, code, startpos=0, endpos=-1, idx=0):
+    #     return self.get_data_value(code, startpos=startpos, endpos=endpos, idx=idx)
    
-    def get_day_l(self, code, startpos=0, endpos=-1, idx=0):
-        return self.get_data_value(code, vtype='low', startpos=startpos, endpos=endpos, idx=idx)
+    # def get_day_h(self, code, startpos=0, endpos=-1, idx=0):
+    #     return self.get_data_value(code, startpos=startpos, endpos=endpos, idx=idx)
    
-    def get_day_d(self, code, startpos=0, endpos=-1, idx=0):
-        return self.get_data_value(code, vtype='date', startpos=startpos, endpos=endpos, idx=idx)
+    # def get_day_l(self, code, startpos=0, endpos=-1, idx=0):
+    #     return self.get_data_value(code, startpos=startpos, endpos=endpos, idx=idx)
+   
+    # def get_day_d(self, code, startpos=0, endpos=-1, idx=0):
+    #     return self.get_data_value(code, startpos=startpos, endpos=endpos, idx=idx)
    
 def main():
     ri = RedisIo('redis.conf')

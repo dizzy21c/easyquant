@@ -72,7 +72,7 @@ def set_data(code, idx, st_date, end_date, last_date, fmt_str):
     return 0
 
   for _,row in new_df.iterrows():
-    data_dict={'code':code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol * 100, 'vol':row.vol * 100, 'now':row.close, 'turnover':row.vol * 100 , 'time':'tdxtime'}
+    data_dict={'code':code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol * 100, 'vol':row.vol * 100, 'now':row.close, 'turnover':row.vol * 100}
     redis.push_day_data(row.code,data_dict,idx=idx)
   
   print(fmt_str)
@@ -85,9 +85,13 @@ def data_conv(st_date, codes, idx=0, redis=redis, pool = None, end_date = "2020-
     i = i + 1
     if x[0:2] == "sh":
       x = x[2:]
+
     fmt_str = "read data : %d/%d => %5.2f" % (i, nc,  i / nc * 100 )
-    pool.apply_async(set_data, args=(x, idx, st_date, end_date, last_date, fmt_str))
-    # set_data(x, idx, st_date, end_date, last_date)
+    if pool is None:
+      set_data(x, idx, st_date, end_date, last_date, fmt_str)
+    else:      
+      pool.apply_async(set_data, args=(x, idx, st_date, end_date, last_date, fmt_str))
+
     # pool.apply_async(work, args=(x,1,idx))
     # tmp_date = redis.get_last_date(x,idx=idx)
     # if tmp_date is not None:
@@ -178,26 +182,38 @@ def get_code_list(idx=0):
     
   return stock_list
 
-def main(argv, pool):
+def main(argv):
   redis = RedisIo('redis.conf')
   st_date="1990-01-01"
 
+  pool_size = 8 # multiprocessing.cpu_count()
+  pool = None
   flg = 0
   l = len(argv)
   if l > 1:
-    flg = argv[1]
+    flg = int(argv[1])
   print(flg)
-  if flg == "1" or flg == 0:
+
+  if flg > 2:
+    pool = Pool(pool_size)
+    flg = flg - 3
+
+  if flg == 1 or flg == 0:
     idx=0
     stock_list = get_code_list(idx)
     data_conv(st_date, stock_list, pool=pool, idx=idx, redis=redis)
     # pool.close()
     # pool.join()
 
-  if flg == "2" or flg == 0:
+  if flg == 2 or flg == 0:
     idx=1
     stock_list = get_code_list(idx)
     data_conv(st_date, stock_list, pool=pool,idx=idx, redis=redis)
+
+  if pool is not None:
+    pool.close()
+    pool.join()
+
   # data_conv(st_date)
   # pass
     # ri = RedisIo('redis.conf')
@@ -223,8 +239,4 @@ def main2(pool2):
 
 if __name__ == '__main__':
   tmp=tdx.QA_fetch_get_stock_list()
-  pool_size = 8 # multiprocessing.cpu_count()
-  pool = Pool(pool_size)
-  main(sys.argv, pool)
-  pool.close()
-  pool.join()
+  main(sys.argv)
