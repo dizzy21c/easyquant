@@ -127,6 +127,7 @@ class calcStrategy(Thread):
 class Strategy(StrategyTemplate):
     name = 'data-risk'
     data_flg = "data-sina"
+    EventType = 'worker2'
     config_name = './config/stock_list.json'
     idx=0
 
@@ -160,10 +161,11 @@ class Strategy(StrategyTemplate):
     def loading(self, code, idx):
         data_df = self.rio.get_day_df(code, idx=self.idx)
         data_map = self.data_util.df2series(data_df)
-        self.hdata[code] = data_map
+        # self.hdata[code] = data_map
 
     def strategy(self, event):
-        if event.event_type != 'data-sina':
+        # self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+        if event.event_type != self.EventType:
             return
 
         self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))

@@ -84,10 +84,11 @@ class Strategy(StrategyTemplate):
         # self.log.info('init event end:%s' % self.name)
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
     def strategy(self, event):
+        # self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
         if event.event_type != self.EventType:
             return
 
-        # self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+        self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
         threads = []
         #for td in event.data:
         #    self.log.info(td)

@@ -127,25 +127,36 @@ class RedisIo(object):
         self.set_read_flg(code, value=0)
         if last_date == data['date']:
             self.rpop_day_df(code, idx=idx)
-            # self.rpop(self._get_key(code,vtype="close",idx=idx))
-            # self.rpop(self._get_key(code,vtype="high",idx=idx))
-            # self.rpop(self._get_key(code,vtype="low",idx=idx))
-            # self.rpop(self._get_key(code,vtype="volume",idx=idx))
-            # self.rpop(self._get_key(code,vtype="vol",idx=idx))
-            # self.rpop(self._get_key(code,vtype="open",idx=idx))
-            # self.rpop(self._get_key(code,vtype="date",idx=idx))
-        # else:
-        #     self.push_list_rvalue(listname,last_date)
-        self.push_data_value(code, data, vtype='close', idx=idx)
 
-        self.push_data_value(code, data, vtype='high', idx=idx)
-        self.push_data_value(code, data, vtype='low', idx=idx)
-        # self.push_data_value(code, data, vtype='volume', idx=idx)
-        self.push_data_value(code, data, vtype='vol', idx=idx)
-        self.push_data_value(code, data, vtype='open', idx=idx)
-        self.push_data_value(code, data, vtype='date', idx=idx)
-        self.set_read_flg(code)
+        self.push_data_value(code, data, idx=idx)
         self.set_log_date(code, data, idx = idx)
+
+    # def push_day_data(self, code, data, idx=0):
+    #     # listname=self._get_key(code,vtype='date',idx=idx)
+    #     # last_date = self.rpop(listname)
+    #     last_date = self.get_last_date(code, idx=idx)
+    #     self.set_read_flg(code, value=0)
+    #     if last_date == data['date']:
+    #         self.rpop_day_df(code, idx=idx)
+    #         # self.rpop(self._get_key(code,vtype="close",idx=idx))
+    #         # self.rpop(self._get_key(code,vtype="high",idx=idx))
+    #         # self.rpop(self._get_key(code,vtype="low",idx=idx))
+    #         # self.rpop(self._get_key(code,vtype="volume",idx=idx))
+    #         # self.rpop(self._get_key(code,vtype="vol",idx=idx))
+    #         # self.rpop(self._get_key(code,vtype="open",idx=idx))
+    #         # self.rpop(self._get_key(code,vtype="date",idx=idx))
+    #     # else:
+    #     #     self.push_list_rvalue(listname,last_date)
+    #     self.push_data_value(code, data, vtype='close', idx=idx)
+
+    #     self.push_data_value(code, data, vtype='high', idx=idx)
+    #     self.push_data_value(code, data, vtype='low', idx=idx)
+    #     # self.push_data_value(code, data, vtype='volume', idx=idx)
+    #     self.push_data_value(code, data, vtype='vol', idx=idx)
+    #     self.push_data_value(code, data, vtype='open', idx=idx)
+    #     self.push_data_value(code, data, vtype='date', idx=idx)
+    #     self.set_read_flg(code)
+    #     self.set_log_date(code, data, idx = idx)
 
     def set_log_date(self, code, data, dtype='day', idx=0):
         vtype = "logtime"
@@ -164,33 +175,65 @@ class RedisIo(object):
         vtype = "rwflg"
         listname=self._get_key(code,dtype,vtype,idx)
         value = self.get_key_value(listname)
-        return value is None or 1 == value
+        return value is None or "1" == value
     
-    def push_data_value(self, code, data, dtype='day', vtype='close', idx=0, last_vol = 0):
-        listname=self._get_key(code,dtype,vtype,idx)
-        #if idx==0:
-        #    listname=self._get_key(code, dtype=dtype, vtype=vtype, idx=0)
-        #else:
-        #    listname=self._get_key(code, dtype=dtype, vtype=vtype, idx=idx)
-
-        if vtype == 'close':
-            value=data['now']
-        elif vtype == 'vol':
-            value = data['turnover'] / 100 - last_vol
-        elif vtype == 'volume':
-            value = data['turnover'] / 100 - last_vol
-        elif vtype == 'datetime':
-            value = "%s %s"%(data['date'], data['time'])
+    def sdata2redis(self, data, last_vol = 0):
+        ##      O  C  H  L  V  #D#
+        rtn = "%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol)
+        if 'time' in data.keys():
+            rtn = "%s|%s|%s %s" % (rtn, data['date'], data['date'],data['time'])
         else:
-            value=data[vtype]
+            rtn = "%s|%s" % (rtn, data['date'])
+        return rtn
 
+    def redis2sdata(self, data):
+        rtn = []
+        for ns in data.split('|'):
+            if "-" in ns:
+                rtn.append(ns)
+            else:
+                rtn.append(float(ns))
+
+        return rtn
+
+
+    def push_data_value(self, code, data, dtype='day', idx=0, last_vol = 0):
+        listname=self._get_key(code,dtype,idx)
+        value = self.sdata2redis(data, last_vol)
         self.push_list_rvalue(listname, value)
+
+        #if idx==0:
+    # def push_data_value(self, code, data, dtype='day', vtype='close', idx=0, last_vol = 0):
+    #     listname=self._get_key(code,dtype,vtype,idx)
+    #     #if idx==0:
+    #     #    listname=self._get_key(code, dtype=dtype, vtype=vtype, idx=0)
+    #     #else:
+    #     #    listname=self._get_key(code, dtype=dtype, vtype=vtype, idx=idx)
+
+    #     if vtype == 'close':
+    #         value=data['now']
+    #     elif vtype == 'vol':
+    #         value = data['turnover'] / 100 - last_vol
+    #     elif vtype == 'volume':
+    #         value = data['turnover'] / 100 - last_vol
+    #     elif vtype == 'datetime':
+    #         value = "%s %s"%(data['date'], data['time'])
+    #     else:
+    #         value=data[vtype]
+
+    #     self.push_list_rvalue(listname, value)
     
-    def _get_key(self, code, dtype='day', vtype='close', idx=0):
+    def _get_key(self, code, dtype='day', idx=0):
         if idx==0:
-            return "%s:%s:%s"%(code, dtype, vtype)
+            return "%s:%s"%(code, dtype)
         else:
-            return "%s:idx:%s:%s"%(code, dtype, vtype)
+            return "%s:idx:%s"%(code, dtype)
+
+    # def _get_key(self, code, dtype='day', vtype='close', idx=0):
+    #     if idx==0:
+    #         return "%s:%s:%s"%(code, dtype, vtype)
+    #     else:
+    #         return "%s:idx:%s:%s"%(code, dtype, vtype)
 
     def _get_str_data(self, listname, startpos=0, endpos=-1):
         rl = self.pull_list_range(listname, startpos, endpos) 
