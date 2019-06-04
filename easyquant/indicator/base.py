@@ -242,7 +242,7 @@ def BARSLAST(cond, yes=True):
         ## TODO
         cond2=cond[cond==yes]
         if len(cond2) > 0:
-            return len(cond) - cond2.index[-1]
+            return len(cond) - cond2.index[-1] - 1
         return 0
         # return len(cond) - cond[cond==yes].index[-1]
 
