@@ -4,6 +4,7 @@ from easyquant import UdfMarketStart
 from easyquant import DataUtil
 from easyquant import RedisIo
 from threading import Thread, current_thread, Lock, Event
+from multiprocessing import Process, Pool
 import json
 import redis
 import time
@@ -13,7 +14,7 @@ import pandas as pd
 import numpy as np
 import talib
 
-class calcStrategy(Thread):
+class calcStrategy(Process):
     def __init__(self, code, new_data, log, redisIo, idx):
         Thread.__init__(self)
         # self.data = new_data
@@ -48,19 +49,7 @@ class calcStrategy(Thread):
         self.resume()
 
     def run(self):
-        data_df = None
-        try:
-            data_df = self.redis.get_day_df(self.code, idx=self.idx)
-        except Exception as e:
-            time.sleep(1)
-            try:
-                data_df = self.redis.get_day_df(self.code, idx=self.idx)
-            except Exception as e1:
-                data_df = None
-        if data_df is None:
-            self.log.info("data-data read error:code=%s" % self.code)
-            return
-
+        data_df = self.redis.get_day_df(self.code, idx=self.idx)
         # finally:
         #     self.log.info("data read error: code= %s" % self.code )
         # data_df = self.redis.get_day_df(self.code, idx=self.idx)
@@ -100,18 +89,16 @@ class calcStrategy(Thread):
 
     def do_calc(self):
         # self.log.info("do-calc. %s data... " % self.code)
-        # data_df = self.redis.get_day_df(self.code, idx=self.idx)
+        data_df = self.redis.get_day_df(self.code, idx=self.idx)
         # data_map = self.data_util.df2series(data_df)
-        C, H, L, O, V, D = self.data_util.append2series(self.data_map, self.data)
-        # # C = H = L = []
-        out = self.pt.check(C,H,L)
+        out = self.pt.check(data_df.close,data_df.high,data_df.low)
         # out = {'flg':0}
         if out['flg']:
             self.log.info(" data risk => code=%s , value= %s " %  (self.code, out))
         # # self.log.info(" code=%s , value= %s " %  (self.code, out))
 
         # self.log.info("begin calc %s" % self.code)
-        if self.qd.check(C):
+        if self.qd.check(data_df.close):
             self.log.info(" data market start=>code=%s" % self.code )
 
     def pause(self):
@@ -124,10 +111,27 @@ class calcStrategy(Thread):
         self.__flag.set()       # 将线程从暂停状态恢复, 如何已经暂停的话
         self.__running.clear()        # 设置为False
 
+redis=RedisIo()
+
+def do_calc(code, idx, pt, qd):
+    # log.info("do calc")
+    # print("start do-calc")
+    data_df = redis.get_day_df(code, idx=idx)
+    out = pt.check(data_df.close,data_df.high, data_df.low)
+    if out['flg']:
+        # log.info(" data risk => code=%s , value= %s " %  (code, out))
+        print(" data risk => code=%s , value= %s " %  (code, out))
+
+    # self.log.info("begin calc %s" % self.code)
+    if qd.check(data_df.close):
+        # log.info(" data market start=>code=%s" % code )
+        print(" data market start=>code=%s" % code )
+
+
 class Strategy(StrategyTemplate):
-    name = 'data-risk'
+    name = 'data-worker2'
     data_flg = "data-sina"
-    EventType = 'worker2'
+    EventType = 'worker'
     config_name = './config/stock_list.json'
     idx=0
 
@@ -141,6 +145,10 @@ class Strategy(StrategyTemplate):
         self.rio=RedisIo('redis.conf')
         self.data_util = DataUtil()
         self.code_list = []
+        # self.pool = Pool(10)
+        self.is_working = False
+        self.pt = UdfIndexRisk()
+        self.qd = UdfMarketStart()
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
@@ -169,9 +177,15 @@ class Strategy(StrategyTemplate):
             return
 
         self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+
+        if self.is_working:
+            self.log.info("working...")
+            return
         # chklist = ['002617','600549','300275','000615']
         # print  (type(event.data))
         threads = []
+        pool = Pool(50)
+        self.is_working = True
         # [calcStrategy(l) for i in range(5)]
         #for td in event.data:
         #    self.log.info(td)
@@ -186,12 +200,31 @@ class Strategy(StrategyTemplate):
             # else:
             #     self.log.info("\n\nnot in data:" + td[0])
 
+        # for stcode in self.code_list:
+        #     # stdata= event.data[stcode]
+        #     threads.append(calcStrategy(stcode, None, self.log, self.rio, self.idx))
+
         for stcode in self.code_list:
             # stdata= event.data[stcode]
-            threads.append(calcStrategy(stcode, None, self.log, self.rio, self.idx))
+            # threads.append(calcStrategy(stcode, None, self.log, self.rio, self.idx))o
+            # def do_calc(code, idx, pt, qd, redis, log):
 
-        for c in threads:
-            c.start()
+            pool.apply_async(do_calc, args=(stcode, self.idx, self.pt, self.qd))
+
+        # for c in threads:
+        #     c.start()
+
+        # for c in threads:
+        #     c.join()
+
+        pool.close()
+        pool.join()
+
+        pool.terminate()
+
+        self.is_working = False
+
+        self.log.info("do calc end.")
         #     c.set_data_resume(event.data)
 
             # chgValue = (event.data[d]['now'] - event.data[d]['close'])

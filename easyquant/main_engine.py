@@ -184,12 +184,10 @@ class MainEngine:
         # 时钟事件
         func(ClockEngine.EventType, strategy.clock)
 
-    def load_strategy(self, names=None, sdir=None):
+    def load_strategy(self, names=None):
         """动态加载策略
         :param names: 策略名列表，元素为策略的 name 属性"""
         s_folder = 'strategies'
-        if sdir is not None:
-            s_folder = "%s%s" %(s_folder,sdir) 
 
         self._names = names
         strategies = os.listdir(s_folder)
