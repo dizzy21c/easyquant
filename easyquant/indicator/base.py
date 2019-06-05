@@ -80,6 +80,9 @@ def DIFF(Series, N=1):
 
 def HHV(Series, N):
     # TODO
+    if isinstance(N, pd.Series):
+        N = N[len(N) - 1]
+
     if N == 0:
         return Series
 
@@ -88,6 +91,9 @@ def HHV(Series, N):
 
 def LLV(Series, N):
     # TODO
+    if isinstance(N, pd.Series):
+        N = N[len(N) - 1]
+
     if N == 0:
         return Series
 
@@ -166,6 +172,10 @@ def IFOR(COND1, COND2, V1, V2):
 
 
 def REF(Series, N):
+    if isinstance(N, pd.Series):
+        var = np.where(N > 0, Series[N.index - N], Series)
+        return pd.Series(var, index=N.index)
+
     var = Series.diff(N)
     var = Series - var
     return var
@@ -237,13 +247,19 @@ def BARSLAST(cond, yes=True):
     # return BARLAST(cond, yes)
     cond2 = cond[cond == yes]
     if cond2 is None:
-        return 0
+        return pd.Series(np.zeros(len(cond), dtype = int))
     else:
         ## TODO
+        len_c1 = len(cond)
         cond2=cond[cond==yes]
         if len(cond2) > 0:
-            return len(cond) - cond2.index[-1] - 1
-        return 0
+            # var1 = len_c1 - (len_c1 - cond2.index[-1])
+            # var2 = np.arange(len_c1) - var1
+            # var = np.where(var2 < 0, 0, var2)
+            var = np.where(cond.index.values-cond2.index[-1]>=0, cond.index.values-cond2.index[-1],cond.index.values-cond2.index[-2] )
+            return pd.Series(var)
+            
+        return pd.Series(np.zeros(len_c1, dtype = int))
         # return len(cond) - cond[cond==yes].index[-1]
 
 def BARLAST(cond, yes=True):

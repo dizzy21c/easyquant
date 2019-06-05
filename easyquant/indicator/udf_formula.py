@@ -118,7 +118,7 @@ class UdfIndexRisk(BaseFormula):
 
 class UdfMarketStart(BaseFormula):
 
-  def check(self, C=Series(), H=Series(), L=Series(), O=Series(), sd=13, ld=144)#, sd=20, ld=250):
+  def check(self, C=Series(), H=Series(), L=Series(), O=Series(), sd=13, ld=144):#, sd=20, ld=250):
     if len(C) < ld:
       return False
 
