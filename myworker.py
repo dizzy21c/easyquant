@@ -57,11 +57,10 @@ class WorkerEngine(SinaEngine):
 #worker_engine.PushInterval = push_interval
 
 # log_type_choose = '2' #input('请输入 log 记录方式: 1: 显示在屏幕 2: 记录到指定文件\n: ')
-log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
-
-log_filepath = 'logs/working.txt' #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
-
-log_handler = DefaultLogHandler(name='worker', log_type=log_type, filepath=log_filepath)
+_logname="worker"
+_log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
+_log_filepath = 'logs/%s.txt' % _logname #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
+log_handler = DefaultLogHandler(name=_logname, log_type=_log_type, filepath=_log_filepath)
 
 #client= pymongo.MongoClient('localhost',27017)
 #db = client.quantaxis

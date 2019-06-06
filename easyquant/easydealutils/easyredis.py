@@ -106,26 +106,12 @@ class RedisIo(object):
         pass
 
     def push_cur_data(self, code, data, idx=0, last_vol = 0):
-        # print("put cur data")
-        dataType = "cur"
-        self.push_data_value(code, data, dtype=dataType, idx=idx)
-        # self.push_data_value(code, data, dtype=dataType, idx=idx)
-        # self.push_data_value(code, data, dtype=dataType, idx=idx)
-        # # self.push_data_value(code, data, dtype=dataType, idx=idx)
-        # self.push_data_value(code, data, dtype=dataType, idx=idx)
-        # self.push_data_value(code, data, dtype=dataType, idx=idx)
-        # self.push_data_value(code, data, dtype=dataType, idx=idx)
-
-        if idx==0:
-            #{'name': '"', 'open': 11.19, 'close': 11.1, 'now': 11.47, 'high': 11.63, 'low': 11.19, 'buy': 11.46, 'sell': 11.47, 'turnover': 54845630, 'volume': 629822482.49, 'bid1_volume': 52700, 'bid1': 11.46, 'bid2_volume': 94600, 'bid2': 11.45, 'bid3_volume': 10900, 'bid3': 11.44, 'bid4_volume': 40700, 'bid4': 11.43, 'bid5_volume': 60500, 'bid5': 11.42, 'ask1_volume': 5200, 'ask1': 11.47, 'ask2_volume': 70600, 'ask2': 11.48, 'ask3_volume': 116300, 'ask3': 11.49, 'ask4_volume': 248000, 'ask4': 11.5, 'ask5_volume': 26200, 'ask5': 11.51, 'date': '2019-04-08', 'time': '14:12:33'}
-            #{'name': '"', , 'buy': 11.46, 'sell': 11.47,  'bid1_volume': 52700, 'bid1': 11.46, 'bid2_volume': 94600, 'bid2': 11.45, 'bid3_volume': 10900, 'bid3': 11.44, 'bid4_volume': 40700, 'bid4': 11.43, 'bid5_volume': 60500, 'bid5': 11.42, 'ask1_volume': 5200, 'ask1': 11.47, 'ask2_volume': 70600, 'ask2': 11.48, 'ask3_volume': 116300, 'ask3': 11.49, 'ask4_volume': 248000, 'ask4': 11.5, 'ask5_volume': 26200, 'ask5': 11.51, 'date': '2019-04-08', 'time': '14:12:33'}
-            ## "buy|sell"
-            self.push_data_value(code, data, dtype=dataType)
-            # self.push_data_value(code, data, dtype=dataType)
+        dtype = "cur"
+        listname=self._get_key(code,dtype,idx)
+        value = self.dict2ochlvdt(data, last_vol)
+        self.push_list_rvalue(listname, value)
     
     def push_day_data(self, code, data, idx=0):
-        # listname=self._get_key(code,vtype='date',idx=idx)
-        # last_date = self.rpop(listname)
         last_date = self.get_last_date(code, idx=idx)
         # self.set_read_flg(code, value=0)
         if last_date == data['date']:
@@ -180,6 +166,12 @@ class RedisIo(object):
     #     value = self.get_key_value(listname)
     #     return value is None or "1" == value
     
+    def dict2ochlvdt(self, data, last_vol = 0):
+        ##      O  C  H  L  V  D T
+        rtn = "%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol)
+        rtn = "%s|%s|%s %s|%s" % (rtn, data['date'], data['date'],data['time'], time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        return rtn
+
     def dict2ochlvd(self, data, last_vol = 0):
         ##      O  C  H  L  V  #D#
         rtn = "%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol)

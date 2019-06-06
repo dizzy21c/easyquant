@@ -15,13 +15,13 @@ need_data = '' #get_broker_need_data(broker)
 
 class DataSinaEngine(SinaEngine):
     EventType = 'data-sina'
-    PushInterval = 10
+    PushInterval = 8
     config = "stock_list"
 
 
 class BlockSinaEngine(SinaEngine):
     EventType = 'block-sina'
-    PushInterval = 10
+    PushInterval = 8
     config = "bk_list"
 
 class IndexSinaEngine(SinaEngine):

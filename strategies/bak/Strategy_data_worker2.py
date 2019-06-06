@@ -2,26 +2,29 @@ from easyquant import StrategyTemplate
 from easyquant import UdfIndexRisk
 from easyquant import UdfMarketStart
 from easyquant import DataUtil
+from easyquant import DefaultLogHandler
 from easyquant import RedisIo
 from threading import Thread, current_thread, Lock, Event
-from multiprocessing import Process, Pool
+from multiprocessing import Process, Pool, cpu_count
 import json
 import redis
 import time
 #import pymongo
-from pandas import Series
-import pandas as pd
-import numpy as np
-import talib
+# from pandas import Series
+# import pandas as pd
+# import numpy as np
+# import talib
 
-class calcStrategy(Process):
-    def __init__(self, code, new_data, log, redisIo, idx):
+
+class calcStrategy(Thread):
+    def __init__(self, code, log_handler, redis, idx):
+    # def __init__(self, code, idx):
         Thread.__init__(self)
         # self.data = new_data
         # self.data_map = his_data
         self.code = code
-        self.log = log
-        self.redis = redisIo
+        self.log = log_handler
+        self.redis = redis
         self.idx = idx
 
         self.data_util = DataUtil()
@@ -111,7 +114,34 @@ class calcStrategy(Process):
         self.__flag.set()       # 将线程从暂停状态恢复, 如何已经暂停的话
         self.__running.clear()        # 设置为False
 
+# redis=RedisIo()
+
+# _logname="do-calc"
+# _log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
+# _log_filepath = 'logs/%s.txt' % _logname #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
+# log_handler = DefaultLogHandler(name=_logname, log_type=_log_type, filepath=_log_filepath)
+
+
 redis=RedisIo()
+
+_logname="do-calc"
+_log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
+_log_filepath = 'logs/%s.txt' % _logname #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
+log_handler = DefaultLogHandler(name=_logname, log_type=_log_type, filepath=_log_filepath)
+
+def do_calc_slow(codes, idx, pt, qd):
+    # log_handler.info("begin-do-calc %s" % codes)
+    threads = []
+    for code in codes:
+	    threads.append(calcStrategy(code, log_handler, redis, idx))
+	    # threads.append(calcStrategy(code, idx))
+
+    for c in threads:
+        c.start()
+    for c in threads:
+        c.join()
+
+    # log_handler.info("end-do-calc %s" % codes)
 
 def do_calc(code, idx, pt, qd):
     # log.info("do calc")
@@ -120,12 +150,12 @@ def do_calc(code, idx, pt, qd):
     out = pt.check(data_df.close,data_df.high, data_df.low)
     if out['flg']:
         # log.info(" data risk => code=%s , value= %s " %  (code, out))
-        print(" data risk => code=%s , value= %s " %  (code, out))
+        log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
 
     # self.log.info("begin calc %s" % self.code)
     if qd.check(data_df.close):
         # log.info(" data market start=>code=%s" % code )
-        print(" data market start=>code=%s" % code )
+        log_handler.info(" data market start=>code=%s" % code )
 
 
 class Strategy(StrategyTemplate):
@@ -173,65 +203,28 @@ class Strategy(StrategyTemplate):
 
     def strategy(self, event):
         # self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+        if self.is_working:
+            return
         if event.event_type != self.EventType:
             return
-
         self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
-
-        if self.is_working:
-            self.log.info("working...")
-            return
-        # chklist = ['002617','600549','300275','000615']
-        # print  (type(event.data))
-        threads = []
-        pool = Pool(50)
+        pool = Pool(cpu_count())
         self.is_working = True
-        # [calcStrategy(l) for i in range(5)]
-        #for td in event.data:
-        #    self.log.info(td)
-        # for stcode in event.data:
-        #     stdata= event.data[stcode]
-        #     # rtn=self.summary(data=stdata,org=rtn)
-        #     threads.append(calcStrategy(stcode, stdata, self.log, self.hdata[stcode], self.rio, idx=1))
-
-        # for td in self.chks:
-            # if td[0] in event.data:
-                # threads.append(calcStrategy(td[0], event.data[td[0]], self.log, td))
-            # else:
-            #     self.log.info("\n\nnot in data:" + td[0])
-
-        # for stcode in self.code_list:
-        #     # stdata= event.data[stcode]
-        #     threads.append(calcStrategy(stcode, None, self.log, self.rio, self.idx))
 
         for stcode in self.code_list:
-            # stdata= event.data[stcode]
-            # threads.append(calcStrategy(stcode, None, self.log, self.rio, self.idx))o
-            # def do_calc(code, idx, pt, qd, redis, log):
-
             pool.apply_async(do_calc, args=(stcode, self.idx, self.pt, self.qd))
 
-        # for c in threads:
-        #     c.start()
-
-        # for c in threads:
-        #     c.join()
-
+        # i = 0
+        # stcode = []
+        # code_len = len(self.code_list)
+        # while i < code_len:
+        #     stcode.append(self.code_list[i])
+        #     if i % 10 == 0 or i == code_len - 1:
+        #         pool.apply_async(do_calc, args=(stcode, self.idx, self.pt, self.qd))
+        #         stcode = []
+        #     i += 1
         pool.close()
         pool.join()
-
         pool.terminate()
-
         self.is_working = False
-
-        self.log.info("do calc end.")
-        #     c.set_data_resume(event.data)
-
-            # chgValue = (event.data[d]['now'] - event.data[d]['close'])
-            # self.log.info( "code=%s pct=%6.2f now=%6.2f" % (d, ( chgValue * 100/ event.data[d]['now']), event.data[d]['now']))
-
-        # self.log.info('data: stock-code-name %s' % event.data['162411'])
-        # self.log.info('check balance')
-        # self.log.info(self.user.balance)
-        # self.log.info('\n')
-
+        self.log.info("do-working-end")
