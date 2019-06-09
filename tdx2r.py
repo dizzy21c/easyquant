@@ -9,7 +9,7 @@ import os
 import time
 import random
 from threading import Thread, current_thread, Lock
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 
 # mhost='localhost'
 # mport=27017
@@ -187,15 +187,14 @@ def main(argv):
   st_date="1990-01-01"
 
   pool_size = 8 # multiprocessing.cpu_count()
-  pool = None
+  pool = Pool(pool_size)
   flg = 0
   l = len(argv)
   if l > 1:
     flg = int(argv[1])
-  print(flg)
 
   if flg > 2:
-    pool = Pool(pool_size)
+    pool = None
     flg = flg - 3
 
   if flg == 1 or flg == 0:
@@ -227,8 +226,7 @@ def work(n,y,n1):
     return n
 
 def main2(pool2):
-  pool_size = 8 # multiprocessing.cpu_count()
-  pool = Pool(pool_size)
+  pool = Pool(cpu_count())
 
   for i in range(10):
     pool.apply_async(work, args=(i,))
