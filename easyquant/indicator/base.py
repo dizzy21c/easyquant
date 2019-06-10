@@ -152,23 +152,34 @@ def COUNT(COND, N):
 
 
 def IF(COND, V1, V2):
-    if isinstance(V1, np.int64) or isinstance(V1, np.int):
+    # if isinstance(V1, np.int64) or isinstance(V1, np.int):
+    if isinstance(COND, np.bool): 
         if COND:
             return V1
         else:
             return V2
 
     var = np.where(COND, V1, V2)
-    return pd.Series(var, index=V1.index)
+    if isinstance(V1, pd.Series):
+        return pd.Series(var, index=V1.index)
+    else:
+        return pd.Series(var)
 
 
 def IFAND(COND1, COND2, V1, V2):
     var = np.where(np.logical_and(COND1,COND2), V1, V2)
-    return pd.Series(var, index=V1.index)
+    if isinstance(V1, pd.Series):
+        return pd.Series(var, index=V1.index)
+    else:
+        return pd.Series(var)
     
 def IFOR(COND1, COND2, V1, V2):
     var = np.where(np.logical_or(COND1,COND2), V1, V2)
-    return pd.Series(var, index=V1.index)
+    # return pd.Series(var, index=V1.index)
+    if isinstance(V1, pd.Series):
+        return pd.Series(var, index=V1.index)
+    else:
+        return pd.Series(var)
 
 
 def REF(Series, N):

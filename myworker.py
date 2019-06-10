@@ -12,15 +12,6 @@ import sys
 # choose = input('1: \n:')
 
 broker = None
-# if choose == '2':
-#     broker = 'yjb'
-# elif choose == '3':
-#     broker = 'yh'
-# elif choose == '4':
-#     broker = 'xq'
-# elif choose == '5':
-#     broker = 'gf'
-
 
 # def get_broker_need_data(choose_broker):
 #     need_data = input('请输入你的帐号配置文件路径(直接回车使用 %s.json)\n:' % choose_broker)
@@ -59,7 +50,7 @@ class WorkerEngine(SinaEngine):
 # log_type_choose = '2' #input('请输入 log 记录方式: 1: 显示在屏幕 2: 记录到指定文件\n: ')
 _logname="worker"
 _log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
-_log_filepath = 'logs/%s.txt' % _logname #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
+_log_filepath = 'logs/mainlog.txt' # % _logname #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
 log_handler = DefaultLogHandler(name=_logname, log_type=_log_type, filepath=_log_filepath)
 
 #client= pymongo.MongoClient('localhost',27017)

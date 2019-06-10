@@ -46,9 +46,9 @@ class IndexSinaEngine(SinaEngine):
 # log_type_choose = '2' #input('请输入 log 记录方式: 1: 显示在屏幕 2: 记录到指定文件\n: ')
 log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
 
-log_filepath = 'logs/log.txt' #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
+log_filepath = 'logs/mainlog.txt' #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
 
-log_handler = DefaultLogHandler(name='strategy', log_type=log_type, filepath=log_filepath)
+log_handler = DefaultLogHandler(name='real-data', log_type=log_type, filepath=log_filepath)
 
 #client= pymongo.MongoClient('localhost',27017)
 #db = client.quantaxis

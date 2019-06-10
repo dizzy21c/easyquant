@@ -23,6 +23,7 @@ class calcStrategy(Thread):
         #     self.log.info("data=%s" % self.data['name'])
         # self.log.info("code=%s" % self.code)
         self.redis.push_day_data(self.code, self.data, idx = self.idx)
+        # self.redis.push_cur_data(self.code, self.data, idx = self.idx)
 
 class Strategy(StrategyTemplate):
     name = 'save-index-data'
@@ -40,7 +41,7 @@ class Strategy(StrategyTemplate):
         if event.event_type != self.EventType:
             return
 
-        self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+        self.log.info('Strategy =%s, event_type=%s' %(self.name, event.event_type))
         
         threads = []
         rtn = {}

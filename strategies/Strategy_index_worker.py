@@ -1,6 +1,5 @@
 from easyquant import StrategyTemplate
-from easyquant import UdfIndexRisk
-from easyquant import UdfMarketStart
+from easyquant.indicator.udf_formula import *
 from easyquant import DataUtil
 from easyquant import DefaultLogHandler
 from easyquant import RedisIo
@@ -21,23 +20,24 @@ _log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
 _log_filepath = 'logs/%s.txt' % _logname #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
 log_handler = DefaultLogHandler(name=_logname, log_type=_log_type, filepath=_log_filepath)
 
-def do_calc(code, idx, pt, qd):
+def do_calc(code, idx):
     # log.info("do calc")
     # print("start do-calc")
     data_df = redis.get_day_df(code, idx=idx)
-    out = pt.check(data_df.close,data_df.high, data_df.low)
+    out = udf_dapan_risk(data_df)
     if out['flg']:
         # log.info(" data risk => code=%s , value= %s " %  (code, out))
         log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
+    # log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
 
     # self.log.info("begin calc %s" % self.code)
-    if qd.check(data_df.close):
+    if udf_hangqing_start(data_df):
         # log.info(" data market start=>code=%s" % code )
         log_handler.info(" data market start=>code=%s" % code )
 
 
 class Strategy(StrategyTemplate):
-    name = 'index-risk'
+    name = 'index-worker'
     EventType = 'worker'
     config_name = './config/index_list.json'
     idx=1
@@ -54,8 +54,8 @@ class Strategy(StrategyTemplate):
         self.code_list = []
         # self.pool = Pool(10)
         self.is_working = False
-        self.pt = UdfIndexRisk()
-        self.qd = UdfMarketStart()
+        # self.pt = UdfIndexRisk()
+        # self.qd = UdfMarketStart()
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
@@ -84,12 +84,12 @@ class Strategy(StrategyTemplate):
             return
         if event.event_type != self.EventType:
             return
-        self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
+        self.log.info('Strategy =%s, event_type=%s' %(self.name, event.event_type))
         pool = Pool(cpu_count())
         self.is_working = True
 
         for stcode in self.code_list:
-            pool.apply_async(do_calc, args=(stcode, self.idx, self.pt, self.qd))
+            pool.apply_async(do_calc, args=(stcode, self.idx))
 
         # i = 0
         # stcode = []
@@ -104,4 +104,4 @@ class Strategy(StrategyTemplate):
         pool.join()
         pool.terminate()
         self.is_working = False
-        self.log.info("do-working-end")
+        self.log.info("do-working-end name=%s" % self.name)
