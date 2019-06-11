@@ -28,8 +28,8 @@ def do_calc(code, idx):
     out = udf_dapan_risk(data_df)
     if out['flg']:
         log.info(" data risk => code=%s , value= %s " %  (code, out))
-    if code == "002007":
-        log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
+    # if code == "002007":
+    #     log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
 
     # self.log.info("begin calc %s" % self.code)
     if udf_hangqing_start(data_df):

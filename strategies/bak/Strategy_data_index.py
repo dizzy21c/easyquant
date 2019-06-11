@@ -39,6 +39,8 @@ class calcStrategy(Thread):
         # if self.code == "000001":
         #     self.log.info("index data=%s" % self.data)
         # self.log.info("code=%s" % self.code)
+        if self.data['open'] <= 0:
+            return
         self.redis.push_day_data(self.code, self.data, idx = 1)
 
         # # self.redis_push_day(self.data)

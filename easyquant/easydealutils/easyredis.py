@@ -83,7 +83,7 @@ class RedisIo(object):
         if list == []:
             return None
         else:
-            return self.list2ochlvd(list[0])[5]
+            return self.list2ochlvad(list[0])[6]
 
     def push_list_value(self, listname, value):
         #推入到队列
@@ -108,7 +108,7 @@ class RedisIo(object):
     def push_cur_data(self, code, data, idx=0, last_vol = 0):
         dtype = "cur"
         listname=self._get_key(code,dtype,idx)
-        value = self.dict2ochlvdt(data, last_vol)
+        value = self.dict2ochlvadt(data, last_vol)
         self.push_list_rvalue(listname, value)
     
     def push_day_data(self, code, data, idx=0):
@@ -166,22 +166,22 @@ class RedisIo(object):
     #     value = self.get_key_value(listname)
     #     return value is None or "1" == value
     
-    def dict2ochlvdt(self, data, last_vol = 0):
-        ##      O  C  H  L  V  D T
-        rtn = "%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol)
+    def dict2ochlvadt(self, data, last_vol = 0, last_amount = 0):
+        ##      O  C  H  L  V  A D T
+        rtn = "%s|%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol, data['amount'] - last_amount)
         rtn = "%s|%s|%s %s|%s" % (rtn, data['date'], data['date'],data['time'], time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         return rtn
 
-    def dict2ochlvd(self, data, last_vol = 0):
-        ##      O  C  H  L  V  #D#
-        rtn = "%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol)
+    def dict2ochlvad(self, data, last_vol = 0, last_amount = 0):
+        ##      O  C  H  L  V  A #D#
+        rtn = "%s|%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol, data['volume'] - last_amount)
         if 'time' in data.keys():
             rtn = "%s|%s|%s %s" % (rtn, data['date'], data['date'],data['time'])
         else:
             rtn = "%s|%s" % (rtn, data['date'])
         return rtn
 
-    def list2ochlvd(self, data):
+    def list2ochlvad(self, data):
         rtn = []
         for ns in data.split('|'):
             if "-" in ns: # 2019-12-31 [12:59:59]
@@ -190,9 +190,9 @@ class RedisIo(object):
                 rtn.append(float(ns))
         return rtn
 
-    def push_data_value(self, code, data, dtype='day', idx=0, last_vol = 0):
+    def push_data_value(self, code, data, dtype='day', idx=0, last_vol = 0, last_amount = 0):
         listname=self._get_key(code,dtype,idx)
-        value = self.dict2ochlvd(data, last_vol)
+        value = self.dict2ochlvad(data, last_vol, last_amount)
         self.push_list_rvalue(listname, value)
 
         #if idx==0:
@@ -254,21 +254,24 @@ class RedisIo(object):
 
     def get_data_df(self, code, dtype="day", startpos=0, endpos=-1, idx=0):
         data = self.get_data_value(code, dtype=dtype, startpos=startpos, endpos=endpos, idx=idx)
-        c = []
         o = []
-        v = []
+        c = []
         h = []
         l = []
+        v = []
+        a = []
         d = []
         for nd in data:
-            snd = self.list2ochlvd(nd)
+            snd = self.list2ochlvad(nd)
             o.append(snd[0])
             c.append(snd[1])
             h.append(snd[2])
             l.append(snd[3])
             v.append(snd[4])
-            d.append(snd[5])
-        return pd.DataFrame(data={'close':c, 'open':o, 'volume':v, 'high':h, 'low':l,'date':d})
+            a.append(snd[5])
+            d.append(snd[6])
+        # return pd.DataFrame(data={'close':c, 'open':o, 'vol':v, 'high':h, 'low':l,'amount':a, 'date':d})
+        return pd.DataFrame(data={'close':c, 'open':o, 'vol':v, 'high':h, 'low':l,'amount':a, 'date':d})
 
     def get_data_value(self, code, dtype='day', startpos=0, endpos=-1, idx=0):
         listname=self._get_key(code,dtype,idx)

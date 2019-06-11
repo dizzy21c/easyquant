@@ -72,7 +72,10 @@ def set_data(code, idx, st_date, end_date, last_date, fmt_str):
     return 0
 
   for _,row in new_df.iterrows():
-    data_dict={'code':code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol * 100, 'vol':row.vol * 100, 'now':row.close, 'turnover':row.vol * 100}
+    if row.vol <= 0:
+      continue
+    # data_dict={'code':code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol * 100, 'vol':row.vol * 100, 'now':row.close, 'turnover':row.vol * 100, 'amount':row.amount}
+    data_dict={'code':code, 'open':row.open, 'high':row.high, 'low':row.low, 'date':row.date, 'now':row.close, 'turnover':row.vol * 100, 'volume':row.amount}
     redis.push_day_data(row.code,data_dict,idx=idx)
   
   print(fmt_str)
@@ -184,7 +187,8 @@ def get_code_list(idx=0):
 
 def main(argv):
   redis = RedisIo('redis.conf')
-  st_date="1990-01-01"
+  # st_date="1990-01-01"
+  st_date="2013-01-01"
 
   pool_size = 8 # multiprocessing.cpu_count()
   pool = Pool(pool_size)

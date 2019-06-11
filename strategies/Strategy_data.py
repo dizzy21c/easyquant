@@ -24,6 +24,8 @@ class calcStrategy(Thread):
         # if self.code == "000004" or self.code == "000001":
         #     self.log.info("data=%s" % self.data['name'])
         # self.log.info("code=%s" % self.code)
+        if self.data['open'] <= 0:
+            return
         self.redis.push_day_data(self.code, self.data, idx = 0)
         # self.redis.push_cur_data(self.code, self.data, idx = 0)
 
