@@ -24,15 +24,12 @@ def do_calc(code, idx):
     # log.info("do calc")
     # print("start do-calc")
     data_df = redis.get_day_df(code, idx=idx)
-    out = udf_dapan_risk(data_df)
-    if out['flg']:
-        # log.info(" data risk => code=%s , value= %s " %  (code, out))
+    Flg, out = udf_dapan_risk(data_df)
+    if Flg: 
         log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
     # log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
 
-    # self.log.info("begin calc %s" % self.code)
     if udf_hangqing_start(data_df):
-        # log.info(" data market start=>code=%s" % code )
         log_handler.info(" data market start=>code=%s" % code )
 
 

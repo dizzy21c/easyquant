@@ -103,6 +103,17 @@ class MainEngine:
         #self.log.info('启动主引擎')
         self.log.info('start main engine')
 
+    def backtest(self):
+        # for aa in 
+        self.log.info("start backtest ... ")
+        for st in self.strategy_list:
+            self.log.info("st %s" % st.name)
+            self.event_engine.event_type = st.EventType
+            st.strategy(self.event_engine)
+            
+        
+        self.log.info("end backtest ... ")
+        
     def start(self):
         """启动主引擎"""
         self.event_engine.start()

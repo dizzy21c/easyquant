@@ -36,7 +36,7 @@ def ref_pct(A, B, N = 1):
 def udf_dapan_risk(data_df, N1=6, N2=12):
   dsize = len(data_df)
   if dsize <= N2:
-    return {'flg':0}
+    return (False, None)
 
   C = data_df.close
   H = data_df.high
@@ -79,7 +79,23 @@ def udf_dapan_risk(data_df, N1=6, N2=12):
 
   flg = flg + sell0
   
-  return {'flg':flg, 'buy50':buy50, 'buy30':buy30, 'sell5':sell5, 'sella':sell0}
+  return (flg > 0, {'buy50':buy50, 'buy30':buy30, 'sell5':sell5, 'sella':sell0})
+
+def udf_base_check(data_df, N1=70, N2=144, N3=250):
+  len_d = len(data_df)
+  N = MAX(MAX(N1,N2),N3)
+  if len_d < N:
+    return (False, None)
+
+  len_d -= 1
+  C = data_df.close
+  V = data_df.vol
+  
+  cn1 = C > MA(C, N1)
+  cn2 = C > MA(C, N2)
+  cn3 = C > MA(C, N3)
+  
+  return (cn1[len_d] or cn2[len_d] or cn3[len_d], {str(N1):cn1[len_d], str(N2):cn2[len_d], str(N3):cn3[len_d]})
 
 def udf_hangqing_start(data_df, snum=13, lnum=144):#, sd=20, ld=250):
   if len(data_df) < lnum:
