@@ -146,6 +146,27 @@ def udf_niu_check(data_df, n1 = 36, n2 = 30, n3 = 25):
   RTN=IFOR(JD, AAA, True, False)
   lrtn = len(RTN)
   return RTN[lrtn - 1] or RTN[lrtn - 2] or RTN[lrtn - 3]
+
+  
+def udf_top(data_df):
+  # {涨停板次日跳空高开的选股}
+  # REF(C,1)/REF(C,2)>1.098 AND REF(C,1)=REF(H,1) AND L>REF(H,1);
+  len_d = len(data_df)
+  if len_d < 2:
+    return False
+  
+  C=data_df.close
+  H=data_df.high
+  L=data_df.low
+  
+  A1=REF(C,1)/REF(C,2)>1.098
+  A2=REF(C,1)==REF(H,1)
+  A3=L>REF(H,1)
+  
+  A4 = IFAND(IFAND(A1,A2,True,False),A3,True,False)
+  return A4[len_d - 1]
+  
+  
   
   
 

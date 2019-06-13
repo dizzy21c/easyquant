@@ -101,9 +101,15 @@ class RedisIo(object):
         #获取队列长度
         return self.r.llen(listname)
 
-    def get_cur_data(self, code, data, idx=0, last_vol = 0):
-        # print("put cur data")
-        pass
+    def set_cur_data(self, code, data, idx=0):
+        dtype = "now"
+        listname=self._get_key(code,dtype,idx)
+        self.set_key_value(listname, data)
+
+    def get_cur_data(self, code, idx=0):
+        dtype = "now"
+        listname=self._get_key(code,dtype,idx)
+        return self.get_key_value(listname)
 
     def push_cur_data(self, code, data, idx=0, last_vol = 0):
         dtype = "cur"
@@ -235,6 +241,50 @@ class RedisIo(object):
     def _get_num_data(self, listname, startpos=0, endpos=-1):
         rl = self.pull_list_range(listname, startpos, endpos) 
         return [json.loads(v.decode()) for v in rl]
+
+    def _sdata2dictdata(self, sina_data):
+        str = sina_data.decode('utf8').replace('"','').replace('\'','"')
+        return json.loads(str)
+        
+    def get_day_ps(self, data_df, sina_data):
+        sdata = self._sdata2dictdata(sina_data)
+        def_ps = pd.Series()
+        if sdata['open'] <= 0:
+           return def_ps
+
+        len_d = len(data_df)
+        if len_d <= 0:
+           return def_ps
+        C = data_df.close.append(pd.Series([sdata['now']], indexs=[len_d]))
+        return C
+        
+
+    def get_day_ps_chl(self, data_df, sina_data):
+        sdata = self._sdata2dictdata(sina_data)
+        def_ps = pd.Series()
+        if sdata['open'] <= 0:
+           return def_ps, def_ps, def_ps
+
+        len_d = len(data_df)
+        if len_d <= 0:
+           return def_ps, def_ps, def_ps
+
+        C = data_df.close.append(pd.Series([sdata['now']], indexs=[len_d]))
+        H = data_df.high.append(pd.Series([sdata['high']], indexs=[len_d]))
+        L = data_df.low.append(pd.Series([sdata['low']], indexs=[len_d]))
+        return C,H,L
+
+    def get_day_ps_ochlva(self, data_df, sina_data):
+        C,H,L = self.get_day_ps_chl(data_df, sina_data)
+        len_d = len(C)
+        if len_d <= 0:
+           return C,C,C,C,C,C
+
+        sdata = self._sdata2dictdata(sina_data)
+        O = data_df.open.append(pd.Series([sdata['open']], indexs=[len_d]))
+        V = data_df.vol.append(pd.Series([sdata['turnover']], indexs=[len_d]))
+        A = data_df.amount.append(pd.Series([sdata['volume']], indexs=[len_d]))
+        return O,C,H,L,V,A
 
     def get_day_df(self, code, startpos=0, endpos=-1,idx=0):
         return self.get_data_df(code, dtype="day", startpos=startpos, endpos=endpos, idx=idx)

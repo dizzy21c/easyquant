@@ -5,9 +5,9 @@ from threading import Thread, current_thread, Lock
 import json
 import redis
 import time
-import pymongo
-import pandas as pd
-import talib
+# import pymongo
+# import pandas as pd
+# import talib
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, redis, idx):
@@ -18,16 +18,17 @@ class calcStrategy(Thread):
         self.redis = redis
         self.idx = idx
         # self.hdata = hdata
-        self.lasttm = ""
+        # self.lasttm = ""
 
     def run(self):
         # if self.code == "000004" or self.code == "000001":
         #     self.log.info("data=%s" % self.data['name'])
-        # self.log.info("code=%s" % self.code)
-        if self.data['open'] <= 0:
-            return
-        self.redis.push_day_data(self.code, self.data, idx = 0)
-        # self.redis.push_cur_data(self.code, self.data, idx = 0)
+        # self.log.info("code=%s, time=%s" % (self.code, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
+        self.redis.set_cur_data(self.code, self.data, idx = 0)
+        # if self.data['open'] <= 0:
+        #     return
+        # self.redis.push_day_data(self.code, self.data, idx = 0)
+        # # self.redis.push_cur_data(self.code, self.data, idx = 0)
 
 class Strategy(StrategyTemplate):
     name = 'save-data'

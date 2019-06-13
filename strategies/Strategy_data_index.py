@@ -1,13 +1,13 @@
 from easyquant import StrategyTemplate
 from easyquant import RedisIo
-from easyquant import DataUtil
+# from easyquant import DataUtil
 from threading import Thread, current_thread, Lock
 import json
 import redis
 import time
-import pymongo
-import pandas as pd
-import talib
+# import pymongo
+# import pandas as pd
+# import talib
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, redis, idx):
@@ -24,7 +24,8 @@ class calcStrategy(Thread):
         # self.log.info("code=%s" % self.code)
         # if self.data['open'] <= 0:
         #     return
-        self.redis.push_day_data(self.code, self.data, idx = self.idx)
+        self.redis.set_cur_data(self.code, self.data, idx = 1)
+        # self.redis.push_day_data(self.code, self.data, idx = self.idx)
         # self.redis.push_cur_data(self.code, self.data, idx = self.idx)
 
 class Strategy(StrategyTemplate):
@@ -37,7 +38,7 @@ class Strategy(StrategyTemplate):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
         self.log.info('init event:%s'% self.name)
         self.redis = RedisIo()
-        self.data_util = DataUtil()
+        # self.data_util = DataUtil()
 
     def strategy(self, event):
         if event.event_type != self.EventType:
