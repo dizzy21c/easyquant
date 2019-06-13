@@ -30,28 +30,24 @@ def do_init_data_buf(code, idx):
 
 def do_calc(code, idx):
     # print("data-buf size=%d " % len(data_bufo))
-    sdata = redis.get_cur_data(code, idx = idx)
+    sina_data = redis.get_cur_data(code, idx = idx)
     data_df = data_buf[code]
-
-    # print("data-buf size=%d " % len(st.code_list))
-    # d = redis.get_last_date(code, idx=idx)
-    # redis.get_data_value
+    O,C,H,L,V,A = redis.get_day_ps_ochlva(data_df, sina_data)
     
     # data_df = redis.get_day_df(code, idx=idx)
-    data_df = data_buf[code]
     # print("data-len=%d" % len(data_df))
     
-    baseFlg, _ = udf_base_check(data_df)
+    baseFlg, _ = udf_base_check(C,V)
     
-    Flg, out = udf_dapan_risk(data_df)
+    Flg, out = udf_dapan_risk(C,H,L)
     if baseFlg and Flg:
         log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
 
-    # if udf_hangqing_start(data_df):
-    #     log_handler.info(" data market start=>code=%s" % code )
+    if udf_hangqing_start(C):
+        log_handler.info(" data market start=>code=%s" % code )
 
-    # if udf_niu_check(data_df):
-    #     log_handler.info(" data niu-check => code=%s" % code )
+    if udf_niu_check(data_df):
+        log_handler.info(" data niu-check => code=%s" % code )
 
 
 

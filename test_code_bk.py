@@ -8,9 +8,12 @@ import pandas as pd
 import numpy as np
 
 rs=RedisIo()
-
-data_df = rs.get_day_df('002007')
+code = '002007'
+data_df = rs.get_day_df(code)
+sin_data = rs.get_cur_data(code)
 C=data_df.close
+
+rs.get_day_ps(data_df, sin_data)
 
 st_date="2019-06-05"
 end_date="2019-06-05"
