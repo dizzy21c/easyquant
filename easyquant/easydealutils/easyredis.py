@@ -113,7 +113,9 @@ class RedisIo(object):
     def get_cur_data(self, code, idx=0):
         dtype = "now"
         listname=self._get_key(code,dtype,idx)
-        return self.get_key_value(listname)
+        sina_data = self.get_key_value(listname)
+        str = sina_data.decode('utf8').replace('"','').replace('\'','"')
+        return json.loads(str)
 
     def push_cur_data(self, code, data, idx=0, last_vol = 0):
         dtype = "cur"
@@ -245,13 +247,22 @@ class RedisIo(object):
     def _get_num_data(self, listname, startpos=0, endpos=-1):
         rl = self.pull_list_range(listname, startpos, endpos) 
         return [json.loads(v.decode()) for v in rl]
-
-    def _sdata2dictdata(self, sina_data):
-        str = sina_data.decode('utf8').replace('"','').replace('\'','"')
-        return json.loads(str)
+    
+    def calc_pct(self, C, O):
+        ldf = len(C)
+        if ldf < 1:
+            return 0.0
         
-    def get_day_ps(self, data_df, sina_data):
-        sdata = self._sdata2dictdata(sina_data)
+        close = C.iloc[ldf - 1]
+        if ldf == 1:
+            pclose = O[0] 
+        else:
+            pclose = C.iloc[ldf - 2]
+        chgValue = close - pclose
+        pct = chgValue * 100 / pclose
+        return pct
+        
+    def get_day_ps(self, data_df, sdata):
         def_ps = pd.Series()
         if sdata['open'] <= 0:
            return def_ps
@@ -263,8 +274,7 @@ class RedisIo(object):
         return C
         
 
-    def get_day_ps_chl(self, data_df, sina_data):
-        sdata = self._sdata2dictdata(sina_data)
+    def get_day_ps_chl(self, data_df, sdata):
         def_ps = pd.Series()
         if sdata['open'] <= 0:
            return def_ps, def_ps, def_ps
@@ -278,13 +288,12 @@ class RedisIo(object):
         L = data_df.low.append(pd.Series([sdata['low']], index=[len_d]))
         return C,H,L
 
-    def get_day_ps_ochlva(self, data_df, sina_data):
-        C,H,L = self.get_day_ps_chl(data_df, sina_data)
+    def get_day_ps_ochlva(self, data_df, sdata):
+        C,H,L = self.get_day_ps_chl(data_df, sdata)
         len_d = len(C)
         if len_d <= 0:
            return C,C,C,C,C,C
 
-        sdata = self._sdata2dictdata(sina_data)
         O = data_df.open.append(pd.Series([sdata['open']], index=[len_d]))
         V = data_df.vol.append(pd.Series([sdata['turnover']], index=[len_d]))
         A = data_df.amount.append(pd.Series([sdata['volume']], index=[len_d]))

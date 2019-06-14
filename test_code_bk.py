@@ -25,4 +25,13 @@ tdx.QA_fetch_depth_market_data(code)
 tdx.QA_fetch_get_stock_latest(code)
 tdx.QA_fetch_get_stock_transaction_realtime(code)
 
+data_df = rs.get_day_df('002007')
+sdata = rs.get_cur_data('002007')
+code="002107"
+idx=0
+data_df = rs.get_day_df(code)
+sina_data = rs.get_cur_data(code, idx = idx)
+O,C,H,L,V,A = rs.get_day_ps_ochlva(data_df, sina_data)
+
+rs.calc_pct(H,O)
 

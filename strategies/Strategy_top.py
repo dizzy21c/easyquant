@@ -15,7 +15,7 @@ import time
 # import talib
 redis=RedisIo()
 data_buf = Manager().dict()
-_logname="do-worker"
+_logname="do-top-worker"
 _log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
 _log_filepath = 'logs/%s.txt' % _logname #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
 log_handler = DefaultLogHandler(name=_logname, log_type=_log_type, filepath=_log_filepath)
@@ -26,8 +26,6 @@ def do_init_data_buf(code, idx):
     data_buf[code] = data_df
     # print("do-init data data-buf size=%d " % len(data_buf))
     
-    
-
 def do_calc(code, idx, back_test):
     # print("data-buf size=%d " % len(data_bufo))
     # sina_data = redis.get_cur_data(code, idx = idx)
@@ -41,22 +39,19 @@ def do_calc(code, idx, back_test):
     # data_df = redis.get_day_df(code, idx=idx)
     # print("data-len=%d" % len(data_df))
     
-    baseFlg, _ = udf_base_check(C,V)
+    # baseFlg, _ = udf_base_check(C,V)
+    close = C.iloc[ldf - 1]
+    high = H.iloc[ldf - 1]
+    low = L.iloc[ldf - 1]
+    pct = redis.calc_pct(C,O) 
     
-    Flg, out = udf_dapan_risk(C,H,L)
-    if baseFlg and Flg:
-        log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
-
-    if udf_hangqing_start(C):
-        log_handler.info(" data market start=>code=%s" % code )
-
-    if udf_niu_check(data_df):
-        log_handler.info(" data niu-check => code=%s" % code )
-
+    Flg = udf_top(C,H,L)
+    if Flg:
+        log_handler.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( code, close, pct, high, low))
 
 
 class Strategy(StrategyTemplate):
-    name = 'data-worker'
+    name = 'top-worker'
     EventType = 'worker'
     config_name = './config/stock_list.json'
     idx=0

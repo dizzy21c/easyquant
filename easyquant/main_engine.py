@@ -107,9 +107,10 @@ class MainEngine:
         # for aa in 
         self.log.info("start backtest ... ")
         for st in self.strategy_list:
-            self.log.info("st %s" % st.name)
-            self.event_engine.event_type = st.EventType
-            st.strategy(self.event_engine)
+            # self.log.info("st %s" % st.name)
+            # self.event_engine.event_type = st.EventType
+            # st.strategy(self.event_engine)
+            st.backtest()
             
         
         self.log.info("end backtest ... ")

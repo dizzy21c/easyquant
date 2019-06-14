@@ -4,7 +4,7 @@ from easyquant import DataUtil
 from easyquant import DefaultLogHandler
 from easyquant import RedisIo
 from threading import Thread, current_thread, Lock, Event
-from multiprocessing import Process, Pool, cpu_count
+from multiprocessing import Process, Pool, cpu_count, Manager
 import json
 import redis
 import time
@@ -14,43 +14,52 @@ import time
 # import numpy as np
 # import talib
 redis=RedisIo()
-
+data_buf = Manager().dict()
+idx_data_buf = Manager().dict()
 _logname="do-position"
 _log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
 _log_filepath = 'logs/%s.txt' % _logname #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
 log_handler = DefaultLogHandler(name=_logname, log_type=_log_type, filepath=_log_filepath)
 
-def do_calc(code, idx):
-    # log.info("do calc")
-    # print("start do-calc")
+
+def do_init_data_buf(code, idx):
     data_df = redis.get_day_df(code, idx=idx)
-    # out = pt.check(data_df.close,data_df.high, data_df.low)
-    # if out['flg']:
-    #     # log.info(" data risk => code=%s , value= %s " %  (code, out))
-    #     log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
+    if idx == 0:
+        data_buf[code] = data_df
+    else:
+        idx_data_buf[code] = data_df
+        
+def do_calc(code, idx, back_test):
+    # print("data-buf size=%d " % len(data_bufo))
+    # sina_data = redis.get_cur_data(code, idx = idx)
+    if idx == 0:
+        data_df = data_buf[code]
+    else:
+        data_df = idx_data_buf[code]
 
-    # # self.log.info("begin calc %s" % self.code)
-    # if qd.check(data_df.close):
-    #     # log.info(" data market start=>code=%s" % code )
-    #     log_handler.info(" data market start=>code=%s" % code )
+    if back_test:
+        O,C,H,L,V,A = data_df.open, data_df.close, data_df.high, data_df.low, data_df.vol, data_df.amount
+    else:
+        sina_data = redis.get_cur_data(code, idx = idx)
+        O,C,H,L,V,A = redis.get_day_ps_ochlva(data_df, sina_data)
+    
+    # data_df = redis.get_day_df(code, idx=idx)
+    # print("data-len=%d" % len(data_df))
 
-    ldf = len(data_df)
-    if ldf < 2:
+    ldf = len(C)
+    if ldf < 1:
         return
     
-    close = data_df.close.iloc[ldf - 1]
-    high = data_df.high.iloc[ldf - 1]
-    low = data_df.low.iloc[ldf - 1]
-    pclose = data_df.close.iloc[ldf - 2]
-    chgValue = close - pclose
-    pct = chgValue * 100 / close
+    close = C.iloc[ldf - 1]
+    high = H.iloc[ldf - 1]
+    low = L.iloc[ldf - 1]
+    pct = redis.calc_pct(C,O)
 
     if idx == 0:
         if pct > 3 or (pct < 0 and pct > -12) :
             log_handler.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( code, close, pct, high, low))
     else:
         log_handler.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( code, close, pct, high, low))
-
 
 
 class Strategy(StrategyTemplate):
@@ -71,14 +80,20 @@ class Strategy(StrategyTemplate):
         self.code_list = []
         self.index_list = []
         # self.pool = Pool(10)
+        pool = Pool(cpu_count())
         self.is_working = False
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['chk']:
-                self.code_list.append(d['c'])
+                code = d['c']
+                self.code_list.append(code)
+                pool.apply_async(do_init_data_buf, args=(code, 0))
 
             for d in data['chk-index']:
-                self.index_list.append(d['c'])
+                code = d['c']
+                self.index_list.append(code)
+                pool.apply_async(do_init_data_buf, args=(code, 1))
+
         #         # data_df = self.rio.get_day_df(d, idx=self.idx)
         #         # data_map = data_util.df2series(data_df)
                 # self.hdata[d] = data_map
@@ -89,7 +104,9 @@ class Strategy(StrategyTemplate):
 
             # for t in self.threads:
             #     t.join()
-
+        pool.close()
+        pool.join()
+        pool.terminate()
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
 
     def loading(self, code, idx):
@@ -97,36 +114,47 @@ class Strategy(StrategyTemplate):
         data_map = self.data_util.df2series(data_df)
         # self.hdata[code] = data_map
 
+    def main_work(self, is_backtest=False):
+        pool = Pool(cpu_count())
+        self.is_working = True
+
+        for stcode in self.code_list:
+            pool.apply_async(do_calc, args=(stcode, 0, is_backtest))
+
+        for stcode in self.index_list:
+            pool.apply_async(do_calc, args=(stcode, 1, is_backtest))
+
+        pool.close()
+        pool.join()
+        pool.terminate()
+        self.is_working = False
+    
     def strategy(self, event):
         # self.log.info('\nStrategy =%s, event_type=%s' %(self.name, event.event_type))
         if self.is_working:
             return
         if event.event_type != self.EventType:
             return
+
         self.log.info('Strategy =%s, event_type=%s' %(self.name, event.event_type))
-        pool = Pool(cpu_count())
-        self.is_working = True
-        
-        # self.log.info("codes %s" % self.code_list)
-        # self.log.info("codes %s" % self.index_list)
-        for stcode in self.code_list:
-            pool.apply_async(do_calc, args=(stcode, 0))
+        self.main_work(False)
+        # pool = Pool(cpu_count())
+        # self.is_working = True
 
-        for stcode in self.index_list:
-            pool.apply_async(do_calc, args=(stcode, 1))
+        # for stcode in self.code_list:
+        #     pool.apply_async(do_calc, args=(stcode, self.idx))
 
-
-        # i = 0
-        # stcode = []
-        # code_len = len(self.code_list)
-        # while i < code_len:
-        #     stcode.append(self.code_list[i])
-        #     if i % 10 == 0 or i == code_len - 1:
-        #         pool.apply_async(do_calc, args=(stcode, self.idx, self.pt, self.qd))
-        #         stcode = []
-        #     i += 1
-        pool.close()
-        pool.join()
-        pool.terminate()
-        self.is_working = False
+        # # i = 0
+        # # stcode = []
+        # # code_len = len(self.code_list)
+        # # while i < code_len:
+        # #     stcode.append(self.code_list[i])
+        # #     if i % 10 == 0 or i == code_len - 1:
+        # #         pool.apply_async(do_calc, args=(stcode, self.idx, self.pt, self.qd))
+        # #         stcode = []
+        # #     i += 1
+        # pool.close()
+        # pool.join()
+        # pool.terminate()
+        # self.is_working = False
         self.log.info("do-working-end name=%s" % self.name)

@@ -18,7 +18,14 @@ class StrategyTemplate:
         # 进行相关的初始化操作
         pass
 
+    def main_work(self, is_backtest = False):
+        pass
+
+    def backtest(self):
+        self.main_work(True)
+
     def strategy(self, event):
+        ## self.main_work()
         """:param event event.data 为所有股票的信息，结构如下
         {'162411':
         {'ask1': '0.493',
