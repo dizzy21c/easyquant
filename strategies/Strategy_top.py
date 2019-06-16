@@ -38,6 +38,9 @@ def do_calc(code, idx, back_test):
     
     # data_df = redis.get_day_df(code, idx=idx)
     # print("data-len=%d" % len(data_df))
+    ldf = len(C)
+    if ldf < 1:
+        return
     
     # baseFlg, _ = udf_base_check(C,V)
     close = C.iloc[ldf - 1]

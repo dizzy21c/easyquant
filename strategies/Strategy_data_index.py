@@ -47,7 +47,7 @@ class Strategy(StrategyTemplate):
         self.log.info('Strategy =%s, event_type=%s' %(self.name, event.event_type))
         
         threads = []
-        rtn = {}
+        # rtn = {}
         for stcode in event.data:
             stdata= event.data[stcode]
             # rtn=self.data_util.day_summary(data=stdata,rtn=rtn)

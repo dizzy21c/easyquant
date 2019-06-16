@@ -50,7 +50,7 @@ def do_calc(code, idx, back_test):
     if udf_hangqing_start(C):
         log_handler.info(" data market start=>code=%s" % code )
 
-    if udf_niu_check(data_df):
+    if udf_niu_check(C,H,L,V,A):
         log_handler.info(" data niu-check => code=%s" % code )
 
 
