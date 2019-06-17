@@ -56,7 +56,7 @@ def do_calc(code, idx, back_test):
     pct = redis.calc_pct(C,O)
 
     if idx == 0:
-        if pct > 3 or (pct < 0 and pct > -12) :
+        if pct > 3 or (pct < 0 and pct > -99) :
             log_handler.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( code, close, pct, high, low))
     else:
         log_handler.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( code, close, pct, high, low))

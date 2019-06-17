@@ -6,4 +6,5 @@ cd /home/zhangjx/backup/bk/easyquant
 /home/zhangjx/anaconda3/bin/python myworker.py data-worker &
 /home/zhangjx/anaconda3/bin/python myworker.py index-worker &
 /home/zhangjx/anaconda3/bin/python myworker.py position-worker &
+/home/zhangjx/anaconda3/bin/python myworker.py top-worker &
 
