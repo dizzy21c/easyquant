@@ -184,6 +184,18 @@ def udf_top(C,H,L):
   return A4[len_d - 1]
   
   
-  
-  
+def udf_top_last(C, PCT = 9.8, M = 5, N=30):
+  len_d = len(C) - 1
+  if len_d < N:
+    return False
 
+  rtn = False
+  if M <= 0:
+    M = 5
+  for i in range(0, M):
+    A = (REF(C,i) - REF(C,i+1)) * 100 /REF(C,i+1) > PCT
+    if A[len(A)-1]:
+      rtn = True
+      break
+    
+  return rtn

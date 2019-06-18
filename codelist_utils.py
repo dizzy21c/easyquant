@@ -5,6 +5,10 @@ import re
 import xlrd
 import requests
 from easyquant import QATdx as tdx
+from easyquant.indicator.udf_formula import *
+from easyquant import RedisIo
+from multiprocessing import Process, Pool, cpu_count, Manager
+import click
 
 STOCK_CODE_PATH = "config/stock_codes.conf"
 
@@ -148,6 +152,48 @@ def get_stock_codes2():
 def stock_code_path(fileName):
     return os.path.join(os.path.dirname(__file__), "config", fileName)
 
+def do_calc_top_data(code):
+    # print("do-calc")
+    data_df = redis.get_day_df(code, idx=0)
+    C = data_df.close
+    if udf_top_last(C, M = 5, N = 30):
+        top_codes.append(code)
+
+def calc_top_codes(code_type):
+    # redis=RedisIo()
+    config_name = 'stock_list.json'
+    # codes=[]
+    pool = Pool(cpu_count())
+    with open(stock_code_path(config_name), 'r') as f:
+        data = json.load(f)
+        for code in data['code']:
+            pool.apply_async(do_calc_top_data, args=(code,))
+
+    pool.close()
+    pool.join()
+    pool.terminate()
+    
+    codes = []
+    for mc in top_codes: 
+        codes.append(mc)
+    with open(stock_code_path("top_list.json"), "w") as f:
+        f.write(json.dumps(dict(code=codes)))
+
+@click.command () 
+# @click.option ('--count', default=1, help = 'Number of greetings.') 
+# @click.option('--name', prompt = 'strategy name', help= 'test strategy name[data-worker]') 
+@click.option('--code-type', default = None, help= 'code type[top-codes]') 
+def main_func(code_type):
+    if code_type is None:
+        get_stock_codes()
+    elif code_type == "top-codes":
+        calc_top_codes(code_type)
+
+# redis=RedisIo()
+# top_codes = Manager().list()
 if __name__ == "__main__":
-    get_stock_codes()
+    redis=RedisIo()
+    top_codes = Manager().list()
+    # get_stock_codes()
+    main_func()
 

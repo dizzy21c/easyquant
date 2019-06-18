@@ -51,12 +51,14 @@ def do_calc(code, idx, back_test):
     Flg = udf_top(C,H,L)
     if Flg:
         log_handler.info("code=%s now=%6.2f pct=%6.2f h=%6.2f l=%6.2f" % ( code, close, pct, high, low))
+        if high > low:
+            redis.push_buy(code, sina_data)
 
 
 class Strategy(StrategyTemplate):
     name = 'top-worker'
     EventType = 'worker'
-    config_name = './config/stock_list.json'
+    config_name = './config/top_list.json'
     idx=0
 
     def __init__(self, user, log_handler, main_engine):
