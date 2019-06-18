@@ -183,6 +183,9 @@ def IFOR(COND1, COND2, V1, V2):
 
 
 def REF(Series, N):
+    if isinstance(Series[0], bool):
+        N = pd.Series(np.full(len(Series),N))
+        
     if isinstance(N, pd.Series):
         var = np.where(N > 0, Series[N.index - N], Series)
         return pd.Series(var, index=N.index)
