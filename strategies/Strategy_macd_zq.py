@@ -29,7 +29,7 @@ def do_init_data_buf(code, idx):
     
 
 def do_calc(code, idx, back_test):
-    # print("data-buf size=%d " % len(data_bufo))
+    # log_handler.info("calc begin=%s " % (code))
     # sina_data = redis.get_cur_data(code, idx = idx)
     data_df = data_buf[code]
     if back_test:
@@ -44,6 +44,7 @@ def do_calc(code, idx, back_test):
     out = udf_macd_zq(C,O,H,L)
     if out['flg']:
         log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
+    # log_handler.info("calc end=%s " % (code))
 
 class Strategy(StrategyTemplate):
     name = 'macdzq-worker'

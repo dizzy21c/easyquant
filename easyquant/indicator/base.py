@@ -199,7 +199,8 @@ def REF(Series, N):
         N = pd.Series(np.full(len(Series),N))
         
     if isinstance(N, pd.Series):
-        var = np.where(N > 0, Series[N.index - N], Series)
+        # var = np.where(N > 0, Series[N.index - N], Series)
+        var = np.where(N > 0, Series[IF(N.index - N > 0, N.index - N, 0)], Series)
         return pd.Series(var, index=N.index)
 
     var = Series.diff(N)
