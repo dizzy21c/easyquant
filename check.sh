@@ -2,6 +2,7 @@
 #work1=`ps -ef|grep mytest | grep -v grep | awk '{print $2}'`
 work1=`ps -ef|grep mydata | grep -v grep | awk '{print $2 "," }'`
 work2=`ps -ef|grep myworker | grep -v grep | awk '{print $2 "," }' | xargs ` 
+work2=`ps -ef|grep backtest| grep -v grep | awk '{print $2 "," }' | xargs ` 
 if [ "x$work1" == "x"  -a  "x$work2" == "x" ]; then
   exit 0
 fi

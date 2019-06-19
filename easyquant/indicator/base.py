@@ -99,6 +99,18 @@ def LLV(Series, N):
 
     return pd.Series(Series).rolling(N).min()
 
+def SUMS(Series, NS):
+    cond=pd.Series(np.zeros(len(NS), dtype = float))
+    t_sum = 0.0
+    for idx in cond.index:
+        N = NS[idx]
+        if N > 0:
+            t_sum += Series.iloc[idx]
+        else:
+            t_sum = 0.0
+            
+        cond.iloc[idx] = t_sum
+    return cond
 
 def SUM(Series, N):
     return pd.Series.rolling(Series, N).sum()
