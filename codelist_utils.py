@@ -152,14 +152,14 @@ def get_stock_codes2():
 def stock_code_path(fileName):
     return os.path.join(os.path.dirname(__file__), "config", fileName)
 
-def do_calc_top_data(code):
+def do_calc_top_data(code, last_day):
     # print("do-calc")
     data_df = redis.get_day_df(code, idx=0)
     C = data_df.close
-    if udf_top_last(C, M = 5, N = 30):
+    if udf_top_last(C, M = last_day, N = 30):
         top_codes.append(code)
 
-def calc_top_codes(code_type):
+def calc_top_codes(code_type, last_day):
     # redis=RedisIo()
     config_name = 'stock_list.json'
     # codes=[]
@@ -167,7 +167,7 @@ def calc_top_codes(code_type):
     with open(stock_code_path(config_name), 'r') as f:
         data = json.load(f)
         for code in data['code']:
-            pool.apply_async(do_calc_top_data, args=(code,))
+            pool.apply_async(do_calc_top_data, args=(code,last_day,))
 
     pool.close()
     pool.join()
@@ -181,13 +181,14 @@ def calc_top_codes(code_type):
 
 @click.command () 
 # @click.option ('--count', default=1, help = 'Number of greetings.') 
+@click.option ('--last-day', default=5, help = 'Number of greetings.') 
 # @click.option('--name', prompt = 'strategy name', help= 'test strategy name[data-worker]') 
 @click.option('--code-type', default = None, help= 'code type[top-codes]') 
-def main_func(code_type):
+def main_func(code_type, last_day):
     if code_type is None:
         get_stock_codes()
     elif code_type == "top-codes":
-        calc_top_codes(code_type)
+        calc_top_codes(code_type, last_day)
 
 # redis=RedisIo()
 # top_codes = Manager().list()

@@ -266,11 +266,26 @@ def BARSLAST(cond, yes=True):
         ## TODO
         len_c1 = len(cond)
         cond2=cond[cond==yes]
-        if len(cond2) > 0:
+        if len(cond2) > 1:
+            cond3=pd.Series(np.zeros(len_c1, dtype = int))
+            j = 1
+            for d in range(cond2.index[0], len(cond3.index)):
+                if d < cond2.index[j] and d >= cond2.index[j-1]:
+                    cond3[d] = cond2.index[j-1]
+                else:
+                    j += 1
+                    if j < len(cond2):
+                        cond3.iloc[d] = cond2.index[j-1]
+                    else:
+                        j -= 1
+                        cond3.iloc[d] = cond2.index[j]
+            
             # var1 = len_c1 - (len_c1 - cond2.index[-1])
             # var2 = np.arange(len_c1) - var1
             # var = np.where(var2 < 0, 0, var2)
-            var = np.where(cond.index.values-cond2.index[-1]>=0, cond.index.values-cond2.index[-1],cond.index.values-cond2.index[-2] )
+            # var = np.where(cond.index.values-cond2.index[-1]>=0, cond.index.values-cond2.index[-1],cond.index.values-cond2.index[-2] )
+            var = np.where(cond.index - cond3 > 0, cond.index - cond3, 0)
+
             return pd.Series(var)
             
         return pd.Series(np.zeros(len_c1, dtype = int))
