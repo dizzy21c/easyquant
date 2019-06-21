@@ -27,6 +27,8 @@ from functools import reduce
 import math
 import numpy as np
 import pandas as pd
+from ctypes import * 
+lib  = cdll.LoadLibrary('easyquant/indicator/talib_ext/talib_ext.so')
 
 
 """
@@ -100,17 +102,18 @@ def LLV(Series, N):
     return pd.Series(Series).rolling(N).min()
 
 def SUMS(Series, NS):
-    cond=pd.Series(np.zeros(len(NS), dtype = float))
-    t_sum = 0.0
-    for idx in cond.index:
-        N = NS[idx]
-        if N > 0:
-            t_sum += Series.iloc[idx]
-        else:
-            t_sum = 0.0
-            
-        cond.iloc[idx] = t_sum
-    return cond
+    ncount = len(NS)
+    tf_p=c_float * ncount
+    np_OUT =tf_p(0)
+    na_Series=np.asarray(Series).astype(np.float32)
+    na_NS=np.asarray(NS).astype(np.int32)
+    
+    np_S=cast(na_Series.ctypes.data, POINTER(c_float))
+    np_N=cast(na_NS.ctypes.data, POINTER(c_int))
+    
+    lib.Sum(ncount, np_OUT, np_S, np_N)
+    
+    return pd.Series(np.asarray(np_OUT))
 
 def SUM(Series, N):
     return pd.Series.rolling(Series, N).sum()
