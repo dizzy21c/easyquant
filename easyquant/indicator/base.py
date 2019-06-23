@@ -111,7 +111,7 @@ def SUMS(Series, NS):
     np_S=cast(na_Series.ctypes.data, POINTER(c_float))
     np_N=cast(na_NS.ctypes.data, POINTER(c_int))
     
-    lib.Sum(ncount, np_OUT, np_S, np_N)
+    lib.sum(ncount, np_OUT, np_S, np_N)
     
     return pd.Series(np.asarray(np_OUT))
 
