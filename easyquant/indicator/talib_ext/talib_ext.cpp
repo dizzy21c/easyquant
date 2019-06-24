@@ -20,7 +20,22 @@ void sum_list(int nCount, float *pOut, float *pData, int *pNum)
   }
 }
 
-// 化简函数（至少5根K线完成一笔）
+void barslast_list(int nCount, int *pOut, float *pData, int pNum)
+{
+  int t_sum = 0.0;
+
+  for (int i = 0; i < nCount; i++)
+  {
+    if (pData[i] > pNum) {
+      t_sum += 1;
+    } else {
+      t_sum = 0;
+    }
+
+    pOut[i] = t_sum;
+  }
+}
+
 int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
 {
   int nSpan = 0;
@@ -188,7 +203,7 @@ void sum(int nCount, float *pfOut, float *pfIn, int *piIn)
   sum_list(nCount, pfOut, pfIn, piIn);
 }
 
-void barslast(int nCount, float *pfOut, float *pfIn, int *piIn)
+void barslast(int nCount, int *piOut, float *pfIn, int iIn)
 {
-  sum_list(nCount, pfOut, pfIn, piIn);
+  barslast_list(nCount, piOut, pfIn, iIn);
 }

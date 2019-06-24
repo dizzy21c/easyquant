@@ -29,7 +29,7 @@ extern "C" {
   // DLL_PUBLIC void Func1(int nCount, float *pOut, float *pHigh, float *pLow, float *pIgnore);
   DLL_PUBLIC void sum(int nCount, float *pfOut, float *pfIn, int *piIn2);
 
-  DLL_PUBLIC void barslast(int nCount, float *pfOut, float *pfIn, int *piIn2);
+  DLL_PUBLIC void barslast(int nCount, int *piOut, float *pfIn, int iIn2);
 
     // subBuf* subBuf_new(){ return new subBuf(); }
     // int subBuf_sub(subBuf* subfuf, char* data, int num, char* outData){ subfuf->cursubBuf(data, num, outData); }
