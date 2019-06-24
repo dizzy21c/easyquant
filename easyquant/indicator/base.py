@@ -28,7 +28,8 @@ import math
 import numpy as np
 import pandas as pd
 from ctypes import * 
-lib  = cdll.LoadLibrary('easyquant/indicator/talib_ext/talib_ext.so')
+import os
+lib  = cdll.LoadLibrary("%s/%s" % (os.path.abspath("."), "talib_ext.so"))
 
 
 """

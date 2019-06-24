@@ -1,160 +1,156 @@
-[2019-06-19 21:22:46.865399] INFO: do-macd-zq:  data risk => code=600038 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:22:52.103849] INFO: do-macd-zq:  data risk => code=600073 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:22:53.120479] INFO: do-macd-zq:  data risk => code=600081 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:22:53.750344] INFO: do-macd-zq:  data risk => code=600083 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:22:53.777475] INFO: do-macd-zq:  data risk => code=600082 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:22:55.809009] INFO: do-macd-zq:  data risk => code=600096 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:22:59.454861] INFO: do-macd-zq:  data risk => code=600111 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:23:06.639449] INFO: do-macd-zq:  data risk => code=600136 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:23:36.668324] INFO: do-macd-zq:  data risk => code=600238 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:23:47.420478] INFO: do-macd-zq:  data risk => code=600278 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:23:47.936661] INFO: do-macd-zq:  data risk => code=600281 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:23:50.120211] INFO: do-macd-zq:  data risk => code=600287 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:03.702299] INFO: do-macd-zq:  data risk => code=600332 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:06.096040] INFO: do-macd-zq:  data risk => code=600346 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:11.370012] INFO: do-macd-zq:  data risk => code=600361 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:11.805953] INFO: do-macd-zq:  data risk => code=600366 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 1.0} 
-[2019-06-19 21:24:14.455674] INFO: do-macd-zq:  data risk => code=600372 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:34.423855] INFO: do-macd-zq:  data risk => code=600461 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:42.334793] INFO: do-macd-zq:  data risk => code=600493 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:47.724257] INFO: do-macd-zq:  data risk => code=600512 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:49.988277] INFO: do-macd-zq:  data risk => code=600517 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:24:55.247972] INFO: do-macd-zq:  data risk => code=600535 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:25:07.745893] INFO: do-macd-zq:  data risk => code=600590 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:25:10.441023] INFO: do-macd-zq:  data risk => code=600602 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:25:16.338564] INFO: do-macd-zq:  data risk => code=600640 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:25:39.370849] INFO: do-macd-zq:  data risk => code=600747 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:25:43.191293] INFO: do-macd-zq:  data risk => code=600760 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:25:48.548190] INFO: do-macd-zq:  data risk => code=600776 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:25:50.834461] INFO: do-macd-zq:  data risk => code=600781 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:25:52.491281] INFO: do-macd-zq:  data risk => code=600789 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 1.0} 
-[2019-06-19 21:26:08.788184] INFO: do-macd-zq:  data risk => code=600835 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:26:15.519010] INFO: do-macd-zq:  data risk => code=600860 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:26:18.184232] INFO: do-macd-zq:  data risk => code=600867 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:26:43.818163] INFO: do-macd-zq:  data risk => code=601003 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:26:51.460851] INFO: do-macd-zq:  data risk => code=601100 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:26:53.880591] INFO: do-macd-zq:  data risk => code=601163 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:26:57.476138] INFO: do-macd-zq:  data risk => code=601225 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:26:58.236589] INFO: do-macd-zq:  data risk => code=601231 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:08.974254] INFO: do-macd-zq:  data risk => code=601777 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:14.744257] INFO: do-macd-zq:  data risk => code=601966 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:16.312510] INFO: do-macd-zq:  data risk => code=601988 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:19.521254] INFO: do-macd-zq:  data risk => code=603010 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:23.974339] INFO: do-macd-zq:  data risk => code=603033 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:30.336613] INFO: do-macd-zq:  data risk => code=603101 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:32.481900] INFO: do-macd-zq:  data risk => code=603118 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:32.756728] INFO: do-macd-zq:  data risk => code=603129 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:34.915760] INFO: do-macd-zq:  data risk => code=603160 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:36.974498] INFO: do-macd-zq:  data risk => code=603183 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:27:54.621270] INFO: do-macd-zq:  data risk => code=603444 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:03.378820] INFO: do-macd-zq:  data risk => code=603600 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:08.512181] INFO: do-macd-zq:  data risk => code=603658 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:14.879527] INFO: do-macd-zq:  data risk => code=603730 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:20.446009] INFO: do-macd-zq:  data risk => code=603806 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:20.617836] INFO: do-macd-zq:  data risk => code=603817 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:25.141954] INFO: do-macd-zq:  data risk => code=603877 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:25.671418] INFO: do-macd-zq:  data risk => code=603882 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:27.153891] INFO: do-macd-zq:  data risk => code=603896 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:31.365226] INFO: do-macd-zq:  data risk => code=603967 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:31.612493] INFO: do-macd-zq:  data risk => code=603963 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:35.095366] INFO: do-macd-zq:  data risk => code=603989 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:44.290014] INFO: do-macd-zq:  data risk => code=000028 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:28:55.869590] INFO: do-macd-zq:  data risk => code=000078 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:29:00.326743] INFO: do-macd-zq:  data risk => code=000159 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:29:02.698503] INFO: do-macd-zq:  data risk => code=000403 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:29:05.667403] INFO: do-macd-zq:  data risk => code=000411 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:29:12.089812] INFO: do-macd-zq:  data risk => code=000503 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:29:17.565382] INFO: do-macd-zq:  data risk => code=000523 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:29:24.334605] INFO: do-macd-zq:  data risk => code=000546 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:29:38.070552] INFO: do-macd-zq:  data risk => code=000652 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:29:52.400850] INFO: do-macd-zq:  data risk => code=000738 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:03.451923] INFO: do-macd-zq:  data risk => code=000796 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:08.013352] INFO: do-macd-zq:  data risk => code=000811 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:10.683287] INFO: do-macd-zq:  data risk => code=000821 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:19.575467] INFO: do-macd-zq:  data risk => code=000863 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:27.204963] INFO: do-macd-zq:  data risk => code=000900 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:35.548664] INFO: do-macd-zq:  data risk => code=000929 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:43.493903] INFO: do-macd-zq:  data risk => code=000963 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:44.478701] INFO: do-macd-zq:  data risk => code=000969 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:30:55.185882] INFO: do-macd-zq:  data risk => code=300003 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:31:01.447843] INFO: do-macd-zq:  data risk => code=300023 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:31:05.618117] INFO: do-macd-zq:  data risk => code=300035 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:31:16.446884] INFO: do-macd-zq:  data risk => code=300069 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 1.0} 
-[2019-06-19 21:31:47.587500] INFO: do-macd-zq:  data risk => code=300166 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:31:53.750965] INFO: do-macd-zq:  data risk => code=300183 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:01.058426] INFO: do-macd-zq:  data risk => code=300206 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:05.842717] INFO: do-macd-zq:  data risk => code=300218 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:06.778024] INFO: do-macd-zq:  data risk => code=300225 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:19.449538] INFO: do-macd-zq:  data risk => code=300262 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:29.946202] INFO: do-macd-zq:  data risk => code=300298 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:31.737436] INFO: do-macd-zq:  data risk => code=300308 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:35.093975] INFO: do-macd-zq:  data risk => code=300327 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:40.716965] INFO: do-macd-zq:  data risk => code=300356 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:45.999977] INFO: do-macd-zq:  data risk => code=300396 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:47.861903] INFO: do-macd-zq:  data risk => code=300408 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:49.061295] INFO: do-macd-zq:  data risk => code=300418 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:50.129643] INFO: do-macd-zq:  data risk => code=300426 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:53.745926] INFO: do-macd-zq:  data risk => code=300452 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:53.974605] INFO: do-macd-zq:  data risk => code=300455 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:32:56.960529] INFO: do-macd-zq:  data risk => code=300471 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:07.351519] INFO: do-macd-zq:  data risk => code=300525 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:10.620878] INFO: do-macd-zq:  data risk => code=300545 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:12.787441] INFO: do-macd-zq:  data risk => code=300558 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:13.233320] INFO: do-macd-zq:  data risk => code=300561 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:25.709641] INFO: do-macd-zq:  data risk => code=300652 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:26.567116] INFO: do-macd-zq:  data risk => code=300659 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 1.0} 
-[2019-06-19 21:33:29.702407] INFO: do-macd-zq:  data risk => code=300684 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:29.956108] INFO: do-macd-zq:  data risk => code=300687 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:36.288091] INFO: do-macd-zq:  data risk => code=300762 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:36.363849] INFO: do-macd-zq:  data risk => code=300766 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:36.543417] INFO: do-macd-zq:  data risk => code=300771 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:36.545196] INFO: do-macd-zq:  data risk => code=300773 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:39.275533] INFO: do-macd-zq:  data risk => code=002003 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:33:55.021472] INFO: do-macd-zq:  data risk => code=002052 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:34:14.557192] INFO: do-macd-zq:  data risk => code=002108 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:34:20.065967] INFO: do-macd-zq:  data risk => code=002126 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:34:22.834478] INFO: do-macd-zq:  data risk => code=002135 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:34:31.129813] INFO: do-macd-zq:  data risk => code=002157 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:34:33.833383] INFO: do-macd-zq:  data risk => code=002166 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:34:42.017126] INFO: do-macd-zq:  data risk => code=002190 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:34:50.285541] INFO: do-macd-zq:  data risk => code=002214 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:34:57.982808] INFO: do-macd-zq:  data risk => code=002235 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:01.386840] INFO: do-macd-zq:  data risk => code=002245 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:04.329508] INFO: do-macd-zq:  data risk => code=002255 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:06.949838] INFO: do-macd-zq:  data risk => code=002262 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:11.801626] INFO: do-macd-zq:  data risk => code=002280 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:14.139588] INFO: do-macd-zq:  data risk => code=002286 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:16.514119] INFO: do-macd-zq:  data risk => code=002291 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:22.128144] INFO: do-macd-zq:  data risk => code=002309 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:31.157902] INFO: do-macd-zq:  data risk => code=002337 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:35.351609] INFO: do-macd-zq:  data risk => code=002348 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:39.003644] INFO: do-macd-zq:  data risk => code=002361 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:41.775276] INFO: do-macd-zq:  data risk => code=002367 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:45.850619] INFO: do-macd-zq:  data risk => code=002380 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:52.833685] INFO: do-macd-zq:  data risk => code=002402 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:35:56.134347] INFO: do-macd-zq:  data risk => code=002412 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:05.352117] INFO: do-macd-zq:  data risk => code=002438 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:05.593980] INFO: do-macd-zq:  data risk => code=002440 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:05.673668] INFO: do-macd-zq:  data risk => code=002442 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:11.316469] INFO: do-macd-zq:  data risk => code=002458 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:12.684988] INFO: do-macd-zq:  data risk => code=002461 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:24.944661] INFO: do-macd-zq:  data risk => code=002496 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:29.294984] INFO: do-macd-zq:  data risk => code=002512 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:30.249481] INFO: do-macd-zq:  data risk => code=002515 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:32.354182] INFO: do-macd-zq:  data risk => code=002520 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:36:45.269201] INFO: do-macd-zq:  data risk => code=002559 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:01.863666] INFO: do-macd-zq:  data risk => code=002654 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:02.027547] INFO: do-macd-zq:  data risk => code=002655 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:03.416961] INFO: do-macd-zq:  data risk => code=002663 , value= {'flg': True, 'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:06.240525] INFO: do-macd-zq:  data risk => code=002674 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:07.275633] INFO: do-macd-zq:  data risk => code=002681 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:22.700806] INFO: do-macd-zq:  data risk => code=002750 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:25.591833] INFO: do-macd-zq:  data risk => code=002763 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:28.528015] INFO: do-macd-zq:  data risk => code=002777 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:30.500334] INFO: do-macd-zq:  data risk => code=002788 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:34.285704] INFO: do-macd-zq:  data risk => code=002810 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:38.089122] INFO: do-macd-zq:  data risk => code=002836 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:39.640962] INFO: do-macd-zq:  data risk => code=002849 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:45.744134] INFO: do-macd-zq:  data risk => code=002900 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:47.074991] INFO: do-macd-zq:  data risk => code=002913 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
-[2019-06-19 21:37:47.437780] INFO: do-macd-zq:  data risk => code=002917 , value= {'flg': True, 'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, 'DING_BEI_CI': 0.0} 
+ 	600038 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600073 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600081 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600083 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	600082 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600096 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600111 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600136 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600238 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600278 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600281 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600287 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600332 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600346 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600361 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600372 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	600461 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600493 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600512 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600517 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600535 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600590 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600602 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600640 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600747 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600760 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600776 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 0.0, } 
+ 	600781 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600835 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	600860 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	600867 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	601003 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	601100 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	601163 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	601225 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	601231 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	601777 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	601966 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	601988 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603010 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603033 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603101 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603118 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	603129 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603160 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	603183 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603444 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603600 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603658 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603730 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603806 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603817 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603877 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	603882 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603896 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603967 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	603963 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	603989 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	000028 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000078 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000159 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000403 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000411 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000503 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000523 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000546 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000652 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	000738 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	000796 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	000811 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000821 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000863 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	000900 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000929 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000963 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	000969 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	300003 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300023 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300035 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300166 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300183 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	300206 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300218 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300225 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300262 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300298 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300308 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300327 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	300356 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300396 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300408 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300418 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300426 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	300452 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300455 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	300471 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300525 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300545 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300558 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300561 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300652 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300684 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300687 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300762 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300766 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	300771 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	300773 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	002003 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002052 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002108 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002126 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	002135 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002157 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002166 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002190 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002214 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002235 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	002245 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002255 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002262 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002280 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	002286 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002291 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002309 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	002337 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	002348 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002361 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002367 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002380 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002402 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002412 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002438 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002440 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	002442 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002458 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002461 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	002496 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002512 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002515 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': True, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	002520 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	002559 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002654 , value= {'DI_JIN': False, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002655 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002663 , value= {'DI_JIN': False, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002674 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002681 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	002750 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002763 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002777 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002788 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002810 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002836 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 0.0, } 
+ 	002849 , value= {'DI_JIN': True, 'ER_JIN': False, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
+ 	002900 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	002913 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': True, 'DING_BEI_LI': False, 'SAN_JIN': True, 'DI_BEI_CI': 1.0, } 
+ 	002917 , value= {'DI_JIN': True, 'ER_JIN': True, 'DI_BEI_LI': False, 'DING_BEI_LI': False, 'SAN_JIN': False, 'DI_BEI_CI': 1.0, } 
