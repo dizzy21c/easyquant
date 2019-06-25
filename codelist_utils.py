@@ -183,7 +183,7 @@ def calc_top_codes(code_type, last_day):
 # @click.option ('--count', default=1, help = 'Number of greetings.') 
 @click.option ('--last-day', default=5, help = 'Number of greetings.') 
 # @click.option('--name', prompt = 'strategy name', help= 'test strategy name[data-worker]') 
-@click.option('--code-type', default = None, help= 'code type[top-codes]') 
+@click.option('--code-type', default = "top-codes", help= 'code type[top-codes]') 
 def main_func(code_type, last_day):
     if code_type is None:
         get_stock_codes()

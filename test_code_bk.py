@@ -16,10 +16,18 @@ C=data_df.close
 
 rs.get_day_ps(data_df, sin_data)
 
-st_date="2019-06-05"
+st_date="2019-06-05 14:30:00"
 end_date="2019-06-05"
 code="002107"
+min=5
 tdx.QA_fetch_get_stock_day(code, st_date,end_date)
+md5=tdx.QA_fetch_get_stock_min(code, st_date,end_date, min)
+
+row=md5.iloc[0]
+data_dict={'code':code, 'open':row.open, 'high':row.high, 'low':row.low, 'date':row.date, 'now':row.close, 'turnover':row.vol * 100, 'volume':row.amount, 'datetime':row.datetime}
+rs.push_min_data(row.code,data_dict,idx=0,min=min)
+
+
 
 tdx.QA_fetch_get_stock_realtime(code)
 tdx.QA_fetch_depth_market_data(code)

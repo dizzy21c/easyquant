@@ -67,16 +67,28 @@ class RedisIo(object):
         else:
             return value.decode()
 
+    def rpop_min_df(self, code, idx=0, freq=15):
+        dtype="m%d" % freq 
+        self.rpop(self._get_key(code, dtype=dtype, idx=idx))
+
     # def rpop_day_df(self, code, dtype="day", idx=0):
     def rpop_day_df(self, code, idx=0):
         dtype="day"
         self.rpop(self._get_key(code, dtype=dtype, idx=idx))
 
     def get_last_close(self, code, dtype="day", idx=0):
-        return self.get_last_data(code, vidx=1)
+        return self.get_last_data(code, vidx=1, dtype=dtype)
 
+    def get_last_day(self, code, idx=0):
+        dtype="day"
+        return self.get_last_data(code, vidx=6, dtype=dtype)
+    
+    def get_last_time(self, code, freq=15, idx=0):
+        dtype="m%d" % freq
+        return self.get_last_data(code, vidx=7, dtype=dtype)
+    
     def get_last_date(self, code, dtype="day", idx=0):
-        return self.get_last_data(code, vidx=6)
+        return self.get_last_data(code, vidx=6, dtype=dtype)
     
     def get_last_data(self, code, vidx=6, dtype="day", idx=0):
         list = self.get_data_value(code, dtype=dtype, startpos=-1, endpos=-1, idx=idx)
@@ -133,8 +145,17 @@ class RedisIo(object):
         dtype = "buy"
         self.push_data_value(code, data, dtype=dtype, idx=0)
 
+    def push_min_data(self, code, data, idx=0, freq=15):
+        last_date = self.get_last_time(code, freq=dtype, idx=idx)
+        # self.set_read_flg(code, value=0)
+        if last_date == data['date']:
+            self.rpop_min_df(code, idx=idx)
+
+        self.push_data_value(code, data, idx=idx, dtype=dtype)
+        # self.set_log_date(code, data, idx = idx)
+
     def push_day_data(self, code, data, idx=0):
-        last_date = self.get_last_date(code, idx=idx)
+        last_date = self.get_last_day(code, idx=idx)
         # self.set_read_flg(code, value=0)
         if last_date == data['date']:
             self.rpop_day_df(code, idx=idx)
@@ -154,7 +175,10 @@ class RedisIo(object):
         if 'time' in data.keys():
             rtn = "%s|%s|%s %s" % (rtn, data['date'], data['date'],data['time'])
         else:
-            rtn = "%s|%s" % (rtn, data['date'])
+        # elif 'datetime' in data.keys():
+            rtn = "%s|%s|%s" % (rtn, data['date'], data['datetime'])
+        # else:
+            # rtn = "%s|%s" % (rtn, data['date'])
         return rtn
 
     def list2ochlvad(self, data):

@@ -46,27 +46,37 @@ def convert(code, flg, st_date, col):
   dtd=col.find({'code':code,'date':{'$gt':st_date}})
   allpush(code, flg, dtd)
 
-def readTdx(code, st_date, end_date, idx=0, re = 3):
-  if idx == 0:
-    new_df = tdx.QA_fetch_get_stock_day(code, st_date,end_date)
+def readTdx(code, st_date, end_date, idx=0, re = 3, freq=-1):
+  if freq > 0:
+    if idx == 0:
+      new_df = tdx.QA_fetch_get_stock_min(code, st_date,end_date, freq)
+    else:
+      new_df = tdx.QA_fetch_get_index_min(code, st_date,end_date, freq)
   else:
-    new_df = tdx.QA_fetch_get_index_day(code, st_date,end_date)
+    if idx == 0:
+      new_df = tdx.QA_fetch_get_stock_day(code, st_date,end_date)
+    else:
+      new_df = tdx.QA_fetch_get_index_day(code, st_date,end_date)
 
   if new_df is None and re > 0:
-    return readTdx(code, st_date, end_date, idx, re - 1)
+    return readTdx(code, st_date, end_date, idx, re - 1, freq=freq)
 
   return new_df
 
 
-def set_data(code, idx, st_date, end_date, last_date, fmt_str):
-  tmp_date = redis.get_last_date(code, idx=idx)
+def set_data(code, idx, st_date, end_date, last_date, fmt_str, freq=-1):
+  if freq > 0:
+    tmp_date = redis.get_last_time(code, idx=idx)
+  else:
+    tmp_date = redis.get_last_day(code, idx=idx)
+    
   if tmp_date is not None:
     st_date = tmp_date
 
   if tmp_date == last_date:
     return 0
 
-  new_df = readTdx(code, st_date, end_date, idx)
+  new_df = readTdx(code, st_date, end_date, idx,freq=freq)
   if new_df is None:
     print("tdx code %s is None." % code)
     return 0
@@ -75,13 +85,18 @@ def set_data(code, idx, st_date, end_date, last_date, fmt_str):
     if row.vol <= 0:
       continue
     # data_dict={'code':code, 'open':row.open, 'close':row.close, 'high':row.high, 'low':row.low, 'date':row.date, 'volume':row.vol * 100, 'vol':row.vol * 100, 'now':row.close, 'turnover':row.vol * 100, 'amount':row.amount}
-    data_dict={'code':code, 'open':row.open, 'high':row.high, 'low':row.low, 'date':row.date, 'now':row.close, 'turnover':row.vol * 100, 'volume':row.amount}
-    redis.push_day_data(row.code,data_dict,idx=idx)
+    if freq < 0:
+      data_dict={'code':code, 'open':row.open, 'high':row.high, 'low':row.low, 'date':row.date, 'now':row.close, 'turnover':row.vol * 100, 'volume':row.amount, 'time':'00:00:00'}
+      redis.push_day_data(row.code,data_dict,idx=idx)
+    else:
+      data_dict={'code':code, 'open':row.open, 'high':row.high, 'low':row.low, 'date':row.date, 'now':row.close, 'turnover':row.vol * 100, 'volume':row.amount, 'datetime':row.datetime}
+      redis.push_min_data(row.code,data_dict,idx=idx,freq=freq)
+      
   
   print(fmt_str)
   return 1
 
-def data_conv(st_date, codes, idx=0, redis=redis, pool = None, end_date = "2020-12-31", last_date="2020-05-17"):
+def data_conv(st_date, codes, idx=0, freq=-1, pool = None, end_date = "2019-06-25", last_date="2020-12-31"):
   nc=len(codes)
   i = 0
   for x in codes:
@@ -91,9 +106,9 @@ def data_conv(st_date, codes, idx=0, redis=redis, pool = None, end_date = "2020-
 
     fmt_str = "read data : %d/%d => %5.2f" % (i, nc,  i / nc * 100 )
     if pool is None:
-      set_data(x, idx, st_date, end_date, last_date, fmt_str)
+      set_data(x, idx, st_date, end_date, last_date, fmt_str,freq)
     else:      
-      pool.apply_async(set_data, args=(x, idx, st_date, end_date, last_date, fmt_str))
+      pool.apply_async(set_data, args=(x, idx, st_date, end_date, last_date, fmt_str, freq))
 
     # pool.apply_async(work, args=(x,1,idx))
     # tmp_date = redis.get_last_date(x,idx=idx)
@@ -190,12 +205,16 @@ def main(argv):
   # st_date="1990-01-01"
   st_date="2013-01-01"
 
-  pool_size = 8 # multiprocessing.cpu_count()
+  pool_size = cpu_count()
   pool = Pool(pool_size)
   flg = 0
+  freq = -1
   l = len(argv)
   if l > 1:
     flg = int(argv[1])
+
+  if l > 2:
+    freq = int(argv[2])
 
   if flg > 2:
     pool = None
@@ -204,14 +223,14 @@ def main(argv):
   if flg == 1 or flg == 0:
     idx=0
     stock_list = get_code_list(idx)
-    data_conv(st_date, stock_list, pool=pool, idx=idx, redis=redis)
+    data_conv(st_date, stock_list, pool=pool, idx=idx, freq=freq)
     # pool.close()
     # pool.join()
 
   if flg == 2 or flg == 0:
     idx=1
     stock_list = get_code_list(idx)
-    data_conv(st_date, stock_list, pool=pool,idx=idx, redis=redis)
+    data_conv(st_date, stock_list, pool=pool,idx=idx, freq=freq)
 
   if pool is not None:
     pool.close()
@@ -224,20 +243,6 @@ def main(argv):
     # ri.set_key_value('test1', 1)
     # ri.push_list_value('test2', 1)
     # ri.push_list_value('test2', 2)
-def work(n,y,n1):
-    print('%s run' % os.getpid())   # 进程ID号
-    # time.sleep(random.random())
-    return n
-
-def main2(pool2):
-  pool = Pool(cpu_count())
-
-  for i in range(10):
-    pool.apply_async(work, args=(i,))
-
-
-  pool.close()
-  pool.join()
 
 if __name__ == '__main__':
   tmp=tdx.QA_fetch_get_stock_list()
