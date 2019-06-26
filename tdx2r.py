@@ -64,9 +64,9 @@ def readTdx(code, st_date, end_date, idx=0, re = 3, freq=-1):
   return new_df
 
 
-def set_data(code, idx, st_date, end_date, last_date, fmt_str, freq=-1):
+def set_data(code, idx, st_date, end_date, last_date, fmt_str, freq):
   if freq > 0:
-    tmp_date = redis.get_last_time(code, idx=idx)
+    tmp_date = redis.get_last_time(code, idx=idx, freq=freq)
   else:
     tmp_date = redis.get_last_day(code, idx=idx)
     
@@ -201,9 +201,9 @@ def get_code_list(idx=0):
   return stock_list
 
 def main(argv):
-  redis = RedisIo('redis.conf')
+  # redis = RedisIo('redis.conf')
   # st_date="1990-01-01"
-  st_date="2013-01-01"
+  st_date="2015-01-01"
 
   pool_size = cpu_count()
   pool = Pool(pool_size)
@@ -214,7 +214,12 @@ def main(argv):
     flg = int(argv[1])
 
   if l > 2:
+    st_date="2019-05-15"
     freq = int(argv[2])
+
+  if l > 3:
+    st_date = argv[3]
+    print(st_date)
 
   if flg > 2:
     pool = None

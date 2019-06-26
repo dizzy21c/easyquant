@@ -95,7 +95,7 @@ class RedisIo(object):
         if list == []:
             return None
         else:
-            return self.list2ochlvad(list[0])[vidx]
+            return self.list2ochlvadt(list[0])[vidx]
 
     def push_list_value(self, listname, value):
         #推入到队列
@@ -129,12 +129,6 @@ class RedisIo(object):
         str = sina_data.decode('utf8').replace('"','').replace('\'','"')
         return json.loads(str)
 
-    # def push_cur_data(self, code, data, idx=0, last_vol = 0):
-    #     dtype = "cur"
-    #     listname=self._get_key(code,dtype,idx)
-    #     value = self.dict2ochlvadt(data, last_vol)
-    #     self.push_list_rvalue(listname, value)
-    
     def push_buy(self, code, data):
         # dtype = "buy"
         lc = self.get_last_close(code)
@@ -146,12 +140,12 @@ class RedisIo(object):
         self.push_data_value(code, data, dtype=dtype, idx=0)
 
     def push_min_data(self, code, data, idx=0, freq=15):
-        last_date = self.get_last_time(code, freq=dtype, idx=idx)
+        last_date = self.get_last_time(code, freq=freq, idx=idx)
         # self.set_read_flg(code, value=0)
-        if last_date == data['date']:
+        if last_date == data['datetime']:
             self.rpop_min_df(code, idx=idx)
 
-        self.push_data_value(code, data, idx=idx, dtype=dtype)
+        self.push_data_value(code, data, idx=idx, dtype="m%d"%freq)
         # self.set_log_date(code, data, idx = idx)
 
     def push_day_data(self, code, data, idx=0):
@@ -163,13 +157,13 @@ class RedisIo(object):
         self.push_data_value(code, data, idx=idx)
         # self.set_log_date(code, data, idx = idx)
 
-    def dict2ochlvadt(self, data, last_vol = 0, last_amount = 0):
+    def dict2ochlvadtl(self, data, last_vol = 0, last_amount = 0):
         ##      O  C  H  L  V  A D T
         rtn = "%s|%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol, data['volume'] - last_amount)
         rtn = "%s|%s|%s %s|%s" % (rtn, data['date'], data['date'],data['time'], time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         return rtn
 
-    def dict2ochlvad(self, data, last_vol = 0, last_amount = 0):
+    def dict2ochlvadt(self, data, last_vol = 0, last_amount = 0):
         ##      O  C  H  L  V  A #D#
         rtn = "%s|%s|%s|%s|%s|%s" % (data['open'],data['now'],data['high'],data['low'],data['turnover'] / 100 - last_vol, data['volume'] - last_amount)
         if 'time' in data.keys():
@@ -181,7 +175,7 @@ class RedisIo(object):
             # rtn = "%s|%s" % (rtn, data['date'])
         return rtn
 
-    def list2ochlvad(self, data):
+    def list2ochlvadt(self, data):
         rtn = []
         for ns in data.split('|'):
             if "-" in ns: # 2019-12-31 [12:59:59]
@@ -192,12 +186,12 @@ class RedisIo(object):
 
     def push_data_value(self, code, data, dtype='day', idx=0, last_vol = 0, last_amount = 0):
         listname=self._get_key(code,dtype,idx)
-        value = self.dict2ochlvad(data, last_vol, last_amount)
+        value = self.dict2ochlvadt(data, last_vol, last_amount)
         self.push_list_rvalue(listname, value)
 
     def push_options_value(self, code, data, dtype='buy'):
         listname=self._get_key(code,dtype,0)
-        value = self.dict2ochlvadt(data, 0, 0)
+        value = self.dict2ochlvadtl(data, 0, 0)
         self.push_list_rvalue(listname, value)
 
     
@@ -266,6 +260,9 @@ class RedisIo(object):
         A = data_df.amount.append(pd.Series([sdata['volume']], index=[len_d]))
         return O,C,H,L,V,A
 
+    def get_min_df(self, code, startpos=0, endpos=-1,idx=0, freq=15):
+        return self.get_data_df(code, dtype="m%d"%freq, startpos=startpos, endpos=endpos, idx=idx)
+
     def get_day_df(self, code, startpos=0, endpos=-1,idx=0):
         return self.get_data_df(code, dtype="day", startpos=startpos, endpos=endpos, idx=idx)
 
@@ -278,8 +275,9 @@ class RedisIo(object):
         v = []
         a = []
         d = []
+        t = []
         for nd in data:
-            snd = self.list2ochlvad(nd)
+            snd = self.list2ochlvadt(nd)
             o.append(snd[0])
             c.append(snd[1])
             h.append(snd[2])
@@ -287,8 +285,10 @@ class RedisIo(object):
             v.append(snd[4])
             a.append(snd[5])
             d.append(snd[6])
+            t.append(snd[7])
         # return pd.DataFrame(data={'close':c, 'open':o, 'vol':v, 'high':h, 'low':l,'amount':a, 'date':d})
-        return pd.DataFrame(data={'close':c, 'open':o, 'vol':v, 'high':h, 'low':l,'amount':a, 'date':d})
+        # return pd.DataFrame(data={'close':c, 'open':o, 'vol':v, 'high':h, 'low':l,'amount':a, 'date':d, 'datetime':t})
+        return pd.DataFrame(data={'close':c, 'open':o, 'vol':v, 'high':h, 'low':l,'amount':a, 'date':t})
 
     def get_data_value(self, code, dtype='day', startpos=0, endpos=-1, idx=0):
         listname=self._get_key(code,dtype,idx)
