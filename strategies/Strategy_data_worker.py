@@ -53,6 +53,9 @@ def do_calc(code, idx, back_test):
     if udf_niu_check(C,H,L,V,A):
         log_handler.info(" data niu-check => code=%s" % code )
 
+    if udf_yao_check(C,O,H,L,V):
+        log_handler.info(" data niu-check => code=%s" % code )
+
 
 
 class Strategy(StrategyTemplate):
