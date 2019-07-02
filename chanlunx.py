@@ -44,6 +44,6 @@ lib.Func5(ncount, DUANZG2, DUAN2, H, L)
 lib.Func6(ncount, DUANZD2, DUAN2, H, L)
 lib.Func7(ncount, DUANSE2, DUAN2, H, L)
 
-for i in range(0,ncount):
-  print("f1=%d f2=%d d1=%d d2=%d zg1=%6.2f zd1=%6.2f se1=%6.2f zg2=%6.2f zd2=%6.2f se2=%6.2f" % \
-    (FRAC1[i], FRAC2[i], DUAN1[i], DUAN2[i],DUANZG1[i],DUANZD1[i],DUANSE1[i],DUANZG2[i],DUANZD2[i],DUANSE2[i]))
+# for i in range(0,ncount):
+#   print("f1=%d f2=%d d1=%d d2=%d zg1=%6.2f zd1=%6.2f se1=%6.2f zg2=%6.2f zd2=%6.2f se2=%6.2f" % \
+#     (FRAC1[i], FRAC2[i], DUAN1[i], DUAN2[i],DUANZG1[i],DUANZD1[i],DUANSE1[i],DUANZG2[i],DUANZD2[i],DUANSE2[i]))
