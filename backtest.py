@@ -23,7 +23,8 @@ class WorkerEngine(SinaEngine):
 @click.command () 
 # @click.option ('--count', default=1, help = 'Number of greetings.') 
 @click.option('--name', prompt = 'strategy name', help= 'test strategy name[data-worker]') 
-def backtest(name):
+@click.option('--data-type', default="D", prompt = 'data type', help= 'data type[D 5 15]') 
+def backtest(name, data_type):
     '''Simple program that greets NAME for a total of COUNT times .'''
     _logname="bt-worker"
     _log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
@@ -41,6 +42,7 @@ def backtest(name):
     qe_list=[WorkerEngine]
     m = easyquant.MainEngine(broker, need_data, quotation_engines=qe_list, log_handler=log_handler)
     m.is_watch_strategy = False  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
+    m.data_type = data_type
     names=[name]
     m.load_strategy(names=names)
     m.backtest()

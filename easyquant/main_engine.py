@@ -71,6 +71,8 @@ class MainEngine:
         self.strategies = OrderedDict()
         self.strategy_list = list()
 
+        self.data_type = "D" ##D, 5M, 15M
+
         # 是否要动态重载策略
         self.is_watch_strategy = False
         # 修改时间缓存

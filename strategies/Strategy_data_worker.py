@@ -21,8 +21,13 @@ _log_filepath = 'logs/%s.txt' % _logname #input('请输入 log 文件记录路�
 log_handler = DefaultLogHandler(name=_logname, log_type=_log_type, filepath=_log_filepath)
 
 
-def do_init_data_buf(code, idx):
-    data_df = redis.get_day_df(code, idx=idx)
+def do_init_data_buf(code, idx, data_type):
+    if data_type == "D":
+        data_df = redis.get_day_df(code, idx=idx)
+    else:
+        data_df = redis.get_min_df(code, idx=idx, freq=int(data_type))
+    
+    
     data_buf[code] = data_df
     # print("do-init data data-buf size=%d " % len(data_buf))
     
@@ -53,8 +58,9 @@ def do_calc(code, idx, back_test):
     if udf_niu_check(C,H,L,V,A):
         log_handler.info(" data niu-check => code=%s" % code )
 
-    if udf_yao_check(C,O,H,L,V):
-        log_handler.info(" data niu-check => code=%s" % code )
+    yflg, _ =  udf_yao_check(C,O,H,L,V)
+    if yflg:
+        log_handler.info(" data yao-check => code=%s" % code )
 
 
 
@@ -73,6 +79,7 @@ class Strategy(StrategyTemplate):
         # start_date = '2018-01-01'
         self.rio=RedisIo('redis.conf')
         self.data_util = DataUtil()
+        self.data_type = main_engine.data_type
         self.code_list = []
         # self.pool = Pool(10)
         pool = Pool(cpu_count())
@@ -82,7 +89,7 @@ class Strategy(StrategyTemplate):
             for d in data['code']:
                 self.code_list.append(d)
                 
-                pool.apply_async(do_init_data_buf, args=(d, self.idx))
+                pool.apply_async(do_init_data_buf, args=(d, self.idx, self.data_type))
         #         # data_df = self.rio.get_day_df(d, idx=self.idx)
         #         # data_map = data_util.df2series(data_df)
                 # self.hdata[d] = data_map
