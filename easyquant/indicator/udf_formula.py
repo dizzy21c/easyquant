@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from pandas import Series
 from .base import *
+from .talib_series import LINEARREG_SLOPE as SLOPE
 
 def udf_cross(A, B):
   if isinstance(A, float):
@@ -316,4 +317,16 @@ def udf_yao_check(C,OPEN,HIGH,LOW,VOL):
       return True, 1
   else:
     return False, 0
-  
+
+def udf_ctlsb_check(C,N1=2,N2=21,N3=20,N4=42):
+  BL=EMA(C,N1)
+  SL=EMA(SLOPE(C,N2)*N3 + C, N4)
+  BF=SINGLE_CROSS(BL,SL)
+  SF=SINGLE_CROSS(SL,BL)
+  return {'buy':BF,'sell':SF}
+  # 买线:EMA(C,2),COLOR0000AA;
+  # 卖线:EMA(SLOPE(C,21)*20+C,42),POINTDOT,COLOR0000CC,LINETHICK3;
+  # BUY:=CROSS(买线,卖线);
+  # SEL:=CROSS(卖线,买线);
+  # DRAWTEXT(BUY,LOW*0.99,'B'),COLORF00FF0,LINETHICK5;
+  # DRAWTEXT(SEL,HIGH*1.01,'S'),COLORWHITE,LINETHICK5;

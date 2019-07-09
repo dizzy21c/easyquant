@@ -45,23 +45,27 @@ def do_calc(code, idx, back_test):
     
     # data_df = redis.get_day_df(code, idx=idx)
     # print("data-len=%d" % len(data_df))
+   
+    ######check########
+    # baseFlg, _ = udf_base_check(C,V)
     
-    baseFlg, _ = udf_base_check(C,V)
-    
-    Flg, out = udf_dapan_risk(C,H,L)
-    if baseFlg and Flg:
-        log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
+    # Flg, out = udf_dapan_risk(C,H,L)
+    # if baseFlg and Flg:
+    #     log_handler.info(" data risk => code=%s , value= %s " %  (code, out))
 
-    if udf_hangqing_start(C):
-        log_handler.info(" data market start=>code=%s" % code )
+    # if udf_hangqing_start(C):
+    #     log_handler.info(" data market start=>code=%s" % code )
 
-    if udf_niu_check(C,H,L,V,A):
-        log_handler.info(" data niu-check => code=%s" % code )
+    # if udf_niu_check(C,H,L,V,A):
+    #     log_handler.info(" data niu-check => code=%s" % code )
 
-    yflg, _ =  udf_yao_check(C,O,H,L,V)
-    if yflg:
-        log_handler.info(" data yao-check => code=%s" % code )
+    # yflg, _ =  udf_yao_check(C,O,H,L,V)
+    # if yflg:
+    #     log_handler.info(" data yao-check => code=%s" % code )
 
+    ctlFlg = udf_ctlsb_check(C)
+    if ctlFlg['buy']:
+        log_handler.info("data buy flag => code=%s" % code)
 
 
 class Strategy(StrategyTemplate):
