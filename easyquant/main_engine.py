@@ -8,7 +8,7 @@ import time
 from collections import OrderedDict
 from threading import Thread, Lock
 
-import easytrader
+#import easytrader
 from logbook import Logger, StreamHandler
 
 from .event_engine import EventEngine
@@ -38,7 +38,7 @@ class MainEngine:
 
         # 登录账户
         if (broker is not None) and (need_data is not None):
-            self.user = easytrader.use(broker)
+            self.user = None #easytrader.use(broker)
             need_data_file = pathlib.Path(need_data)
             if need_data_file.exists():
                 self.user.prepare(need_data)

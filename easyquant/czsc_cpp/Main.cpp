@@ -584,6 +584,7 @@ void Func8(int nCount, float *pOut, float *pIn, float *pHigh, float *pLow)
   }
 }
 
+/*
 static PluginTCalcFuncInfo Info[] =
 {
   {1, &Func1},
@@ -608,4 +609,4 @@ BOOL RegisterTdxFunc(PluginTCalcFuncInfo **pInfo)
 
   return FALSE;
 }
-
+*/
