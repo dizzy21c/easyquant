@@ -12,5 +12,4 @@ from .indicator import udf_formula
 # from .indicator import UdfIndexRisk
 # from .indicator import UdfMarketStart
 from .indicator import talib_indicators as talib_qa
-from .qafetch import QATdx #as qatdx
-# from .qafetch.QATdx_adv import QA_Tdx_Executor #as qatdxE
+from QUANTAXIS.QAFetch import QATdx
