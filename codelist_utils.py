@@ -52,6 +52,7 @@ def get_udf_code_list(config="config/codelist.xlsx"):
 def get_stock_codes():
     black_list,index_list,block_list= get_udf_code_list()
     codes_df = tdx.QA_fetch_get_stock_list()
+    codes_df=codes_df[~codes_df.name.str.contains('ST')]
 
     sz_stocks=[]
     zxb_stocks=[]
@@ -185,10 +186,10 @@ def calc_top_codes(code_type, last_day):
 # @click.option('--name', prompt = 'strategy name', help= 'test strategy name[data-worker]') 
 @click.option('--code-type', default = "top-codes", help= 'code type[top-codes]') 
 def main_func(code_type, last_day):
-    if code_type is None:
-        get_stock_codes()
-    elif code_type == "top-codes":
+    if code_type == "top-codes":
         calc_top_codes(code_type, last_day)
+    else:
+        get_stock_codes()
 
 # redis=RedisIo()
 # top_codes = Manager().list()
