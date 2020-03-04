@@ -2,6 +2,7 @@ account.session
 yjb_account.json
 account.json
 .idea
+.vscode
 .ipynb_checkpoints
 Untitled.ipynb
 untitled.txt
