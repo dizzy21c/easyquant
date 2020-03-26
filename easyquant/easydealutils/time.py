@@ -17,7 +17,8 @@ def _is_holiday(day):
 
 def is_holiday(now_time):
     today = now_time.strftime('%Y%m%d')
-    return _is_holiday(today)
+    # return _is_holiday(today)
+    return False
 
 
 def is_weekend(now_time):
