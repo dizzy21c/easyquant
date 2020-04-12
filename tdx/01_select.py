@@ -33,14 +33,17 @@ def readTdxLdayPath(path):
 
 def select1(code,data):
     # 连续三日缩量
-    ch= data.close.iloc[-1] * 1.1
-    cl= data.close.iloc[-1] * 0.9
+    cn = data.close.iloc[-1]
+#     ch= data.close.iloc[-1] * 1.1
+#     cl= data.close.iloc[-1] * 0.9
 #     ch= data.close * 1.1
 #     cl = data.close * 0.9
     
-    df=pd.concat([tdx.MA(data.close, x) for x in (5,10,20,30,60,90,120,250) ], axis = 1).dropna()[-1:]
-    df.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250']  
-    df_h = df.apply(lambda x:x.max() <= ch,  axis = 1 )
+#     df=pd.concat([tdx.MA(data.close, x) for x in (5,10,20,30,60,90,120,250,500,750,1000,1500,2000,2500,) ], axis = 1).dropna()[-1:]
+    df=pd.concat([tdx.MA(data.close, x) for x in (5,10,20,30,60,90,120,250,500,750,1000,1500,2000,2500,) ], axis = 1)[-1:]
+    df.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm500', u'm750', u'm1000', u'm1500', u'm2000', u'm2500']  
+    df_c = df.m5 > df.m10 and c > df.m5
+    df_h = df.apply(lambda x:cn > x ,  axis = 1 )
     df_l = df.apply(lambda x:x.min() >= cl,  axis = 1 )
     
     df['dfh'] = df_h
