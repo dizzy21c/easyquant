@@ -8,6 +8,8 @@ import time
 # import pymongo
 # import pandas as pd
 # import talib
+import pika
+from easyquant import EasyMq
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, idx):
@@ -50,6 +52,8 @@ class Strategy(StrategyTemplate):
         self.log.info('init event:%s'% self.name)
         # self.redis = RedisIo()
         # self.data_util = DataUtil()
+        self.easymq = EasyMq()
+        self.easymq.init_pub(exchange="stockcn")
 
     def strategy(self, event):
         if event.event_type != self.EventType:
@@ -61,6 +65,7 @@ class Strategy(StrategyTemplate):
         # rtn = {}
         for stcode in event.data:
             stdata= event.data[stcode]
+            self.easymq.pub(json.dumps(stdata), stcode)
             # rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
             threads.append(calcStrategy(stcode, stdata, self.log, self.idx))
 

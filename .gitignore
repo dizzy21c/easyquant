@@ -2,6 +2,7 @@ account.session
 yjb_account.json
 account.json
 .idea
+.lock
 .vscode
 .ipynb_checkpoints
 Untitled.ipynb
@@ -66,3 +67,5 @@ docs/_build/
 # PyBuilder
 target/
 vcode
+
+test/*/*.lock

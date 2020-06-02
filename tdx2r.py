@@ -96,7 +96,7 @@ def set_data(code, idx, st_date, end_date, last_date, fmt_str, freq):
   print(fmt_str)
   return 1
 
-def data_conv(st_date, codes, idx=0, freq=-1, pool = None, end_date = "2020-02-25", last_date="2020-12-31"):
+def data_conv(st_date, codes, idx=0, freq=-1, pool = None, end_date = "2023-12-31", last_date="2020-12-31"):
   nc=len(codes)
   i = 0
   for x in codes:

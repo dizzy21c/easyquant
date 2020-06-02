@@ -5,12 +5,14 @@ from threading import Thread, current_thread, Lock
 import json
 # import redis
 import time
+import datetime
 # import pymongo
 # import pandas as pd
 # import talib
 import pika
 
 from easyquant import EasyMq
+from multiprocessing import Pool, cpu_count
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, idx, easymq):
@@ -25,7 +27,7 @@ class calcStrategy(Thread):
         # self.lasttm = ""
 
     def run(self):
-        self.easymq.pub(text=self._data, routing_key = self.code)
+        # self.easymq.pub(text=self.code, routing_key = self.code)
         # self.log.info("data=%s" % self._data)
         chgValue = (self._data['now'] - self._data['close'])
         # downPct = (self._data['high'] - self._data['now']) * 100 / self._data['now']
@@ -66,14 +68,16 @@ class Strategy(StrategyTemplate):
             return
 
         self.log.info('Strategy =%s, event_type=%s' %(self.name, event.event_type))
-        
         threads = []
         rtn = {}
+        # print(datetime.datetime.now())
         for stcode in event.data:
             stdata= event.data[stcode]
+            # self.log.info("data=%s" % stdata)
+            self.easymq.pub(json.dumps(stdata), stcode)
             rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
             threads.append(calcStrategy(stcode, stdata, self.log, self.idx, self.easymq))
-
+        # print(datetime.datetime.now())
         self.log.info(rtn)
 
         for c in threads:
