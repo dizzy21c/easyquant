@@ -5,7 +5,9 @@ from threading import Thread, current_thread, Lock
 import json
 # import redis
 import time
-import datetime
+# import datetime
+from datetime import datetime, date
+
 # import pymongo
 # import pandas as pd
 # import talib
@@ -73,15 +75,21 @@ class Strategy(StrategyTemplate):
         # print(datetime.datetime.now())
         for stcode in event.data:
             stdata= event.data[stcode]
-            # self.log.info("data=%s" % stdata)
+            # self.log.info("data=%s" % stcode)
+            # self.easymq.pub(json.dumps(stdata, cls=CJsonEncoder), stcode)
             self.easymq.pub(json.dumps(stdata), stcode)
-            rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
-            threads.append(calcStrategy(stcode, stdata, self.log, self.idx, self.easymq))
-        # print(datetime.datetime.now())
+            # rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
+            # threads.append(calcStrategy(stcode, stdata, self.log, self.idx, self.easymq))
         self.log.info(rtn)
 
-        for c in threads:
-            c.start()
+        # for c in threads:
+        #     c.start()
 
-        
-
+class CJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        # elif isinstance(obj, date):
+        #     return obj.strftime('%Y-%m-%d')
+        else:
+            return json.JSONEncoder.default(self, obj)

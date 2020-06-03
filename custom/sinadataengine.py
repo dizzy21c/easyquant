@@ -1,5 +1,5 @@
 import easyquotation
-import datetime
+from datetime import datetime, date
 import json
 import easyquant
 # from easyquant import DefaultQuotationEngine, DefaultLogHandler, PushBaseEngine
@@ -13,7 +13,7 @@ class SinaEngine(PushBaseEngine):
     config = None
 
     def init(self):
-        self.source = easyquotation.use('sina')
+        self.source = easyquotation.use('qq')  # sina, tencent/qq
 
     def fetch_quotation(self):
         if self.EventType == "worker":
