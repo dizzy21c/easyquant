@@ -151,7 +151,7 @@ pub struct QASeries {
     dtmin: String, //dtmin是用于控制分钟线生成的
 }
 
-fn main33() -> Result<()> {
+fn main() -> Result<()> {
     env_logger::init();
 
     // Open connection.
@@ -238,7 +238,7 @@ fn main33() -> Result<()> {
 }
 
 
-fn main() {
+fn main23() {
     // let code = "au2002".to_string();
     let subscribe_list = vec![
         // "IF2005", "IH2005", "IC2005", "TF2006", "T2006", "cu2006", "au2006", "ag2006", "zn2006",
@@ -292,7 +292,7 @@ fn subscribe_code(code: String) {
     let exchange = channel
         .exchange_declare(
             ExchangeType::Direct,
-            format!("realtime_{}", code.clone()).as_str(),
+            "",
             ExchangeDeclareOptions::default(),
         )
         .unwrap();
@@ -343,7 +343,7 @@ impl QAKlineBase {
         if self.open == 0.0 {
             self.init_data(data.clone());
         }
-        let new_price = data["price"].as_f64().unwrap();
+        let new_price = data["now"].as_f64().unwrap();
         if (self.high < new_price) {
             self.high = new_price;
         }
@@ -351,19 +351,19 @@ impl QAKlineBase {
             self.low = new_price;
         }
         self.close = new_price;
-        let cur_datetime: String = data["servertime"].as_str().unwrap().parse().unwrap();
+        let cur_datetime: String = data["datatime"].as_str().unwrap().parse().unwrap();
         self.updatetime = cur_datetime.clone();
     }
 
     fn init_data(&mut self, data: Value) {
-        self.datetime = data["servertime"].as_str().unwrap().parse().unwrap();
-        self.updatetime = data["servertime"].as_str().unwrap().parse().unwrap();
+        self.datetime = data["datetime"].as_str().unwrap().parse().unwrap();
+        self.updatetime = data["datetime"].as_str().unwrap().parse().unwrap();
         self.code = data["code"].as_str().unwrap().parse().unwrap();
-        self.open = data["price"].as_f64().unwrap();
-        self.high = data["price"].as_f64().unwrap();
-        self.low = data["price"].as_f64().unwrap();
-        self.close = data["price"].as_f64().unwrap();
-        self.volume = data["vol"].as_f64().unwrap();
+        self.open = data["now"].as_f64().unwrap();
+        self.high = data["now"].as_f64().unwrap();
+        self.low = data["now"].as_f64().unwrap();
+        self.close = data["now"].as_f64().unwrap();
+        self.volume = data["volume"].as_f64().unwrap();
     }
 
     fn print(&mut self) {
@@ -383,14 +383,14 @@ impl QAKlineBase {
 
     fn new(&mut self, data: Value) -> QAKlineBase {
         let data = QAKlineBase {
-            datetime: data["servertime"].as_str().unwrap().parse().unwrap(),
-            updatetime: data["servertime"].as_str().unwrap().parse().unwrap(),
+            datetime: data["datetime"].as_str().unwrap().parse().unwrap(),
+            updatetime: data["datetime"].as_str().unwrap().parse().unwrap(),
             code: data["code"].as_str().unwrap().parse().unwrap(),
-            open: data["price"].as_f64().unwrap(),
-            high: data["price"].as_f64().unwrap(),
-            low: data["price"].as_f64().unwrap(),
-            close: data["price"].as_f64().unwrap(),
-            volume: data["vol"].as_f64().unwrap(),
+            open: data["now"].as_f64().unwrap(),
+            high: data["now"].as_f64().unwrap(),
+            low: data["now"].as_f64().unwrap(),
+            close: data["now"].as_f64().unwrap(),
+            volume: data["volume"].as_f64().unwrap(),
             frequence: self.frequence.clone(),
         };
         data
@@ -417,7 +417,7 @@ impl QASeries {
     fn update(&mut self, data: Value) {
         let cur_data = data.clone();
         // println!("now1");
-        let cur_datetime: String = cur_data["servertime"].as_str().unwrap().parse().unwrap();
+        let cur_datetime: String = cur_data["datetime"].as_str().unwrap().parse().unwrap();
         // println!("now21 ={}", &cur_datetime);
         // println!("now22={}", &cur_datetime[3..5]);
         if self.dtmin == "99".to_string() {
@@ -427,10 +427,10 @@ impl QASeries {
             self.update_15(cur_data.clone(), cur_datetime.clone());
             self.update_30(cur_data.clone(), cur_datetime.clone());
             self.update_60(cur_data.clone(), cur_datetime.clone());
-            self.dtmin = cur_datetime[3..5].parse().unwrap();
+            self.dtmin = cur_datetime[14..16].parse().unwrap();
         }
-        if &cur_datetime[3..5] != self.dtmin {
-            let min_f = &cur_datetime[3..5];
+        if &cur_datetime[14..16] != self.dtmin {
+            let min_f = &cur_datetime[14..16];
             match min_f {
                 "00" => {
                     self.update_1(cur_data.clone(), cur_datetime.clone());
@@ -480,7 +480,7 @@ impl QASeries {
     }
 
     fn update_1(&mut self, data: Value, cur_datetime: String) {
-        if cur_datetime.len() == 12 {
+        if cur_datetime.len() == 19 {
             println!("create new bar !!");
             //self.min1.pop().unwrap();
             let lastdata = QAKlineBase::init("1min".to_string()).new(data.clone());
@@ -493,7 +493,7 @@ impl QASeries {
     }
 
     fn update_5(&mut self, data: Value, cur_datetime: String) {
-        if cur_datetime.len() == 12 {
+        if cur_datetime.len() == 19 {
             println!("create new bar !!");
             //self.min5.pop().unwrap();
             let lastdata = QAKlineBase::init("5min".to_string()).new(data.clone());
@@ -505,7 +505,7 @@ impl QASeries {
         }
     }
     fn update_15(&mut self, data: Value, cur_datetime: String) {
-        if cur_datetime.len() == 12 {
+        if cur_datetime.len() == 19 {
             println!("create new bar !!");
             //self.min15.pop().unwrap();
             let lastdata = QAKlineBase::init("15min".to_string()).new(data.clone());
@@ -517,7 +517,7 @@ impl QASeries {
         }
     }
     fn update_30(&mut self, data: Value, cur_datetime: String) {
-        if cur_datetime.len() == 12 {
+        if cur_datetime.len() == 19 {
             println!("create new bar !!");
             //self.min30.pop().unwrap();
             let lastdata = QAKlineBase::init("30min".to_string()).new(data.clone());
@@ -529,7 +529,7 @@ impl QASeries {
         }
     }
     fn update_60(&mut self, data: Value, cur_datetime: String) {
-        if cur_datetime.len() == 12 {
+        if cur_datetime.len() == 19 {
             println!("create new bar !!");
             //self.min60.pop().unwrap();
             let lastdata = QAKlineBase::init("60min".to_string()).new(data.clone());
