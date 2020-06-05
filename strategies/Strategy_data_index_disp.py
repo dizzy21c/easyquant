@@ -67,10 +67,10 @@ class Strategy(StrategyTemplate):
             stdata= event.data[stcode]
             self.easymq.pub(json.dumps(stdata), stcode)
             # rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
-            threads.append(calcStrategy(stcode, stdata, self.log, self.idx))
+            # threads.append(calcStrategy(stcode, stdata, self.log, self.idx))
 
-        for c in threads:
-            c.start()
+        # for c in threads:
+        #     c.start()
 
         
 

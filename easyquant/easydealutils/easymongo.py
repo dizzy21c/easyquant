@@ -9,23 +9,51 @@ import numpy as np
 class MongoIo(object):
     """Redis操作类"""
     
-    def __init__(self, conf):
-        self.config = self.file2dict(conf)
-        client = pymongo.MongoClient(self.config['mongoip'], self.config['mongoport'])
-        self.db = client[self.config['mongodb']]
+    def __init__(self, host='127.0.0.1', port=27017, database='quantaxis'):
+        # self.config = self.file2dict(conf)
+        client = pymongo.MongoClient(host, port)
+        self.db = client[database]
+        self.st_start = '2018-01-01'
+        self.st_end = '2030-12-31'
+        self.st_start_1min = '2020-01-01'
+        self.st_start_5min = '2020-01-01'
+        self.st_start_15min = '2020-01-01'
+        self.st_start_30min = '2020-01-01'
+        self.st_start_60min = '2020-01-01'
+        # self.st_end_day = '2030-12-31'
         # if self.config['passwd'] is None:
         #     self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'])
         # else:
         #     self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'], password = self.config['passwd'])
     
-    def get_data(self, code, st_start="2017-01-01", st_end="2030-01-01"):
-        col =self.db.stock_day
-        dtd=col.find({'code':code,'date':{'$gt':st_start}, 'date':{"$lt":st_end}})
+    def _get_data(self, code, table, st_start, st_end, type='D'):
+        if type == 'D':
+            if isinstance(code, list):
+                dtd=self.db[table].find({'code':{'$in' : code},'date':{'$gt':st_start, "$lt":st_end}})
+            else:
+                dtd=self.db[table].find({'code':code,'date':{'$gt':st_start, "$lt":st_end}})
+        else:
+            if isinstance(code, list):
+                dtd=self.db[table].find({'code':{'$in':code},'date':{'$gt':st_start, "$lt":st_end}, 'type':type})
+            else:
+                dtd=self.db[table].find({'code':code,'date':{'$gt':st_start, "$lt":st_end}, 'type':type})
         ptd=pd.DataFrame(list(dtd))
         del ptd['_id']
         del ptd['date_stamp']
         ptd.rename(columns={"vol":"volume"}, inplace=True)
         return ptd
+    
+    def get_stock_day(self, code, st_start=self.st_start, st_end=self.st_end):
+        return self._get_data(code, 'stock_day', st_start, st_end)
+  
+    def get_stock_min(self, code, st_start=self.st_start_15min, st_end=self.st_end, type="15min"):
+        return self._get_data(code, 'stock_min', st_start, st_end, type)
+  
+    def get_index_day(self, code, st_start=self.st_start, st_end=self.st_end):
+        return self._get_data(code, 'index_day', st_start, st_end)
+
+    def get_index_min(self, code, st_start=self.st_start_15min, st_end=self.st_end, type="15min"):
+        return self._get_data(code, 'index_min', st_start, st_end, type)
 
     def file2dict(self, path):
         #读取配置文件
@@ -34,8 +62,8 @@ class MongoIo(object):
         
     
 def main():
-    md = MongoIo('mongo.conf')
-    md.get_data('000001')
+    md = MongoIo()
+    md.get_stock_day('000001')
     # d.head
 
 if __name__ == '__main__':

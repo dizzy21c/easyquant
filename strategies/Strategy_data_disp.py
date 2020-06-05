@@ -78,7 +78,7 @@ class Strategy(StrategyTemplate):
             # self.log.info("data=%s" % stcode)
             # self.easymq.pub(json.dumps(stdata, cls=CJsonEncoder), stcode)
             self.easymq.pub(json.dumps(stdata), stcode)
-            # rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
+            rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
             # threads.append(calcStrategy(stcode, stdata, self.log, self.idx, self.easymq))
         self.log.info(rtn)
 

@@ -127,8 +127,8 @@ class EasyMq(object):
           target=u.start, daemon=True, group=None))
       
   def callback(self, chan, method_frame, _header_frame, body, userdata=None):
-      print(1)
-      print(" [x] %r" % body)
+      print('test ok')
+      # print(" [x] %r" % body)
 
   def subscribe(self):
       if len(self.c) > 0:
