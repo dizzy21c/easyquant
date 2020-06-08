@@ -286,7 +286,7 @@ def BARSLAST(cond, yes=True):
     
     lib.barslast(ncount, np_OUT, np_S, 0)
     
-    return pd.Series(np.asarray(np_OUT))
+    return pd.Series(np.asarray(np_OUT), index=cond.index)
 
     # # return BARLAST(cond, yes)
     # cond2 = cond[cond == yes]

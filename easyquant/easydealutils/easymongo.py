@@ -14,7 +14,7 @@ class MongoIo(object):
         client = pymongo.MongoClient(host, port)
         self.db = client[database]
         self.st_start = '2018-01-01'
-        self.st_end = '2030-12-31'
+        # self.st_end = '2030-12-31'
         self.st_start_1min = '2020-01-01'
         self.st_start_5min = '2020-01-01'
         self.st_start_15min = '2020-01-01'
@@ -27,6 +27,8 @@ class MongoIo(object):
         #     self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'], password = self.config['passwd'])
     
     def _get_data(self, code, table, st_start, st_end, type='D'):
+        if st_end is None:
+            st_end = "2030-12-31"
         if type == 'D':
             if isinstance(code, list):
                 dtd=self.db[table].find({'code':{'$in' : code},'date':{'$gt':st_start, "$lt":st_end}})
@@ -40,19 +42,30 @@ class MongoIo(object):
         ptd=pd.DataFrame(list(dtd))
         del ptd['_id']
         del ptd['date_stamp']
-        ptd.rename(columns={"vol":"volume"}, inplace=True)
+        # ptd.rename(columns={"vol":"volume"}, inplace=True)
         return ptd
     
-    def get_stock_day(self, code, st_start=self.st_start, st_end=self.st_end):
+    def get_stock_day(self, code, st_start=None, st_end=None):
+        if st_start is None:
+            st_start = self.st_start
         return self._get_data(code, 'stock_day', st_start, st_end)
   
-    def get_stock_min(self, code, st_start=self.st_start_15min, st_end=self.st_end, type="15min"):
+    def get_stock_min(self, code, st_start=None, st_end=None, type="15min"):
+        if st_start is None:
+            st_start = self.st_start_15min
+            
         return self._get_data(code, 'stock_min', st_start, st_end, type)
   
-    def get_index_day(self, code, st_start=self.st_start, st_end=self.st_end):
+    def get_index_day(self, code, st_start=None, st_end=None):
+        if st_start is None:
+            st_start = self.st_start
+            
         return self._get_data(code, 'index_day', st_start, st_end)
 
-    def get_index_min(self, code, st_start=self.st_start_15min, st_end=self.st_end, type="15min"):
+    def get_index_min(self, code, st_start=None, st_end=None, type="15min"):
+        if st_start is None:
+            st_start = self.st_start_15min
+            
         return self._get_data(code, 'index_min', st_start, st_end, type)
 
     def file2dict(self, path):

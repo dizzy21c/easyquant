@@ -1,6 +1,8 @@
 
 from easyquant import EasyMq
 from easyquant import MongoIo
+import pandas as pd
+from easyquant import base
 # a = EasyMq()
 
 # a.init_receive(exchange='stockcn')
@@ -9,7 +11,15 @@ from easyquant import MongoIo
 
 # a.start()
 
-
+from easyquant import MongoIo
 m=MongoIo()
+a=m.get_stock_day('000001')
+a.date=pd.to_datetime(a.date)
+b=a.set_index(['date'])
 
-m.get_stock_day('000001')
+
+con1=base.BARSLAST(b.close>10)
+print(con1.head())
+
+
+
