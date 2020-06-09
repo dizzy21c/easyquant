@@ -23,7 +23,7 @@ class Strategy(StrategyTemplate):
         # self.redis = RedisIo()
         # self.data_util = DataUtil()
         self.easymq = EasyMq()
-        self.easymq.init_pub(exchange="stockcn-idx")
+        self.easymq.init_pub(exchange="stockcn.idx")
 
     def strategy(self, event):
         if event.event_type != self.EventType:

@@ -101,7 +101,7 @@ class EasyMq(object):
       self.routing_key = routing_key
       self.queue = self.channel.queue_declare(
           queue='', auto_delete=True, exclusive=True, durable=durable).method.queue
-      print("queue= %s, self.queue=%s " %(queue, self.queue))
+    #   print("queue= %s, self.queue=%s " %(queue, self.queue))
       self.channel.queue_bind(queue=self.queue, exchange=exchange,
                               routing_key=self.routing_key)          # 队列名采用服务端分配的临时队列
       # self.channel.basic_qos(prefetch_count=1)

@@ -15,7 +15,7 @@ need_data = '' #get_broker_need_data(broker)
 
 class DataSinaEngine(SinaEngine):
     EventType = 'data-sina'
-    PushInterval = 8
+    PushInterval = 10
     config = "stock2_list"
 
 
@@ -60,6 +60,7 @@ qe_list=[DataSinaEngine, IndexSinaEngine]
 m = easyquant.MainEngine(broker, need_data, quotation_engines=qe_list, log_handler=log_handler)
 # m = FixedMainEngine(broker, need_data, quotation_engines=qe_list, log_handler=log_handler)
 m.is_watch_strategy = False #True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
+# names=['save-index-data-disp', 'save-data-disp'] 
 names=['save-index-data-disp', 'save-data-disp', 'save-data-calc-01']
 m.load_strategy(names=names)
 m.start()

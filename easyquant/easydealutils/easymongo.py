@@ -40,8 +40,16 @@ class MongoIo(object):
             else:
                 dtd=self.db[table].find({'code':code,'date':{'$gt':st_start, "$lt":st_end}, 'type':type})
         ptd=pd.DataFrame(list(dtd))
-        del ptd['_id']
-        del ptd['date_stamp']
+        if len(ptd) > 0:
+            del ptd['_id']
+            del ptd['date_stamp']
+            if type == 'D':
+                ptd.date = pd.to_datetime(ptd.date)
+                ptd = ptd.set_index(["date"])
+            else:
+                ptd.date = pd.to_datetime(ptd.date)
+                ptd.datetime= pd.to_datetime(ptd.datetime)
+                ptd = ptd.set_index(["datetime"])
         # ptd.rename(columns={"vol":"volume"}, inplace=True)
         return ptd
     

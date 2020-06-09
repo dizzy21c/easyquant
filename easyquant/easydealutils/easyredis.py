@@ -10,12 +10,12 @@ import numpy as np
 class RedisIo(object):
     """Redis操作类"""
     
-    def __init__(self, conf='redis.conf'):
+    def __init__(self, host="127.0.0.1", port=6379):
         self.config = self.file2dict(conf)
-        if self.config['passwd'] is None:
-            self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'])
-        else:
-            self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'], password = self.config['passwd'])
+        # if self.config['passwd'] is None:
+        self.r = redis.Redis(host=host, port=port, db=0)
+        # else:
+        #     self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'], password = self.config['passwd'])
     
     def file2dict(self, path):
         #读取配置文件
@@ -295,7 +295,7 @@ class RedisIo(object):
         return self._get_str_data(listname, startpos, endpos)
    
 def main():
-    ri = RedisIo('redis.conf')
+    ri = RedisIo()
     ri.lookup_redis_info()
     ri.set_key_value('test1', 1)
     ri.push_list_value('test2', 1)
