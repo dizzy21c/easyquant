@@ -4,6 +4,8 @@ from easyquant import MongoIo
 import pandas as pd
 from easyquant import base
 import talib as tdx
+from easyquant.indicator.udf_formula import *
+
 # import pandas as pd
 
 # a = EasyMq()
@@ -16,10 +18,11 @@ import talib as tdx
 
 from easyquant import MongoIo
 m=MongoIo()
-a=m.get_stock_day('000001')
+a=m.get_stock_day('000028')
 # a.date=pd.to_datetime(a.date)
 # b=a.set_index(['date'])
 
+print(udf_yao_check_df(a))
 
 con1=base.BARSLAST(b.close>10)
 print(con1.head())

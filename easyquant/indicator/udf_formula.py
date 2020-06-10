@@ -293,7 +293,11 @@ def udf_macd_zq(C,O,H,L):
 
   return rtn
 
+def udf_yao_check_df(data):
+  return udf_yao_check(data.close, data.open, data.high, data.low, data.vol)
+
 def udf_yao_check(C,OPEN,HIGH,LOW,VOL):
+  ##妖股公式
   VAR0 = (3 * (SMA(((C - LLV(LOW,21)) / (HHV(HIGH,34) - LLV(LOW,21))) * 100,5,1))) - (2 * (SMA(SMA(((C - LLV(LOW,21)) / (HHV(HIGH,13) - LLV(LOW,8))) * 100,5,1),3,1)))
   VAR1 = 10
   VAR2 = MA(C,5)
@@ -303,20 +307,14 @@ def udf_yao_check(C,OPEN,HIGH,LOW,VOL):
   VAR6 = EMA(VAR5,4)
   VAR7 = C * VOL
   VAR8 = EMA(((((EMA(VAR7,3) / EMA(VOL,3)) + (EMA(VAR7,6) / EMA(VOL,6))) + (EMA(VAR7,12) / EMA(VOL,12))) + (EMA(VAR7,24) / EMA(VOL,24))) / 4,13)
-  # VAR9 = VAR6 > VAR8
+  VAR9 = VAR6 > VAR8
   # FLCS = CROSS(VAR0,VAR1) AND VAR4,COLORMAGENTA
-  FLCS1 = CROSS(VAR0,VAR1)
-  FLCS_C1 = FLCS1[len(FLCS1) - 1]
-  FLCS = FLCS_C1 and VAR4[len(VAR4) - 1]
+  result=pd.DataFrame({"cross":CROSS(VAR0, VAR1), "var4":VAR4, "var9": VAR9})
+  # FLCS = CROSS(VAR0,VAR1) AND VAR4,COLORMAGENTA
+  result['FLCS'] = result.apply(lambda x : x['cross'] > 0 and x['var4'], axis=1)
   # FLTP = (CROSS(VAR0,VAR1) AND VAR4) AND VAR9,COLORRED,LINETHICK2
-  if FLCS:
-    VAR9 = VAR6 > VAR8
-    if VAR9[len(VAR9) - 1]:
-      return True, 2
-    else:
-      return True, 1
-  else:
-    return False, 0
+  result['FLTP'] = result.apply(lambda x : x['cross'] > 0 and x['var4'] and x['var9'], axis=1)
+  return result
 
 def udf_ctlsb_check(C,N1=2,N2=21,N3=20,N4=42):
   BL=EMA(C,N1)

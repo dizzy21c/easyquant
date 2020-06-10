@@ -36,11 +36,14 @@ def do_init_data_buf(code, idx):
         data_15min = mongo.get_stock_min(code=code)
         if len(data_15min) == 0:
             data_15min = tdx.QA_fetch_get_stock_min(code, st_date,end_date, 15)
+        else:
+            last_dt = data_15min.datetime.iloc[-1]
+            
     else:
         data_day = mongo.get_index_day(code=code)
         data_15min = mongo.get_index_min(code=code)
         if len(data_15min) == 0:
-            data_15min = tdx.QA_fetch_get_index_min(code, st_date,end_date, freq)
+            data_15min = tdx.QA_fetch_get_index_min(code, st_date,end_date, 15)
     ## TODO fuquan 
     data_buf_day[code] = data_day
     data_buf_15min[code] = data_15min

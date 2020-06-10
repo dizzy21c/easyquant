@@ -1,6 +1,7 @@
 # coding: utf-8
 from threading import Thread, current_thread, Lock
 import datetime
+import time
 
 class CalcWorker(Thread):
     dataType = 0
@@ -42,4 +43,3 @@ class CalcWorker(Thread):
 
         self.redis.push_cur_data(self.code, self.data, self.dataType, self.last_vol)
         self.last_vol = self.data['volume']
-

@@ -8,6 +8,7 @@ from .easydealutils.easyredis import RedisIo
 from .easydealutils.easymongo import MongoIo
 from .easydealutils.easymq import EasyMq
 from .easydealutils.datautil import DataUtil
+from .easydealutils.easytime import EasyTime
 from .indicator import base
 from .indicator import udf_formula 
 # from .indicator import UdfIndexRisk
