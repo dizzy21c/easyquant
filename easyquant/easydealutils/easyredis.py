@@ -11,7 +11,7 @@ class RedisIo(object):
     """Redis操作类"""
     
     def __init__(self, host="127.0.0.1", port=6379):
-        self.config = self.file2dict(conf)
+        # self.config = self.file2dict(conf)
         # if self.config['passwd'] is None:
         self.r = redis.Redis(host=host, port=port, db=0)
         # else:

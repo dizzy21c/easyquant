@@ -29,7 +29,7 @@ class EasyTime(object):
 
 
     def is_trade_date(self, now_time):
-        return not (is_holiday(now_time) or is_weekend(now_time))
+        return not (self.is_holiday(now_time) or self.is_weekend(now_time))
 
 
     def get_next_trade_date(self, now_time):
@@ -46,7 +46,7 @@ class EasyTime(object):
         while 1:
             days += 1
             now += datetime.timedelta(days=1)
-            if is_trade_date(now):
+            if self.is_trade_date(now):
                 if isinstance(now, datetime.date):
                     return now
                 else:
@@ -67,7 +67,7 @@ class EasyTime(object):
         :return:
         """
         now = now_time.time()
-        for begin, end in OPEN_TIME:
+        for begin, end in self.OPEN_TIME:
             if begin <= now < end:
                 return True
         else:
@@ -85,7 +85,7 @@ class EasyTime(object):
         :return:
         """
         now = now_time.time()
-        for b, e in PAUSE_TIME:
+        for b, e in self.PAUSE_TIME:
             if b <= now < e:
                 return True
 
@@ -101,7 +101,7 @@ class EasyTime(object):
 
     def is_continue(self, now_time):
         now = now_time.time()
-        for b, e in CONTINUE_TIME:
+        for b, e in self.CONTINUE_TIME:
             if b <= now < e:
                 return True
         return False
