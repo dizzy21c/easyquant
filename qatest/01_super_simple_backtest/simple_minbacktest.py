@@ -7,14 +7,14 @@
 import QUANTAXIS as QA
 import pandas as pd
 
-data = QA.QA_fetch_stock_min_adv('601318', '2018-03-22', '2018-08-23', '30min')
+data = QA.QA_fetch_stock_min_adv('601318', '2020-01-22', '2021-08-23', '30min')
 
 
 res = data.add_func(QA.QA_indicator_KDJ)
 sig = QA.CROSS(res.KDJ_J, res.KDJ_K)
 sig2 = QA.CROSS(res.KDJ_K, res.KDJ_J)
 
-User = QA.QA_User(username='quantaxis', password='quantaxis')
+User = QA.QA_User(username='admin', password='admin')
 Portfolio = User.new_portfolio('qatestportfolio')
 Account = Portfolio.new_account(account_cookie='supersimple', init_cash=100000, init_hold={'601318': 1000},
                                 frequence=QA.FREQUENCE.THIRTY_MIN)

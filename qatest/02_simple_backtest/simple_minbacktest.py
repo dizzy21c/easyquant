@@ -16,7 +16,7 @@ res = data.add_func(QA.QA_indicator_KDJ)
 sig = QA.CROSS(res.KDJ_J, res.KDJ_K)
 sig2 = QA.CROSS(res.KDJ_K, res.KDJ_J)
 
-User = QA.QA_User(username='quantaxis', password='quantaxis')
+User = QA.QA_User(username='admin', password='admin')
 Portfolio = User.new_portfolio('qatestportfolio')
 Account = Portfolio.new_account(account_cookie='macdmin_601318' ,init_cash=20000,
                         frequence=QA.FREQUENCE.THIRTY_MIN)
@@ -78,7 +78,7 @@ for items in data.panel_gen:
 r = QA.QA_Risk(Account)
 
 
-r.plot_assets_curve().show()
+# r.plot_assets_curve().show()
 
 print(r.profit_construct)
 

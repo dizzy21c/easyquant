@@ -22,7 +22,7 @@ class MAMINT0Strategy(QA_Account):
         super().__init__(user_cookie, portfolio_cookie, init_hold=init_hold)
         self.account_cookie = 'T0BACKTEST'
         self.running_environment = RUNNING_ENVIRONMENT.TZERO
-        self.frequence = FREQUENCE.ONE_MIN
+        self.frequence = FREQUENCE.DAY
         self.market_type = MARKET_TYPE.STOCK_CN
 
         self.result = {}

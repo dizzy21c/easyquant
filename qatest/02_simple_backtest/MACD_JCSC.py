@@ -29,11 +29,11 @@ def MACD_JCSC(dataframe, SHORT=12, LONG=26, M=9):
 
 
 # create account
-user = QA.QA_User(username='quantaxis', password='quantaxis')
+user = QA.QA_User(username='admin', password='admin')
 portfolio = user.new_portfolio('qatestportfolio')
 
 
-Account = portfolio.new_account(account_cookie='macd_stock', init_cash=1000000)
+Account = portfolio.new_account(account_cookie='macd_stock2', init_cash=1000000)
 Broker = QA.QA_BacktestBroker()
 
 
@@ -41,14 +41,15 @@ QA.QA_SU_save_strategy('MACD_JCSC', 'Indicator',
                        Account.account_cookie, if_save=True)
 # get data from mongodb
 data = QA.QA_fetch_stock_day_adv(
-    ['000001', '000002', '000004', '600000'], '2017-09-01', '2018-05-20')
+    ['000001', '000002', '000004', '600000'], '2019-09-01', '2021-05-20')
 data = data.to_qfq()
 
 # add indicator
 ind = data.add_func(MACD_JCSC)
 # ind.xs('000001',level=1)['2018-01'].plot()
 
-data_forbacktest = data.select_time('2018-01-01', '2018-05-01')
+# data_forbacktest = data.select_time('2018-01-01', '2018-05-01')
+data_forbacktest = data #.select_time('2018-01-01', '2018-05-01')
 
 
 for items in data_forbacktest.panel_gen:
@@ -100,6 +101,7 @@ print(Account.daily_hold)
 
 # create Risk analysis
 Risk = QA.QA_Risk(Account)
+Risk.plot_assets_curve().show()
 
 Account.save()
 Risk.save()
