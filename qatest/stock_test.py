@@ -44,5 +44,7 @@ if __name__ == '__main__':
     s = strategy(code=['000001', '000002','600822','000859'], frequence='day', start='2020-01-01', end='2020-12-31', strategy_id='stock-test')
     # s.debug()
     s.run_backtest()
+    # msg = s.acc.message
+    # print("alpha=%6.2f, " % (msg['']))
     # s.update_account()
   
