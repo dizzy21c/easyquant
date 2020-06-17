@@ -6,11 +6,11 @@ import time
 class CalcWorker(Thread):
     dataType = 0
     workType = "calc" # data, calc
-	log = None
-	redisIo = None
-	chkData = None
-	last_time = None
-	last_vol = 0
+    log = None
+    redisIo = None
+    chkData = None
+    last_time = None
+    last_vol = 0
 	
     def __init__(self, code, sina_data):
         Thread.__init__(self)

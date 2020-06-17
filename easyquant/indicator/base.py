@@ -29,7 +29,8 @@ import numpy as np
 import pandas as pd
 from ctypes import * 
 import os
-lib  = cdll.LoadLibrary("%s/%s" % (os.path.abspath("."), "talib_ext.so"))
+# lib  = cdll.LoadLibrary("%s/%s" % (os.path.abspath("."), "talib_ext.so"))
+lib  = cdll.LoadLibrary("/usr/share/talib/%s" % ("talib_ext.so"))
 
 
 """
