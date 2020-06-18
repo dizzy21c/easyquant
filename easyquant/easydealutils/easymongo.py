@@ -5,6 +5,7 @@ import pymongo
 import json
 import pandas as pd
 import numpy as np
+from datetime import date
 
 class MongoIo(object):
     """Redis操作类"""
@@ -80,8 +81,19 @@ class MongoIo(object):
         #读取配置文件
         with open(path) as f:
             return json.load(f)
-        
-    
+
+    def save(self, table, data):
+        self.db[table].insert_many(
+            [data]
+        )
+
+    def save_realtime(self, data):
+        table = 'realtime_{}'.format(date.today())
+        self.db[table].insert_many(
+            [data]
+        )
+
+
 def main():
     md = MongoIo()
     md.get_stock_day('000001')

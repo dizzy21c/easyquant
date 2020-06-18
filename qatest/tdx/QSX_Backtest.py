@@ -8,23 +8,15 @@ import random
 
 import numpy as np
 
-def YAO_FN(data, SHORT=12, LONG=26, M=9):
-    """
-    1.DIF向上突破DEA，买入信号参考。
-    2.DIF向下跌破DEA，卖出信号参考。
-    """
-    # res = udf_yao_check_df(dataframe)
-    res = udf_yao_check(data.close, data.open, data.high, data.low, data.volume)
-    close = data.close
-    ma5 = base.MA(close, 5)
+def CALC_FUN(data, SHORT=12, LONG=26, M=9):
+    close=data.close
+    mid=3*(data.close+data.low+data.high)/6
+    qsx=(20*mid+19*base.REF(mid,1)) / 20
+    data['BUY']=base.CROSS(data.close,qsx)
+    data['SELL'] = base.CROSS(qsx, data.close)
+    return data
 
-    sc = base.CROSS(ma5, close)
-    # CROSS_SC = base.CROSS(DEA, DIFF)
-    # ZERO = 0
-    res['SC'] = sc
-    return res
-
-class YaoBacktest(QAStrategyStockBase):
+class QsxBacktest(QAStrategyStockBase):
     def on_bar(self, data):
         code = data.name[1]
         # print(data)
@@ -41,7 +33,7 @@ class YaoBacktest(QAStrategyStockBase):
         if len(self.get_code_marketdata(code)) < 21:
             return
         # code = data.name[1]
-        res = self.macd(code)
+        res = self.calc(code)
         # sig = QA.CROSS(res.KDJ_J, res.KDJ_K)
         # sig2 = QA.CROSS(res.KDJ_K, res.KDJ_J)
         # print(res.iloc[-1])
@@ -54,7 +46,7 @@ class YaoBacktest(QAStrategyStockBase):
         # print(self.get_positions(code))
         # if res.MA5[-1] > res.MA30[-1]:
         # print("sig1=%6.2f, sig2=%6.2f" % (sig[-1], sig2[-1]))
-        if res.FLTP[-1] or res.FLCS[-1]:
+        if res.BUY[-1]: # or res.BUY2[-1]:
         # if res.DIF[-1] > res.DEA[-1]:
 
             # print('LONG price=%8.2f' % (bar['close']))
@@ -65,7 +57,7 @@ class YaoBacktest(QAStrategyStockBase):
             # if self.positions.volume_short > 0:
             #     self.send_order('BUY', 'CLOSE', code=code, price=bar['close'], volume=1)
 
-        elif res.SC[-1] > 0:
+        elif res.SELL[-1] > 0:
             # print('SHORT price=%8.2f' % (bar['close']))
 
             # if self.acc.positions == {} or self.acc.positions.volume_short == 0:
@@ -73,11 +65,11 @@ class YaoBacktest(QAStrategyStockBase):
             if self.get_positions(code).volume_long > 0:
                 self.send_order('SELL', 'CLOSE', code=code, price=data['close'], volume=1000)
 
-    def macd(self,code):
+    def calc(self,code):
         # res = data.add_func(QA.QA_indicator_KDJ)
         # sig = QA.CROSS(res.KDJ_J, res.KDJ_K)
         # sig2 = QA.CROSS(res.KDJ_K, res.KDJ_J)
-        return YAO_FN(self.get_code_marketdata(code))
+        return CALC_FUN(self.get_code_marketdata(code))
         # res = QA.QA_indicator_KDJ(self.market_data)
         # return res
         # return QA.QA_indicator_MACD(self.market_data)
@@ -86,7 +78,7 @@ class YaoBacktest(QAStrategyStockBase):
         pass
 
 if __name__ == '__main__':
-    s = YaoBacktest(
+    s = QsxBacktest(
                 code=['600822']
                 # code=QA.QA_fetch_stock_block_adv().code[0:10]
                 # , frequence='30min'

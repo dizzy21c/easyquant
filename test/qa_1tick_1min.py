@@ -45,8 +45,9 @@ def fetch_stock_day_realtime_adv(codelist,
     """
     查询日线实盘数据，支持多股查询
     """
-    if ((datetime.datetime.combine(datetime.date.today(),
-                                   datetime.datetime.min.time()) - data_day.data.index.get_level_values(level=0)[-1].to_pydatetime()) > datetime.timedelta(hours=10)):
+    # if ((datetime.datetime.combine(datetime.date.today(),
+    #                                datetime.datetime.min.time()) - data_day.data.index.get_level_values(level=0)[-1].to_pydatetime()) > datetime.timedelta(hours=10)):
+    if verbose:
         if (verbose== True):
             print('时间戳差距超过：', datetime.datetime.combine(datetime.date.today(),
                                                              datetime.datetime.min.time()) - data_day.data.index.get_level_values(level=0)[-1].to_pydatetime(),
@@ -138,7 +139,8 @@ if __name__ == '__main__':
     用法示范
     """
     # codelist = ['600157', '300263', '600765']
-    codelist = ['000001']
+    # codelist = ['000001']
+    codelist = ['000410', '600718']
     data_day = QA.QA_fetch_stock_day_adv(codelist,
                                         '2018-01-01',
                                         '{}'.format(datetime.date.today(),)).to_qfq()

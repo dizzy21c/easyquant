@@ -14,7 +14,32 @@ from datetime import datetime, date
 import pika
 
 from easyquant import EasyMq
+from easyquant import MongoIo
 from multiprocessing import Pool, cpu_count
+
+mongo = MongoIo()
+class SaveData(Thread):
+    def __init__(self, data):
+        Thread.__init__(self)
+        self.data = data
+        # self.code = code
+        # self.log = log
+        # # self.redis = redis
+        # self.idx = idx
+        # self.m = MongoIo()
+        # self.last_time = None
+        # self.working = False
+
+    # def set_data(self, code, data, idx):
+    #     Thread.__init__(self)
+    #     self._data = data
+    #     self.code = code
+    #     self.log = log
+    #     # self.redis = redis
+
+    def run(self):
+        self.data['price'] = self.data['now']
+        mongo.save_realtime(self.data)
 
 class Strategy(StrategyTemplate):
     name = 'save-data-disp'
@@ -45,11 +70,11 @@ class Strategy(StrategyTemplate):
             # self.easymq.pub(json.dumps(stdata, cls=CJsonEncoder), stcode)
             self.easymq.pub(json.dumps(stdata), stcode)
             rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
-            # threads.append(calcStrategy(stcode, stdata, self.log, self.idx, self.easymq))
+            threads.append(SaveData(stdata))
         self.log.info(rtn)
 
-        # for c in threads:
-        #     c.start()
+        for c in threads:
+            c.start()
 
 class CJsonEncoder(json.JSONEncoder):
     def default(self, obj):
