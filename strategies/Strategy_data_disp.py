@@ -19,10 +19,10 @@ from multiprocessing import Pool, cpu_count
 
 mongo = MongoIo()
 class SaveData(Thread):
-    def __init__(self, data):
+    def __init__(self, code,data):
         Thread.__init__(self)
         self.data = data
-        # self.code = code
+        self.code = code
         # self.log = log
         # # self.redis = redis
         # self.idx = idx
@@ -38,6 +38,7 @@ class SaveData(Thread):
     #     # self.redis = redis
 
     def run(self):
+        self.data['_id'] = "%s-%s" %( self.code, self.data['datetime'])
         self.data['price'] = self.data['now']
         mongo.save_realtime(self.data)
 
@@ -70,7 +71,7 @@ class Strategy(StrategyTemplate):
             # self.easymq.pub(json.dumps(stdata, cls=CJsonEncoder), stcode)
             self.easymq.pub(json.dumps(stdata), stcode)
             rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
-            threads.append(SaveData(stdata))
+            threads.append(SaveData(stcode, stdata))
         self.log.info(rtn)
 
         for c in threads:

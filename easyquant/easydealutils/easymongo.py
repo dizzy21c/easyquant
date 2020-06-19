@@ -89,9 +89,10 @@ class MongoIo(object):
 
     def save_realtime(self, data):
         table = 'realtime_{}'.format(date.today())
-        self.db[table].insert_many(
-            [data]
-        )
+        # self.db[table].insert_many(
+        #     [data]
+        # )
+        self.db[table].replace_one({'_id':data['_id']}, data, True)
 
 
 def main():

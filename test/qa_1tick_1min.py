@@ -100,7 +100,8 @@ def fetch_stock_day_realtime_adv(codelist,
                         data_realtime_1day = data_realtime_1day.set_index(['datetime', 'code'],
                                                                         drop=True).sort_index()
                         if (verbose== True):
-                            print(u'追加实时实盘数据，股票代码：{} 时间：{} 价格：{}'.format(data_realtime_1day.index[0][1],
+                            # print(u'追加实时实盘数据，股票代码：{} 时间：{} 价格：{}'.format(data_realtime_1day.index[0][1],
+                            print(u'add realtime data，code：{} time：{} price：{}'.format(data_realtime_1day.index[0][1],
                                                                                      data_realtime_1day.index[0][0],
                                                                                      data_realtime_1day[AKA.CLOSE][-1]))
                         data_day.data = data_day.data.append(data_realtime_1day,

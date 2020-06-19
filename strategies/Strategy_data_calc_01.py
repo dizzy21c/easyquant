@@ -91,7 +91,8 @@ class calcStrategy(Thread):
 
         # self.log.info()
         # if now_vol > df_v.m5.iloc[-1]:
-        self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
+        # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
+        self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], self._data['high'], self._data['low']))
 
 
         # self.working = False
