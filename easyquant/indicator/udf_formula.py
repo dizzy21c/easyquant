@@ -89,6 +89,24 @@ def udf_dapan_risk(C,H,L, N1=6, N2=12):
   
   return (flg > 0, {'buy50':buy50, 'buy30':buy30, 'sell5':sell5, 'sella':sell0})
 
+def udf_index_risk(data, N1=6, N2=12):
+  qc=3.5
+  jb=3.3
+  j3=1.3
+  j5=0.5
+  L=data.low
+  H=data.high
+  C=data.close
+  VAR2=LLV(L, N1)
+  VAR3=HHV(H, N2)
+  DLX=EMA(((C-VAR2)/(VAR3-VAR2))*4, 4)
+  sj5=CROSS(DLX,j5)
+  sj3=CROSS(DLX,j3)
+  sjb=CROSS(DLX,jb)
+  sqc=CROSS(DLX,qc)
+  dict_rt = {'BUY50':sj5, 'ADD30':sj3, 'SELL50':sjb, 'SELL0':sqc}
+  return pd.DataFrame(dict_rt)
+  
 def udf_base_check_df(data_df, N1=70, N2=144, N3=250):
   return udf_base_check(data_df.close, data_df.vol, N1, N2, N3)
 

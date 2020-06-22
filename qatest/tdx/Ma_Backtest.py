@@ -105,7 +105,7 @@ if __name__ == '__main__':
     # s.update_account()
 
     risk = QA.QA_Risk(s.acc)
-    risk.plot_assets_curve().show()
+    # risk.plot_assets_curve().show()
     print(risk.profit_construct)
 
   
