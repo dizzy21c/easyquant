@@ -1,18 +1,21 @@
 # coding: utf-8
 import os
 import sys
-import pymongo
+import pymongo as mongo
 import json
 import pandas as pd
 import numpy as np
 from datetime import date
+import time
+from easyquant.qafetch import QATdx as tdx
+
 
 class MongoIo(object):
     """Redis操作类"""
     
     def __init__(self, host='127.0.0.1', port=27017, database='quantaxis'):
         # self.config = self.file2dict(conf)
-        client = pymongo.MongoClient(host, port)
+        client = mongo.MongoClient(host, port)
         self.db = client[database]
         self.st_start = '2018-01-01'
         # self.st_end = '2030-12-31'
@@ -29,7 +32,8 @@ class MongoIo(object):
     
     def _get_data(self, code, table, st_start, st_end, type='D'):
         if st_end is None:
-            st_end = "2030-12-31"
+            # st_end = "2030-12-31"
+            st_end = "2030-12-31 23:59:59"
         if type == 'D':
             if isinstance(code, list):
                 dtd=self.db[table].find({'code':{'$in' : code},'date':{'$gt':st_start, "$lt":st_end}})
@@ -59,23 +63,66 @@ class MongoIo(object):
             st_start = self.st_start
         return self._get_data(code, 'stock_day', st_start, st_end)
   
-    def get_stock_min(self, code, st_start=None, st_end=None, type="15min"):
+    def get_stock_min(self, code, st_start=None, st_end=None, freq=5):
         if st_start is None:
             st_start = self.st_start_15min
             
-        return self._get_data(code, 'stock_min', st_start, st_end, type)
-  
+        return self._get_data(code, 'stock_min', st_start, st_end, "%dmin"%freq)
+
+    def get_stock_min_realtime(self, code, st_start=None, st_end=None, freq=5):
+        if st_start is None:
+            st_start = self.st_start_5min
+        if st_end is None:
+            st_end = "2030-12-31 23:59:59"
+
+        data_min = self.get_stock_min(code=code, freq=freq)
+        if len(data_min) > 0:
+            if freq < (time.time() - data_min.index[-1].timestamp()) / 60:
+                start = data_min.index[-1].strftime('%Y-%m-%d %H:%M:01')  ## %S=>01
+                add_df = tdx.QA_fetch_get_stock_min(code, start=start, end=st_end, frequence='%dmin' % freq)
+                if len(add_df) > 0:
+                    add_df.drop(['date_stamp', 'datetime'], axis=1, inplace=True)
+                    data_min = data_min.append(add_df, sort=True)
+                    ## save to db
+        else:
+            data_min = tdx.QA_fetch_get_stock_min(code, start=st_start, end=st_end, frequence='%dmin' % freq)
+            if len(data_min) > 0:
+                data_min.drop(['date_stamp', 'datetime'], axis=1, inplace=True)
+
+        return data_min
+
     def get_index_day(self, code, st_start=None, st_end=None):
         if st_start is None:
             st_start = self.st_start
             
         return self._get_data(code, 'index_day', st_start, st_end)
 
-    def get_index_min(self, code, st_start=None, st_end=None, type="15min"):
+    def get_index_min(self, code, st_start=None, st_end=None, freq=5):
         if st_start is None:
             st_start = self.st_start_15min
             
-        return self._get_data(code, 'index_min', st_start, st_end, type)
+        return self._get_data(code, 'index_min', st_start, st_end, "%dmin"%freq)
+
+    def get_index_min_realtime(self, code, st_start=None, st_end=None, freq=5):
+        if st_start is None:
+            st_start = self.st_start_5min
+        if st_end is None:
+            st_end = "2030-12-31 23:59:59"
+        
+        data_min = self.get_index_min(code=code, freq=freq)
+        if len(data_min) > 0:
+            if freq < (time.time() - data_min.index[-1].timestamp()) / 60:
+                start=data_min.index[-1].strftime('%Y-%m-%d %H:%M:01') ## %S=>01
+                add_df=tdx.QA_fetch_get_index_min(code,start=start,end=st_end, frequence='%dmin' % freq)
+                if len(add_df) > 0:
+                    add_df.drop(['date_stamp','datetime'],axis=1,inplace=True)
+                    data_min=data_min.append(add_df, sort=True)
+        else:
+            data_min=tdx.QA_fetch_get_index_min(code,start=st_start,end=st_end, frequence='%dmin' % freq)
+            if len(data_min) > 0:
+                data_min.drop(['date_stamp','datetime'],axis=1,inplace=True)
+        
+        return data_min
 
     def file2dict(self, path):
         #读取配置文件
@@ -86,6 +133,12 @@ class MongoIo(object):
         self.db[table].insert_many(
             [data]
         )
+
+    def save_data_min(self, data, idx=0):
+        if idx == 0:
+            pass
+        else:
+            pass
 
     def save_realtime(self, data):
         table = 'realtime_{}'.format(date.today())

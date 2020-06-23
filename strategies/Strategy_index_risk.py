@@ -11,56 +11,51 @@ import pandas as pd
 
 # import pymongo
 import talib as tdx
-from easyquant import QATdx as qatdx
 import pika
 
 from easyquant import EasyMq
 from easyquant import MongoIo
 from multiprocessing import Process, Pool, cpu_count, Manager
-
+from easyquant.indicator.base import *
 
 # calc_thread_dict = Manager().dict()
 data_buf_day = Manager().dict()
-data_buf_5min = Manager().dict()
-data_buf_5min_0 = Manager().dict()
+data_buf_15min = Manager().dict()
+data_buf_15min_0 = Manager().dict()
 # mongo = MongoIo()
+def index_risk(data, N1=6, N2=12):
+    qc=3.5
+    jb=3.3
+    j3=1.3
+    j5=0.5
+    L=data.low
+    H=data.high
+    C=data.close
+    VAR2=LLV(L, N1)
+    VAR3=HHV(H, N2)
+    DLX=EMA(((C-VAR2)/(VAR3-VAR2))*4, 4)
+    sj5=CROSS(DLX,j5)
+    sj3=CROSS(DLX,j3)
+    sjb=CROSS(DLX,jb)
+    sqc=CROSS(DLX,qc)
+    dict_rt = {'BUY50':sj5, 'ADD30':sj3, 'SELL50':sjb, 'SELL0':sqc}
+    return pd.DataFrame(dict_rt)
 
+    
 def do_init_data_buf(code, idx):
-    start='2020-01-01'
-    end_date='2030-12-31'
-    delta_min = 5
     mongo=MongoIo()
     if idx == 0:
         data_day = mongo.get_stock_day(code=code)
-        data_min = mongo.get_stock_min(code=code, type='%dmin' % delta_min)
-        if len(data_min) > 0:
-            if delta_min > (time.time() - data_min.index[-1].timestamp()) / 60:
-                start=data_min.index[-1].strftime('%Y-%m-%d %H:%M:01') ## %S=>01
-                add_df=qatdx.QA_fetch_get_stock_min(code,start=start,end=end_date, frequence='%dmin' % delta_min)
-                if len(add_df) > 0:
-                    add_df.drop(['date_stamp','datetime'],axis=1,inplace=True)
-                    data_min.append(add_df, sort=True)
-        else:
-            data_min=qatdx.QA_fetch_get_stock_min(code,start=start,end=end_date, frequence='%dmin' % delta_min)
-            if len(data_min) > 0:
-                data_min.drop(['date_stamp','datetime'],axis=1,inplace=True)
+        data_15min = mongo.get_stock_min(code=code)
     else:
         data_day = mongo.get_index_day(code=code)
-        data_min = mongo.get_index_min(code=code)
-        if len(data_min) > 0:
-            if delta_min > (time.time() - data_min.index[-1].timestamp()) / 60:
-                start=data_min.index[-1].strftime('%Y-%m-%d %H:%M:01') ## %S=>01
-                add_df=qatdx.QA_fetch_get_index_min(code,start=start,end=end_date, frequence='%dmin' % delta_min)
-                if len(add_df) > 0:
-                    add_df.drop(['date_stamp','datetime'],axis=1,inplace=True)
-                    data_min.append(add_df, sort=True)
-        
+        data_15min = mongo.get_index_min(code=code)
 
     ## TODO fuquan 
     
     data_buf_day[code] = data_day
-    data_buf_5min[code] = data_min
-    # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_buf_day)))
+    data_buf_15min[code] = data_15min
+    # print("do-init data end, code=%s, data-buf size=%d idx=%d" % (idx, code, len(data_buf_day)))
     
 
 
@@ -92,6 +87,7 @@ class calcStrategy(Thread):
         last_time = pd.to_datetime(self._data['datetime'][0:10])
         # print("code=%s, data=%s" % (self.code, self._data['datetime']))
         df_day = data_buf_day[self.code]
+        # print("code=%s, data=%s, len=%d" % (self.code, self._data['datetime'], len(df_day)))
         df_day.loc[last_time]=[0 for x in range(len(df_day.columns))]
         df_day.loc[last_time,'open'] = self._data['open']
         df_day.loc[last_time,'high']= self._data['high']
@@ -111,19 +107,23 @@ class calcStrategy(Thread):
         df_a.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm13', u'm34', u'm55']
 
         # self.log.info("data=%s, m5=%6.2f" % (self.code, df.m5.iloc[-1]))
-
+        flg = index_risk(df_day)
         # self.log.info()
         # if now_vol > df_v.m5.iloc[-1]:
         # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
-        self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], self._data['high'], self._data['low']))
+        if flg['BUY50'].iloc[-1] > 0:
+            self.log.info("buy code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], self._data['high'], self._data['low']))
+        
+        if flg['SELL50'].iloc[-1] > 0:
+            self.log.info("sell code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], self._data['high'], self._data['low']))
 
 
         # self.working = False
 class Strategy(StrategyTemplate):
-    name = 'save-data-calc-01'  ### day
-    idx = 0
-    EventType = 'data-sina'
-    config_name = './config/stock2_list.json'
+    name = 'index-risk-01'  ### day
+    idx = 1
+    EventType = 'index-sina'
+    config_name = './config/index2_list.json'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
@@ -131,7 +131,7 @@ class Strategy(StrategyTemplate):
         # self.redis = RedisIo()
         # self.data_util = DataUtil()
         # self.code_list = []
-        self.idx=0
+        # self.idx=1
         self.calc_thread_dict = {}
         # init data
         start_time = time.time()
@@ -154,7 +154,7 @@ class Strategy(StrategyTemplate):
         ## init message queue
         self.started=False
         self.easymq = EasyMq()
-        self.easymq.init_receive(exchange="stockcn")
+        self.easymq.init_receive(exchange="stockcn.idx")
         self.easymq.callback = self.callback
         with open(self.config_name, 'r') as f:
             data = json.load(f)

@@ -104,7 +104,7 @@ def ping(ip, port=7709, type_='stock'):
 
 
 def select_best_ip():
-    QA_util_log_info('Selecting the Best Server IP of TDX')
+    # QA_util_log_info('Selecting the Best Server IP of TDX')
 
     # 删除exclude ip
     import json
@@ -149,8 +149,8 @@ def select_best_ip():
     qasetting.set_config(
         section='IPLIST', option='default', default_value=ipbest)
 
-    QA_util_log_info('=== The BEST SERVER ===\n stock_ip {} future_ip {}'.format(
-        best_stock_ip['ip'], best_future_ip['ip']))
+    # QA_util_log_info('=== The BEST SERVER ===\n stock_ip {} future_ip {}'.format(
+    #     best_stock_ip['ip'], best_future_ip['ip']))
     return ipbest
 
 
