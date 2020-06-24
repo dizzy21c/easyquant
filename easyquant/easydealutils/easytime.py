@@ -3,7 +3,7 @@ import doctest
 from functools import lru_cache
 
 import requests
-
+import math
 
 class EasyTime(object):
     def __init__(self):
@@ -94,10 +94,28 @@ class EasyTime(object):
         (datetime.time(12, 59, 30), datetime.time(13, 0, 0)),
     )
 
-    def get_minute_date(self, minute = 1):
+    def get_begin_trade_date(self, minute = 1):
         ts_now = datetime.datetime.now()
-        nm = int(ts_now.minute / minute) * minute
-        return datetime.datetime(ts_now.year, ts_now.month, ts_now.day, ts_now.hour, nm)
+        return datetime.datetime(ts_now.year, ts_now.month, ts_now.day, 9, 30)
+
+    def get_minute_date(self, minute = 1, ts_now = datetime.datetime.now()):
+        delta = 0
+        csec = ts_now.second
+        ts_hour=ts_now.hour
+        if csec > 2:
+            if math.ceil(ts_now.minute / minute) == ts_now.minute / minute:
+                delta = 1
+        nm = (math.ceil(ts_now.minute / minute) + delta) * minute
+        if nm > 59:
+            nm = nm - 60
+            ts_hour = ts_hour + 1
+        return datetime.datetime(ts_now.year, ts_now.month, ts_now.day, ts_hour, nm)
+
+    def get_minute_date_str(self, str_date, minute = 1):
+        ts_now = datetime.datetime.strptime(str_date, '%Y-%m-%d %H:%M:%S')
+        # nm = int(ts_now.minute / minute) * minute
+        # return datetime.datetime(ts_now.year, ts_now.month, ts_now.day, ts_now.hour, nm)
+        return self.get_minute_date(ts_now=ts_now, minute=minute)
 
     def is_continue(self, now_time):
         now = now_time.time()

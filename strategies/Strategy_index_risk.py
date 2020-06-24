@@ -20,7 +20,7 @@ from easyquant.indicator.base import *
 
 # calc_thread_dict = Manager().dict()
 data_buf_day = Manager().dict()
-data_buf_15min = Manager().dict()
+data_buf_5min = Manager().dict()
 data_buf_15min_0 = Manager().dict()
 # mongo = MongoIo()
 def index_risk(data, N1=6, N2=12):
@@ -41,23 +41,19 @@ def index_risk(data, N1=6, N2=12):
     dict_rt = {'BUY50':sj5, 'ADD30':sj3, 'SELL50':sjb, 'SELL0':sqc}
     return pd.DataFrame(dict_rt)
 
-    
 def do_init_data_buf(code, idx):
-    mongo=MongoIo()
+    freq = 5
+    mc = MongoIo()
     if idx == 0:
-        data_day = mongo.get_stock_day(code=code)
-        data_15min = mongo.get_stock_min(code=code)
+        data_day = mc.get_stock_day(code=code)
+        data_min = mc.get_stock_min_realtime(code=code, freq=freq)
     else:
-        data_day = mongo.get_index_day(code=code)
-        data_15min = mongo.get_index_min(code=code)
-
-    ## TODO fuquan 
-    
+        data_day = mc.get_index_day(code=code)
+        data_min = mc.get_index_min_realtime(code=code)
+    ## TODO fuquan
     data_buf_day[code] = data_day
-    data_buf_15min[code] = data_15min
-    # print("do-init data end, code=%s, data-buf size=%d idx=%d" % (idx, code, len(data_buf_day)))
-    
-
+    data_buf_5min[code] = data_min
+    # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_buf_5min)))
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, idx):
@@ -142,8 +138,10 @@ class Strategy(StrategyTemplate):
                 if len(d) > 6:
                     d = d[len(d)-6:len(d)]
                 # self.code_list.append(d)
-                pool.apply_async(do_init_data_buf, args=(d, self.idx))
+                # pool.apply_async(do_init_data_buf, args=(d, self.idx))
                 # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
+                ## 现场无法启动进程
+                do_init_data_buf(d, self.idx)
                 
                 
         pool.close()

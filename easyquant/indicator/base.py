@@ -340,3 +340,8 @@ def BARLAST(cond, yes=True):
 
 XARROUND =  lambda x,y:np.round(y*(round(x/y-math.floor(x/y)+0.00000000001)+ math.floor(x/y)),2)
 
+###TODO 简单计算
+def WINNER(Series,N=60):
+    x=MA(Series, N)
+    return (Series / x - 1)
+

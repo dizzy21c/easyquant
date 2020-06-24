@@ -16,6 +16,7 @@ import pika
 
 from easyquant import EasyMq
 from easyquant import MongoIo
+from easyquant import EasyTime
 from multiprocessing import Process, Pool, cpu_count, Manager
 
 
@@ -24,45 +25,30 @@ data_buf_day = Manager().dict()
 data_buf_5min = Manager().dict()
 data_buf_5min_0 = Manager().dict()
 # mongo = MongoIo()
+easytime=EasyTime()
 
 def do_init_data_buf(code, idx):
-    start='2020-01-01'
-    end_date='2030-12-31'
-    delta_min = 5
-    mongo=MongoIo()
+    freq = 5
+    mc = MongoIo()
     if idx == 0:
-        data_day = mongo.get_stock_day(code=code)
-        data_min = mongo.get_stock_min(code=code, type='%dmin' % delta_min)
-        if len(data_min) > 0:
-            if delta_min > (time.time() - data_min.index[-1].timestamp()) / 60:
-                start=data_min.index[-1].strftime('%Y-%m-%d %H:%M:01') ## %S=>01
-                add_df=qatdx.QA_fetch_get_stock_min(code,start=start,end=end_date, frequence='%dmin' % delta_min)
-                if len(add_df) > 0:
-                    add_df.drop(['date_stamp','datetime'],axis=1,inplace=True)
-                    data_min.append(add_df, sort=True)
-        else:
-            data_min=qatdx.QA_fetch_get_stock_min(code,start=start,end=end_date, frequence='%dmin' % delta_min)
-            if len(data_min) > 0:
-                data_min.drop(['date_stamp','datetime'],axis=1,inplace=True)
+        data_day = mc.get_stock_day(code=code)
+        data_min = mc.get_stock_min_realtime(code=code, freq=freq)
     else:
-        data_day = mongo.get_index_day(code=code)
-        data_min = mongo.get_index_min(code=code)
-        if len(data_min) > 0:
-            if delta_min > (time.time() - data_min.index[-1].timestamp()) / 60:
-                start=data_min.index[-1].strftime('%Y-%m-%d %H:%M:01') ## %S=>01
-                add_df=qatdx.QA_fetch_get_index_min(code,start=start,end=end_date, frequence='%dmin' % delta_min)
-                if len(add_df) > 0:
-                    add_df.drop(['date_stamp','datetime'],axis=1,inplace=True)
-                    data_min.append(add_df, sort=True)
-        
-
-    ## TODO fuquan 
-    
+        data_day = mc.get_index_day(code=code)
+        data_min = mc.get_index_min_realtime(code=code)
+    ## TODO fuquan
     data_buf_day[code] = data_day
     data_buf_5min[code] = data_min
-    # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_buf_day)))
-    
+    # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_buf_5min)))
 
+class UpdateDataThread(Thread):
+    def __init__(self, code, idx):
+        Thread.__init__(self)
+        self.code = code
+        self.idx = idx
+
+    def run(self):
+        do_init_data_buf(self.code, self.idx)
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, idx):
@@ -81,6 +67,49 @@ class calcStrategy(Thread):
     #     self.code = code
     #     self.log = log
     #     # self.redis = redis
+    def upd_min(self, minute):
+        # index_time =pd.to_datetime(easytime.get_minute_date(minute=5))
+        index_time = pd.to_datetime(easytime.get_minute_date_str(minute=minute, str_date=self._data['datetime']))
+        df_min = data_buf_5min[self.code]
+        # if self.code == '600822':
+        #     print("0 code=%s, data=%d" % (self.code, len(df_min)))
+        if len(df_min) > 0:
+            ## TODO 计算单日前的数据
+            # old_vol = 0
+            # old_amount = 0
+            beg_time = pd.to_datetime(easytime.get_minute_date_str(minute=minute, str_date=self._data['datetime']))
+            sum_df=df_min.loc[df_min.index > beg_time]
+            old_vol = sum_df['vol'].sum()
+            old_amount = sum_df['amount'].sum()
+            # if self.code == '600822':
+            #     print("1 code=%s, data=%d" % (self.code, len(df_min)))
+            now_price = self._data['now']
+            if index_time in df_min.index:
+                if self.code == '600822':
+                    print("10 code=%s, data=%s" % (self.code, index_time))
+                # df_min.loc[index_time, 'open'] = now_price
+                if now_price > df_min.loc[index_time, 'high']:
+                    df_min.loc[index_time, 'high'] = now_price
+                if now_price < df_min.loc[index_time, 'low']:
+                    df_min.loc[index_time, 'low'] = now_price
+                df_min.loc[index_time, 'close'] = now_price
+                df_min.loc[index_time, 'vol'] = self._data['volume'] - old_vol
+                df_min.loc[index_time, 'amount'] = self._data['amount'] - old_amount
+            else:
+                if self.code == '600822':
+                    print("2 code=%s, data=%d" % (self.code, len(df_min)))
+                df_min.loc[index_time] = [0 for x in range(len(df_min.columns))]
+                df_min.loc[index_time, 'open'] = now_price
+                df_min.loc[index_time, 'high'] = now_price
+                df_min.loc[index_time, 'low'] = now_price
+                df_min.loc[index_time, 'close'] = now_price
+                df_min.loc[index_time, 'vol'] = self._data['volume'] - old_vol
+                df_min.loc[index_time, 'amount'] = self._data['amount'] - old_amount
+                ## vol 计算
+        else: ##first day ???
+            pass
+
+        data_buf_5min[self.code] = df_min
 
     def run(self):
         # if self.working:
@@ -111,7 +140,7 @@ class calcStrategy(Thread):
         df_a.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm13', u'm34', u'm55']
 
         # self.log.info("data=%s, m5=%6.2f" % (self.code, df.m5.iloc[-1]))
-
+        self.upd_min(5)
         # self.log.info()
         # if now_vol > df_v.m5.iloc[-1]:
         # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
@@ -135,20 +164,26 @@ class Strategy(StrategyTemplate):
         self.calc_thread_dict = {}
         # init data
         start_time = time.time()
-        pool = Pool(cpu_count())
+        # pool = Pool(cpu_count())
+        pool = []
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
                 if len(d) > 6:
                     d = d[len(d)-6:len(d)]
                 # self.code_list.append(d)
-                pool.apply_async(do_init_data_buf, args=(d, self.idx))
+                # pool.apply_async(do_init_data_buf, args=(d, self.idx))
+                # do_init_data_buf(d, self.idx)
+                pool.append(UpdateDataThread(d, self.idx))
                 # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
-                
-                
-        pool.close()
-        pool.join()
-        pool.terminate()
+        # pool.close()
+        # pool.join()
+        # pool.terminate()
+        for c in pool:
+            c.start()
+
+        for c in pool:
+            c.join()
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
         ## init message queue

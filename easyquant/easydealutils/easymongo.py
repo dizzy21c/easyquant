@@ -8,7 +8,7 @@ import numpy as np
 from datetime import date
 import time
 from easyquant.qafetch import QATdx as tdx
-
+from easyquant.easydealutils import EasyTime
 
 class MongoIo(object):
     """Redis操作类"""
@@ -147,6 +147,39 @@ class MongoIo(object):
         # )
         self.db[table].replace_one({'_id':data['_id']}, data, True)
 
+    def upd_data_min(self, df_data_min, json_data, minute):
+        # index_time =pd.to_datetime(easytime.get_minute_date(minute=5))
+        et = EasyTime()
+        index_time = pd.to_datetime(et.get_minute_date_str(minute=minute, str_date=json_data['datetime']))
+        begin_time = pd.to_datetime(et.get_begin_trade_date(minute=minute, str_date=json_data['datetime']))
+        if len(df_data_min) > 0:
+            sum_df=df_data_min.loc[df_data_min.index > begin_time]
+            old_vol = sum_df['vol'].sum()
+            old_amount = sum_df['amount'].sum()
+            now_price = json_data['now']
+            if index_time in df_data_min.index:
+                if now_price > df_data_min.loc[index_time, 'high']:
+                    df_data_min.loc[index_time, 'high'] = now_price
+                if now_price < df_data_min.loc[index_time, 'low']:
+                    df_data_min.loc[index_time, 'low'] = now_price
+                df_data_min.loc[index_time, 'close'] = now_price
+                df_data_min.loc[index_time, 'vol'] = json_data['volume'] - old_vol
+                df_data_min.loc[index_time, 'amount'] = json_data['amount'] - old_amount
+            else:
+                # if self.code == '600822':
+                #     print("2 code=%s, data=%d" % (self.code, len(df_data_min)))
+                df_data_min.loc[index_time] = [0 for x in range(len(df_data_min.columns))]
+                df_data_min.loc[index_time, 'code'] = json_data['code']
+                df_data_min.loc[index_time, 'open'] = now_price
+                df_data_min.loc[index_time, 'high'] = now_price
+                df_data_min.loc[index_time, 'low'] = now_price
+                df_data_min.loc[index_time, 'close'] = now_price
+                df_data_min.loc[index_time, 'vol'] = json_data['volume'] - old_vol
+                df_data_min.loc[index_time, 'amount'] = json_data['amount'] - old_amount
+        else: ##first day ???
+            pass
+
+        return df_data_min
 
 def main():
     md = MongoIo()
