@@ -187,20 +187,32 @@ def IF(COND, V1, V2):
 
 
 def IFAND(COND1, COND2, V1, V2):
+    if len(COND1) < len(COND2):
+        COND2=COND2[COND2.index>=COND1.index[0]]
+    elif len(COND1) > len(COND2):
+        COND1 = COND1[COND1.index >= COND2.index[0]]
     var = np.where(np.logical_and(COND1,COND2), V1, V2)
-    if isinstance(V1, pd.Series):
-        return pd.Series(var, index=V1.index)
-    else:
-        return pd.Series(var)
+    return pd.Series(var, index=COND1.index)
+    # if isinstance(V1, pd.Series):
+    #     return pd.Series(var, index=V1.index)
+    # else:
+    #     return pd.Series(var, index=COND1.index)
     
 def IFOR(COND1, COND2, V1, V2):
+    if len(COND1) < len(COND2):
+        COND2=COND2[COND2.index>=COND1.index[0]]
+    elif len(COND1) > len(COND2):
+        COND1 = COND1[COND1.index >= COND2.index[0]]
     var = np.where(np.logical_or(COND1,COND2), V1, V2)
-    # return pd.Series(var, index=V1.index)
-    if isinstance(V1, pd.Series):
-        return pd.Series(var, index=V1.index)
-    else:
-        return pd.Series(var)
+    return pd.Series(var, index=COND1.index)
+    # if isinstance(V1, pd.Series):
+    #     return pd.Series(var, index=V1.index)
+    # else:
+    #     return pd.Series(var, index=COND1.index)
 
+##TODO 通达信测试结果的出的
+def FILTER(COND,N):
+    return COND
 
 def REF(Series, N):
     if isinstance(Series[0], bool):

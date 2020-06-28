@@ -8,7 +8,7 @@ import numpy as np
 from datetime import date
 import time
 from easyquant.qafetch import QATdx as tdx
-from easyquant.easydealutils import EasyTime
+from easyquant.easydealutils.easytime import EasyTime
 
 class MongoIo(object):
     """Redis操作类"""
