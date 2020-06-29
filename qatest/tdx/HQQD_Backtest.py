@@ -126,7 +126,7 @@ if __name__ == '__main__':
                 , frequence='day'
                 , start='2019-01-01', end='2020-12-31'
                 , portfolio='HQQD'
-                , strategy_id='test03')
+                , strategy_id='test-01')
     # s.debug()
     s.run_backtest()
     # msg = s.acc.message

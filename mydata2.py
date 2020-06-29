@@ -62,6 +62,6 @@ m = easyquant.MainEngine(broker, need_data, quotation_engines=qe_list, log_handl
 m.is_watch_strategy = False #True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 # names=['save-index-data-disp', 'save-data-disp'] 
 # names=['save-index-data-disp', 'save-data-disp', 'save-data-calc-01']
-names=['save-index-data-disp', 'save-data-disp', 'save-data-calc-01', 'index-risk-01']
+names=['save-index-data-disp', 'save-data-disp', 'save-data-calc-01', 'index-risk-01','save-data-2top']
 m.load_strategy(names=names)
 m.start()
