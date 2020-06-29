@@ -135,12 +135,12 @@ def udf_hangqing_start(C, snum=13, lnum=144):#, sd=20, ld=250):
 
   # C = data_df.close
 
-  A1 = (C-MA(C,lnum))/MA(C,lnum)*100
-  N1 = BARSLAST(CROSS(C,MA(C,lnum)), 1)
-  N2 = BARSLAST(CROSS(MA(C,lnum),C), 1)
-  B1 = IF(N1<N2,N1+1,0)
-  C1 = HHV(A1,B1)
-  D1 = (C-REF(C,B1))/REF(C,B1)*100
+  # A1 = (C-MA(C,lnum))/MA(C,lnum)*100
+  # N1 = BARSLAST(CROSS(C,MA(C,lnum)), 1)
+  # N2 = BARSLAST(CROSS(MA(C,lnum),C), 1)
+  # B1 = IF(N1<N2,N1+1,0)
+  # C1 = HHV(A1,B1)
+  # D1 = (C-REF(C,B1))/REF(C,B1)*100
   N3 = BARSLAST(CROSS(C,MA(C,snum)))
   N4 = BARSLAST(CROSS(MA(C,snum),C))
   AA = IF(N3<N4,N3+1,0)

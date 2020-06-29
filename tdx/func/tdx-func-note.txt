@@ -25,7 +25,7 @@ MAVOL3: MA(VOLUME,M3);
 
 
 
-二,
+二, SP
 
 前炮:=CLOSE>REF(CLOSE,1)*1.099;
 

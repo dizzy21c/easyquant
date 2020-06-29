@@ -27,9 +27,9 @@ void barslast_list(int nCount, int *pOut, float *pData, int pNum)
   for (int i = 0; i < nCount; i++)
   {
     if (pData[i] > pNum) {
-      t_sum += 1;
-    } else {
       t_sum = 0;
+    } else {
+      t_sum += 1;
     }
 
     pOut[i] = t_sum;

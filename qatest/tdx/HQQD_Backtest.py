@@ -8,31 +8,23 @@ import random
 
 import numpy as np
 
-def CALC_FUN(data, SHORT=12, LONG=26, M=9):
+def CALC_FUN(data, N=21):
     # """
-    # 1.DIF向上突破DEA，买入信号参考。
-    # 2.DIF向下跌破DEA，卖出信号参考。
     # """
+    # print("len=%d" %(len(data)))
     C = data.close
-    H = data.high
-    L = data.low
-    M = 144
-    N = 13
-    # A1 = (C - MA(C, M)) / MA(C, M) * 100
-    # N1 = BARSLAST(CROSS(C, MA(C, M)))
-    # N2 = BARSLAST(CROSS(MA(C, M), C))
-    # B1 = IF(N1 < N2, N1 + 1, 0)
-    # C1 = HHV(A1, B1)
-    # D1 = (C - REF(C, B1)) / REF(C, B1) * 100
+    # H = data.high
+    # L = data.low
+    # M = 144
     N3 = BARSLAST(CROSS(C, MA(C, N)))
     N4 = BARSLAST(CROSS(MA(C, N), C))
     AA = IF(N3 < N4, N3 + 1, 0)
-    BB = (C - REF(C, AA[-1])) / REF(C, AA[-1]) * 100
-    MR = IFAND(AA == 1 , BB > AA,True,False)
+    BB = (C - REF(C, AA)) / REF(C, AA) * 100
+    MR = IFAND(AA == 1 , BB > AA, True, False)
     # MC=(REF(AA, 1) > 0 and AA = 0) or ( BB > 0 and AA / BB > 1.03) or (BB > 0 and REF(BB, 1) / BB > 1.19)
     MC1 = IFAND(REF(AA, 1) > 0, AA == 0, True, False)
     MC2 = IFAND(BB > 0, AA/BB > 1.03, True, False)
-    MC3 = IFAND(BB > 0, REF(BB,1) / BB > 1.13, True, False)
+    MC3 = IFAND(BB > 0, REF(BB, 1) / BB > 1.19, True, False)
     MCF1 = IFOR(MC1, MC2, True, False)
     MC = IFOR(MCF1, MC3, True, False)
     # ma5=base.REF(base.MA(data.close, 5),1)
@@ -53,7 +45,8 @@ def CALC_FUN(data, SHORT=12, LONG=26, M=9):
 class MaBacktest(QAStrategyStockBase):
     def on_bar(self, data):
         code = data.name[1]
-        # print(data)
+        dateDisp = data.name[0]
+        # print(code)
         # print(self.get_positions('000001'))
         # print(self.market_data)
         #
@@ -64,9 +57,12 @@ class MaBacktest(QAStrategyStockBase):
         # print('---------------under is 当前品种的market_data --------------')
         # print(self.get_code_marketdata(code))
         # print(code)
-        if len(self.get_code_marketdata(code)) < 21:
+        # print(data.name)
+        if len(self.market_data) < 10:
+            # print(data.name)
             return
         # code = data.name[1]
+        # print(data.name)
         res = self.calc(code)
         # sig = QA.CROSS(res.KDJ_J, res.KDJ_K)
         # sig2 = QA.CROSS(res.KDJ_K, res.KDJ_J)
@@ -83,20 +79,23 @@ class MaBacktest(QAStrategyStockBase):
         if res.BUY[-1]: # or res.BUY2[-1]:
         # if res.DIF[-1] > res.DEA[-1]:
 
-            print('LONG price=%8.2f' % (data['close']))
+            # print('LONG time=%s,  price=%8.2f' % (dateDisp, data['close']))
 
             if self.get_positions(code).volume_long == 0:
+                print('LONG time=%s,  price=%8.2f' % (dateDisp, data['close']))
                 self.send_order('BUY', 'OPEN', code=code, price=data['close'], volume=1000)
 
             # if self.positions.volume_short > 0:
             #     self.send_order('BUY', 'CLOSE', code=code, price=bar['close'], volume=1)
 
-        elif res.SELL[-1]:
-            print('SHORT price=%8.2f' % (data['close']))
+        if res.SELL[-1]:
+            # print('SHORT price=%8.2f' % (data['close']))
+            # print('SHORT time=%s,  price=%8.2f' % (dateDisp, data['close']))
 
             # if self.acc.positions == {} or self.acc.positions.volume_short == 0:
             #     self.send_order('SELL', 'OPEN', code=code, price=bar['close'], volume=1)
             if self.get_positions(code).volume_long > 0:
+                print('SHORT time=%s,  price=%8.2f' % (dateDisp, data['close']))
                 self.send_order('SELL', 'CLOSE', code=code, price=data['close'], volume=1000)
 
     def calc(self,code):
@@ -105,7 +104,8 @@ class MaBacktest(QAStrategyStockBase):
         # sig2 = QA.CROSS(res.KDJ_K, res.KDJ_J)
         # data=self.get_code_marketdata(code)
         # print(d/ata.index.names)
-        return CALC_FUN(self.get_code_marketdata(code))
+        # return CALC_FUN(self.get_code_marketdata(code))
+        return CALC_FUN(self.market_data)
         # res = QA.QA_indicator_KDJ(self.market_data)
         # return res
         # return QA.QA_indicator_MACD(self.market_data)
@@ -114,14 +114,19 @@ class MaBacktest(QAStrategyStockBase):
         pass
 
 if __name__ == '__main__':
+    code = QA.QA_fetch_stock_block_adv().code[0:10]
+    # code = ['000001', '000002', '000004', '000005', '000006', '000007']#, '000008', '000009', '000010', '000011']
+    # code = ['000001']
+    # print(code)
     s = MaBacktest(
-                code=['600822']
+                # code=['000001']
                 # code=QA.QA_fetch_stock_block_adv().code[0:10]
+                code = code
                 # , frequence='30min'
                 , frequence='day'
-                , start='2018-01-01', end='2020-12-31'
-                , portfolio='example'
-                , strategy_id='DingDi-day')
+                , start='2019-01-01', end='2020-12-31'
+                , portfolio='HQQD'
+                , strategy_id='test03')
     # s.debug()
     s.run_backtest()
     # msg = s.acc.message
@@ -129,7 +134,7 @@ if __name__ == '__main__':
     # s.update_account()
 
     risk = QA.QA_Risk(s.acc)
-    risk.plot_assets_curve().show()
+    # risk.plot_assets_curve().show()
     print(risk.profit_construct)
 
   

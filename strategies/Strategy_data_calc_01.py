@@ -85,8 +85,8 @@ class calcStrategy(Thread):
             #     print("1 code=%s, data=%d" % (self.code, len(df_min)))
             now_price = self._data['now']
             if index_time in df_min.index:
-                if self.code == '600822':
-                    print("10 code=%s, data=%s" % (self.code, index_time))
+                # if self.code == '600822':
+                #     print("10 code=%s, data=%s" % (self.code, index_time))
                 # df_min.loc[index_time, 'open'] = now_price
                 if now_price > df_min.loc[index_time, 'high']:
                     df_min.loc[index_time, 'high'] = now_price
@@ -96,8 +96,8 @@ class calcStrategy(Thread):
                 df_min.loc[index_time, 'vol'] = self._data['volume'] - old_vol
                 df_min.loc[index_time, 'amount'] = self._data['amount'] - old_amount
             else:
-                if self.code == '600822':
-                    print("2 code=%s, data=%d" % (self.code, len(df_min)))
+                # if self.code == '600822':
+                #     print("2 code=%s, data=%d" % (self.code, len(df_min)))
                 df_min.loc[index_time] = [0 for x in range(len(df_min.columns))]
                 df_min.loc[index_time, 'open'] = now_price
                 df_min.loc[index_time, 'high'] = now_price
