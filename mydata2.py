@@ -16,7 +16,7 @@ need_data = '' #get_broker_need_data(broker)
 class DataSinaEngine(SinaEngine):
     EventType = 'data-sina'
     PushInterval = 10
-    config = "stock2_list"
+    config = "stock_list"
 
 
 # class BlockSinaEngine(SinaEngine):
@@ -27,7 +27,7 @@ class DataSinaEngine(SinaEngine):
 class IndexSinaEngine(SinaEngine):
     EventType = 'index-sina'
     PushInterval = 10
-    config = "index2_list"
+    config = "index_list"
 
 # quotaton_engine = DefaultQuotationEngine if quotation_choose == '1' else LFEngine
 

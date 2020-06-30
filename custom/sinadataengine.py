@@ -13,7 +13,7 @@ class SinaEngine(PushBaseEngine):
     config = None
 
     def init(self):
-        self.source = easyquotation.use('qq')  # sina, tencent/qq
+        self.source = easyquotation.use('sina')  # sina, tencent/qq
 
     def fetch_quotation(self):
         if self.EventType == "worker":

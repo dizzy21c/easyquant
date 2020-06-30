@@ -7,10 +7,21 @@ import requests
 from easyquant import QATdx as tdx
 from easyquant.indicator.udf_formula import *
 from easyquant import RedisIo
+from easyquant import MongoIo
 from multiprocessing import Process, Pool, cpu_count, Manager
 import click
+from threading import Thread, current_thread, Lock
 
 STOCK_CODE_PATH = "config/stock_codes.conf"
+
+class TopTopCalcThread(Thread):
+    def __init__(self, code, idx):
+        Thread.__init__(self)
+        self.code = code
+        self.idx = idx
+
+    def run(self):
+        do_init_data_buf(self.code, self.idx)
 
 
 # def update_stock_codes():
@@ -160,6 +171,23 @@ def do_calc_top_data(code, last_day):
     if udf_top_last(C, M = last_day, N = 30):
         top_codes.append(code)
 
+def do_calc_2top(code, last_day):
+    # print("calc_toptop_codes-cod=%s" % code )
+    mongo = MongoIo()
+    # last_day = "2020-06-30"
+    data = mongo.get_stock_day(code, st_start="2020-03-01", st_end=last_day)
+    if len(data) < 30:
+        return
+    # print("code=%s, len=%d, lastday=%s" % (code, len(data), data.iloc[-1].name))
+    CLOSE = data.close
+    C = data.close
+    前炮 = CLOSE > REF(CLOSE, 1) * 1.099
+    小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
+    时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
+    后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, True, False)
+    if 后炮.iloc[-1]:
+        top_codes.append(code)
+
 def calc_top_codes(code_type, last_day):
     # redis=RedisIo()
     config_name = 'stock_list.json'
@@ -180,22 +208,51 @@ def calc_top_codes(code_type, last_day):
     with open(stock_code_path("top_list.json"), "w") as f:
         f.write(json.dumps(dict(code=codes)))
 
-@click.command () 
+
+def calc_toptop_codes(_code_type, last_day):
+    # redis=RedisIo()
+    config_name = 'stock_list.json'
+    # codes=[]
+    pool = Pool(cpu_count())
+    with open(stock_code_path(config_name), 'r') as f:
+        data = json.load(f)
+        for code in data['code']:
+            # pool.apply_async(do_calc_2top, args=(code, last_day,))
+            do_calc_2top(code, last_day)
+
+    pool.close()
+    pool.join()
+    pool.terminate()
+
+    codes = []
+    for mc in top_codes:
+        codes.append(mc)
+    with open(stock_code_path("toptop_list.json"), "w") as f:
+        f.write(json.dumps(dict(code=codes)))
+
+
+@click.command ()
 # @click.option ('--count', default=1, help = 'Number of greetings.') 
-@click.option ('--last-day', default=5, help = 'Number of greetings.') 
+@click.option ('--last-day', default="5", help = 'Number of greetings.') 
 # @click.option('--name', prompt = 'strategy name', help= 'test strategy name[data-worker]') 
-@click.option('--code-type', default = "top-codes", help= 'code type[top-codes]') 
+@click.option('--code-type', default = "top-codes", help= 'code type[top-codes, toptop-codes]')
 def main_func(code_type, last_day):
     if code_type == "top-codes":
         calc_top_codes(code_type, last_day)
+    elif code_type == "toptop-codes":
+        print("do toptop-codes-calc")
+        calc_toptop_codes(code_type, last_day)
     else:
         get_stock_codes()
 
 # redis=RedisIo()
 # top_codes = Manager().list()
+# mongo = MongoIo()
 if __name__ == "__main__":
     redis=RedisIo()
     top_codes = Manager().list()
     # get_stock_codes()
     main_func()
+    # calc_toptop_codes("code_type", "last_day")
+    # main_func(code_type="toptop-codes")
 

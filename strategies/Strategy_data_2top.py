@@ -49,7 +49,8 @@ def toptop_calc(data):
     小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
     时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
     后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, True, False)
-    return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
+    # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
+    return 后炮.iloc[-1]
 
 class UpdateDataThread(Thread):
     def __init__(self, code, idx):
