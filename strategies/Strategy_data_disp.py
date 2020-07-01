@@ -67,10 +67,12 @@ class Strategy(StrategyTemplate):
         # print(datetime.datetime.now())
         for stcode in event.data:
             stdata= event.data[stcode]
-            # self.log.info("data=%s" % stcode)
+            # self.log.info("data=%s, data=%s" % (stcode, stdata))
             # self.easymq.pub(json.dumps(stdata, cls=CJsonEncoder), stcode)
+            # aa = json.dumps(stdata)
+            # self.log.info("code=%s, data=%s" % (stcode, aa))
             self.easymq.pub(json.dumps(stdata), stcode)
-            rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
+            rtn=self.data_util.day_summary(data=stdata, rtn=rtn)
             threads.append(SaveData(stcode, stdata))
         self.log.info(rtn)
 

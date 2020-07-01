@@ -143,15 +143,19 @@ class calcStrategy(Thread):
         self.upd_min(5)
         # self.log.info()
         # if now_vol > df_v.m5.iloc[-1]:
+        if self._data['close'] > 0:
+            chag_pct = (self._data['now'] - self._data['close']) / self._data['close'] * 100
+        else:
+            chag_pct = 0.0
         # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
-        self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], self._data['high'], self._data['low']))
+        self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, chag_pct, df.m5.iloc[-1], self._data['high'], self._data['low']))
 
 
         # self.working = False
 class Strategy(StrategyTemplate):
     name = 'save-data-calc-01'  ### day
     idx = 0
-    EventType = 'data-sina'
+    # EventType = 'data-sina'
     config_name = './config/stock2_list.json'
 
     def __init__(self, user, log_handler, main_engine):
@@ -187,7 +191,7 @@ class Strategy(StrategyTemplate):
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
         ## init message queue
-        self.started=False
+        self.started = False
         self.easymq = EasyMq()
         self.easymq.init_receive(exchange="stockcn")
         self.easymq.callback = self.callback
@@ -203,16 +207,15 @@ class Strategy(StrategyTemplate):
         # self.easymq.callback = mycallback
         # self.easymq.start()
 
-
     def strategy(self, event):
         if self.started:
             return
-        
+        self.log.info('Strategy =%s, easymq started' % self.name)
         self.started = True
         self.easymq.start()
         
     def callback(self, a, b, c, data):
+        # self.log.info('Strategy =%s, start calc...' % self.name)
         data = json.loads(data)
-        # self.log.info("data111=%s" % data['code'])
         t = calcStrategy(data['code'], data, self.log, self.idx)
         t.start()

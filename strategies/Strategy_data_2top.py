@@ -25,22 +25,23 @@ from easyquant.indicator.base import *
 data_buf_day = Manager().dict()
 # data_buf_5min = Manager().dict()
 # data_buf_5min_0 = Manager().dict()
-# mongo = MongoIo()
+mongo = MongoIo()
 easytime=EasyTime()
 
 def do_init_data_buf(code, idx):
     freq = 5
-    mc = MongoIo()
+    # 进程必须在里面, 线程可以在外部
+    # mc = MongoIo()
     if idx == 0:
-        data_day = mc.get_stock_day(code=code)
+        data_day = mongo.get_stock_day(code=code, st_start="2020-05-15")
         # data_min = mc.get_stock_min_realtime(code=code, freq=freq)
     else:
-        data_day = mc.get_index_day(code=code)
+        data_day = mongo.get_index_day(code=code)
         # data_min = mc.get_index_min_realtime(code=code)
     ## TODO fuquan
     data_buf_day[code] = data_day
     # data_buf_5min[code] = data_min
-    # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_buf_5min)))
+    print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_day)))
 
 def toptop_calc(data):
     CLOSE=data.close
@@ -119,8 +120,8 @@ class calcStrategy(Thread):
 class Strategy(StrategyTemplate):
     name = 'save-data-2top'  ### day
     idx = 0
-    EventType = 'data-sina'
-    config_name = './config/stock2_list.json'
+    # EventType = 'data-sina'
+    config_name = './config/stock_list.json'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
@@ -175,12 +176,12 @@ class Strategy(StrategyTemplate):
     def strategy(self, event):
         if self.started:
             return
-        
+        self.log.info('Strategy =%s, easymq started' % self.name)
         self.started = True
         self.easymq.start()
         
     def callback(self, a, b, c, data):
+        # self.log.info('Strategy =%s, start calc...' % self.name)
         data = json.loads(data)
-        # self.log.info("data111=%s" % data['code'])
         t = calcStrategy(data['code'], data, self.log, self.idx)
         t.start()
