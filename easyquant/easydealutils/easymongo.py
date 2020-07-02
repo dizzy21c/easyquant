@@ -36,25 +36,25 @@ class MongoIo(object):
             st_end = "2030-12-31 23:59:59"
         if type == 'D':
             if isinstance(code, list):
-                dtd=self.db[table].find({'code':{'$in' : code},'date':{'$gt':st_start, "$lt":st_end}})
+                dtd=self.db[table].find({'code':{'$in' : code},'date':{'$gte':st_start, "$lte":st_end}})
             else:
-                dtd=self.db[table].find({'code':code,'date':{'$gt':st_start, "$lt":st_end}})
+                dtd=self.db[table].find({'code':code,'date':{'$gte':st_start, "$lte":st_end}})
         else:
             if isinstance(code, list):
-                dtd=self.db[table].find({'code':{'$in':code},'date':{'$gt':st_start, "$lt":st_end}, 'type':type})
+                dtd=self.db[table].find({'code':{'$in':code},'date':{'$gte':st_start, "$lte":st_end}, 'type':type})
             else:
-                dtd=self.db[table].find({'code':code,'date':{'$gt':st_start, "$lt":st_end}, 'type':type})
+                dtd=self.db[table].find({'code':code,'date':{'$gte':st_start, "$lte":st_end}, 'type':type})
         ptd=pd.DataFrame(list(dtd))
         if len(ptd) > 0:
             del ptd['_id']
             del ptd['date_stamp']
             if type == 'D':
                 ptd.date = pd.to_datetime(ptd.date)
-                ptd = ptd.set_index(["date"])
+                ptd = ptd.set_index(["date","code"])
             else:
                 ptd.date = pd.to_datetime(ptd.date)
                 ptd.datetime= pd.to_datetime(ptd.datetime)
-                ptd = ptd.set_index(["datetime"])
+                ptd = ptd.set_index(["datetime","code"])
         # ptd.rename(columns={"vol":"volume"}, inplace=True)
         return ptd
     

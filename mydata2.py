@@ -46,7 +46,7 @@ class IndexSinaEngine(SinaEngine):
 # log_type_choose = '2' #input('请输入 log 记录方式: 1: 显示在屏幕 2: 记录到指定文件\n: ')
 log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
 
-log_filepath = 'logs/mainlog.txt' #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
+log_filepath = 'logs/data-mainlog.txt' #input('请输入 log 文件记录路径\n: ') if log_type == 'file' else ''
 
 log_handler = DefaultLogHandler(name='real-data', log_type=log_type, filepath=log_filepath)
 
@@ -62,6 +62,6 @@ m = easyquant.MainEngine(broker, need_data, quotation_engines=qe_list, log_handl
 m.is_watch_strategy = False #True  # 策略文件出现改动时,自动重载,不建议在生产环境下使用
 # names=['save-index-data-disp', 'save-data-disp'] 
 # names=['save-index-data-disp', 'save-data-disp', 'save-data-calc-01']
-names=['save-index-data-disp', 'save-data-disp', 'save-data-calc-01', 'index-risk-01','save-data-2top']
+names=['save-index-data-disp', 'save-data-disp']
 m.load_strategy(names=names)
 m.start()

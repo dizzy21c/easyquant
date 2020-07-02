@@ -24,18 +24,18 @@ from multiprocessing import Process, Pool, cpu_count, Manager
 data_buf_day = Manager().dict()
 data_buf_5min = Manager().dict()
 data_buf_5min_0 = Manager().dict()
-# mongo = MongoIo()
+mongo = MongoIo()
 easytime=EasyTime()
 
 def do_init_data_buf(code, idx):
     freq = 5
-    mc = MongoIo()
+    # mongo = MongoIo()
     if idx == 0:
-        data_day = mc.get_stock_day(code=code)
-        data_min = mc.get_stock_min_realtime(code=code, freq=freq)
+        data_day = mongo.get_stock_day(code=code)
+        data_min = mongo.get_stock_min_realtime(code=code, freq=freq)
     else:
-        data_day = mc.get_index_day(code=code)
-        data_min = mc.get_index_min_realtime(code=code)
+        data_day = mongo.get_index_day(code=code)
+        data_min = mongo.get_index_min_realtime(code=code)
     ## TODO fuquan
     data_buf_day[code] = data_day
     data_buf_5min[code] = data_min
@@ -153,10 +153,10 @@ class calcStrategy(Thread):
 
         # self.working = False
 class Strategy(StrategyTemplate):
-    name = 'save-data-calc-01'  ### day
+    name = 'calc-min-data'  ### day
     idx = 0
     # EventType = 'data-sina'
-    config_name = './config/stock2_list.json'
+    config_name = './config/stock_list.json'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
@@ -169,7 +169,7 @@ class Strategy(StrategyTemplate):
         # init data
         start_time = time.time()
         # pool = Pool(cpu_count())
-        pool = []
+        poolThread = []
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
@@ -178,15 +178,15 @@ class Strategy(StrategyTemplate):
                 # self.code_list.append(d)
                 # pool.apply_async(do_init_data_buf, args=(d, self.idx))
                 # do_init_data_buf(d, self.idx)
-                pool.append(UpdateDataThread(d, self.idx))
+                poolThread.append(UpdateDataThread(d, self.idx))
                 # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
         # pool.close()
         # pool.join()
         # pool.terminate()
-        for c in pool:
+        for c in poolThread:
             c.start()
 
-        for c in pool:
+        for c in poolThread:
             c.join()
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         

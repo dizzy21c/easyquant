@@ -22,7 +22,7 @@ from easyquant.indicator.base import *
 data_buf_day = Manager().dict()
 data_buf_5min = Manager().dict()
 data_buf_15min_0 = Manager().dict()
-# mongo = MongoIo()
+mongo = MongoIo()
 def index_risk(data, N1=6, N2=12):
     qc=3.5
     jb=3.3
@@ -54,6 +54,15 @@ def do_init_data_buf(code, idx):
     data_buf_day[code] = data_day
     data_buf_5min[code] = data_min
     # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_buf_5min)))
+
+class UpdateDataThread(Thread):
+    def __init__(self, code, idx):
+        Thread.__init__(self)
+        self.code = code
+        self.idx = idx
+
+    def run(self):
+        do_init_data_buf(self.code, self.idx)
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, idx):
@@ -121,7 +130,7 @@ class calcStrategy(Thread):
 
         # self.working = False
 class Strategy(StrategyTemplate):
-    name = 'index-risk-01'  ### day
+    name = 'calc-day-data-idx'  ### day
     idx = 1
     EventType = 'index-sina'
     config_name = './config/index2_list.json'
@@ -136,7 +145,8 @@ class Strategy(StrategyTemplate):
         self.calc_thread_dict = {}
         # init data
         start_time = time.time()
-        pool = Pool(cpu_count())
+        # pool = Pool(cpu_count())
+        poolThread = []
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
@@ -145,13 +155,19 @@ class Strategy(StrategyTemplate):
                 # self.code_list.append(d)
                 # pool.apply_async(do_init_data_buf, args=(d, self.idx))
                 # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
+                poolThread.append(UpdateDataThread(d, self.idx))
                 ## 现场无法启动进程
-                do_init_data_buf(d, self.idx)
+                # do_init_data_buf(d, self.idx)
+        for c in poolThread:
+            c.start()
+
+        for c in poolThread:
+            c.join()
+
                 
-                
-        pool.close()
-        pool.join()
-        pool.terminate()
+        # pool.close()
+        # pool.join()
+        # pool.terminate()
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
         ## init message queue
@@ -175,7 +191,8 @@ class Strategy(StrategyTemplate):
     def strategy(self, event):
         if self.started:
             return
-        
+
+        self.log.info('Strategy =%s, easymq started' % self.name)
         self.started = True
         self.easymq.start()
         

@@ -25,17 +25,6 @@ MAVOL3: MA(VOLUME,M3);
 
 
 
-二, SP
-
-前炮:=CLOSE>REF(CLOSE,1)*1.099;
-
-小阴小阳:=HHV(ABS(C-REF(C,1))/REF(C,1)*100,BARSLAST(前炮))<9;
-
-时间限制:=COUNT(前炮,30)=1 AND BARSLAST(前炮)>5;
-
-后炮:REF(小阴小阳 AND 时间限制,1) AND 前炮;
-
-
 光辉岁月
 
 A1:=(IF(BARSTATUS=2,O,C));

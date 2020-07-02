@@ -32,6 +32,7 @@ def do_init_data_buf(code, idx):
     freq = 5
     # 进程必须在里面, 线程可以在外部
     # mc = MongoIo()
+    # mongo = MongoIo()
     if idx == 0:
         data_day = mongo.get_stock_day(code=code, st_start="2020-05-15")
         # data_min = mc.get_stock_min_realtime(code=code, freq=freq)
@@ -41,7 +42,7 @@ def do_init_data_buf(code, idx):
     ## TODO fuquan
     data_buf_day[code] = data_day
     # data_buf_5min[code] = data_min
-    print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_day)))
+    # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_day)))
 
 def toptop_calc(data):
     CLOSE=data.close
@@ -113,12 +114,13 @@ class calcStrategy(Thread):
         # if now_vol > df_v.m5.iloc[-1]:
         # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
         if toptop_calc(df_day):
-            self.log.info("toptop code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], self._data['high'], self._data['low']))
+            chag_pct = (self._data['now'] - self._data['close']) / self._data['close'] * 100
+            self.log.info("toptop code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, chag_pct, df.m5.iloc[-1], self._data['high'], self._data['low']))
 
 
         # self.working = False
 class Strategy(StrategyTemplate):
-    name = 'save-data-2top'  ### day
+    name = 'calc-day-data'  ### day
     idx = 0
     # EventType = 'data-sina'
     config_name = './config/stock_list.json'
@@ -134,7 +136,7 @@ class Strategy(StrategyTemplate):
         # init data
         start_time = time.time()
         # pool = Pool(cpu_count())
-        pool = []
+        poolThread = []
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
@@ -143,15 +145,15 @@ class Strategy(StrategyTemplate):
                 # self.code_list.append(d)
                 # pool.apply_async(do_init_data_buf, args=(d, self.idx))
                 # do_init_data_buf(d, self.idx)
-                pool.append(UpdateDataThread(d, self.idx))
+                poolThread.append(UpdateDataThread(d, self.idx))
                 # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
         # pool.close()
         # pool.join()
         # pool.terminate()
-        for c in pool:
+        for c in poolThread:
             c.start()
 
-        for c in pool:
+        for c in poolThread:
             c.join()
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
