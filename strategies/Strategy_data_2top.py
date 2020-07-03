@@ -32,7 +32,7 @@ def do_init_data_buf(code, idx):
     freq = 5
     # 进程必须在里面, 线程可以在外部
     # mc = MongoIo()
-    # mongo = MongoIo()
+    mongo = MongoIo()
     if idx == 0:
         data_day = mongo.get_stock_day(code=code, st_start="2020-05-15")
         # data_min = mc.get_stock_min_realtime(code=code, freq=freq)
@@ -123,7 +123,7 @@ class Strategy(StrategyTemplate):
     name = 'calc-day-data'  ### day
     idx = 0
     # EventType = 'data-sina'
-    config_name = './config/stock_list.json'
+    config_name = './config/stock2_list.json'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
@@ -135,7 +135,7 @@ class Strategy(StrategyTemplate):
         self.calc_thread_dict = {}
         # init data
         start_time = time.time()
-        # pool = Pool(cpu_count())
+        pool = Pool(cpu_count())
         poolThread = []
         with open(self.config_name, 'r') as f:
             data = json.load(f)
@@ -143,18 +143,18 @@ class Strategy(StrategyTemplate):
                 if len(d) > 6:
                     d = d[len(d)-6:len(d)]
                 # self.code_list.append(d)
-                # pool.apply_async(do_init_data_buf, args=(d, self.idx))
+                pool.apply_async(do_init_data_buf, args=(d, self.idx))
                 # do_init_data_buf(d, self.idx)
-                poolThread.append(UpdateDataThread(d, self.idx))
+                # poolThread.append(UpdateDataThread(d, self.idx))
                 # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
-        # pool.close()
-        # pool.join()
+        pool.close()
+        pool.join()
         # pool.terminate()
-        for c in poolThread:
-            c.start()
-
-        for c in poolThread:
-            c.join()
+        # for c in poolThread:
+        #     c.start()
+        #
+        # for c in poolThread:
+        #     c.join()
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
         ## init message queue

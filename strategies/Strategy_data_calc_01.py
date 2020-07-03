@@ -156,7 +156,7 @@ class Strategy(StrategyTemplate):
     name = 'calc-min-data'  ### day
     idx = 0
     # EventType = 'data-sina'
-    config_name = './config/stock_list.json'
+    config_name = './config/stock2_list.json'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
