@@ -38,15 +38,27 @@ void barslast_list(int nCount, int *pOut, float *pData, int pNum)
 
 void hhv_list(int nCount, float *pOut, float *pData, int *pNum)
 {
+//  float t_max = 0.0;
+//  for (int i = 0; i < nCount; i++) {
+//    if (t_max < pData[i]) {
+//        t_max = pData[i];
+//    }
+//  }
+
   for (int i = 0; i < nCount; i++)
   {
     float t_out = 0.0;
     int pos = pNum[i];
-    int pre_pos = i > pos ? i - pos : 0;
-    for(int j = pre_pos; j < i + 1; j++) {
-        if (t_out < pData[j]) {
-            t_out = pData[j];
+    if (pos > 0) {
+        int pre_pos = i > pos ? i - pos + 1 : 0;
+        for(int j = pre_pos; j < i + 1; j++) {
+            if (t_out < pData[j]) {
+                t_out = pData[j];
+            }
         }
+    } else {
+//        t_out = t_max;
+        t_out = pData[i];
     }
     pOut[i] = t_out;
   }
@@ -58,11 +70,15 @@ void llv_list(int nCount, float *pOut, float *pData, int *pNum)
   {
     float t_out = 9999999999999.0;
     int pos = pNum[i];
-    int pre_pos = i > pos ? i - pos : 0;
-    for(int j = pre_pos; j < i + 1; j++) {
-        if (t_out > pData[j]) {
-            t_out = pData[j];
+    if (pos > 0) {
+        int pre_pos = i > pos ? i - pos : 0;
+        for(int j = pre_pos; j < i + 1; j++) {
+            if (t_out > pData[j]) {
+                t_out = pData[j];
+            }
         }
+    } else {
+        t_out = pData[i];
     }
     pOut[i] = t_out;
   }
