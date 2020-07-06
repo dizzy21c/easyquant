@@ -36,6 +36,38 @@ void barslast_list(int nCount, int *pOut, float *pData, int pNum)
   }
 }
 
+void hhv_list(int nCount, float *pOut, float *pData, int *pNum)
+{
+  for (int i = 0; i < nCount; i++)
+  {
+    float t_out = 0.0;
+    int pos = pNum[i];
+    int pre_pos = i > pos ? i - pos : 0;
+    for(int j = pre_pos; j < i + 1; j++) {
+        if (t_out < pData[j]) {
+            t_out = pData[j];
+        }
+    }
+    pOut[i] = t_out;
+  }
+}
+
+void llv_list(int nCount, float *pOut, float *pData, int *pNum)
+{
+  for (int i = 0; i < nCount; i++)
+  {
+    float t_out = 9999999999999.0;
+    int pos = pNum[i];
+    int pre_pos = i > pos ? i - pos : 0;
+    for(int j = pre_pos; j < i + 1; j++) {
+        if (t_out > pData[j]) {
+            t_out = pData[j];
+        }
+    }
+    pOut[i] = t_out;
+  }
+}
+
 int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
 {
   int nSpan = 0;
@@ -206,4 +238,14 @@ void sum(int nCount, float *pfOut, float *pfIn, int *piIn)
 void barslast(int nCount, int *piOut, float *pfIn, int iIn)
 {
   barslast_list(nCount, piOut, pfIn, iIn);
+}
+
+void hhv(int nCount, float *pfOut, float *pfIn, int *piIn2)
+{
+  hhv_list(nCount, pfOut, pfIn, piIn2);
+}
+
+void llv(int nCount, float *pfOut, float *pfIn, int *piIn2)
+{
+  llv_list(nCount, pfOut, pfIn, piIn2);
 }

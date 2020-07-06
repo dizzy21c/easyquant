@@ -85,26 +85,46 @@ def DIFF(Series, N=1):
     return pd.Series(Series).diff(N)
 
 
-def HHV(Series, N):
-    # TODO
-    if isinstance(N, pd.Series):
-        N = N[len(N) - 1]
+def HHV(Series, NS):
+    if isinstance(NS, pd.Series):
+        ncount = len(NS)
+        tf_p = c_float * ncount
+        np_OUT = tf_p(0)
+        na_Series = np.asarray(Series).astype(np.float32)
+        na_NS = np.asarray(NS).astype(np.int32)
 
-    if N == 0:
+        np_S = cast(na_Series.ctypes.data, POINTER(c_float))
+        np_N = cast(na_NS.ctypes.data, POINTER(c_int))
+
+        lib.hhv(ncount, np_OUT, np_S, np_N)
+
+        return pd.Series(np.asarray(np_OUT), index=Series.index)
+
+    if NS == 0:
         return Series
 
-    return pd.Series(Series).rolling(N).max()
+    return pd.Series(Series).rolling(NS).max()
 
 
-def LLV(Series, N):
-    # TODO
-    if isinstance(N, pd.Series):
-        N = N[len(N) - 1]
+def LLV(Series, NS):
+    if isinstance(NS, pd.Series):
+        ncount = len(NS)
+        tf_p = c_float * ncount
+        np_OUT = tf_p(0)
+        na_Series = np.asarray(Series).astype(np.float32)
+        na_NS = np.asarray(NS).astype(np.int32)
 
-    if N == 0:
+        np_S = cast(na_Series.ctypes.data, POINTER(c_float))
+        np_N = cast(na_NS.ctypes.data, POINTER(c_int))
+
+        lib.llv(ncount, np_OUT, np_S, np_N)
+
+        return pd.Series(np.asarray(np_OUT), index=Series.index)
+
+    if NS == 0:
         return Series
 
-    return pd.Series(Series).rolling(N).min()
+    return pd.Series(Series).rolling(NS).min()
 
 def SUMS(Series, NS):
     ncount = len(NS)
