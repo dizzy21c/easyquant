@@ -42,6 +42,7 @@ class SaveData(Thread):
         self.data['_id'] = "%s-%s" %( self.code, self.data['datetime'])
         self.data['price'] = self.data['now']
         mongo.save_realtime(self.data)
+
 def save_monto_realtime(code, data):
     data['_id'] = "{}-{}".format( code, data['datetime'])
     data['price'] = data['now']
@@ -82,7 +83,7 @@ class Strategy(StrategyTemplate):
             # threads.append(SaveData(stcode, stdata))
         self.log.info(rtn)
 
-        for _task in as_completed(task_list)
+        for task in as_completed(task_list):
             # c.start()
             pass
 
