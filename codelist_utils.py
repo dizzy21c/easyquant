@@ -12,6 +12,9 @@ from multiprocessing import Process, Pool, cpu_count, Manager
 import click
 from threading import Thread, current_thread, Lock
 import time
+from concurrent.futures import (
+    ThreadPoolExecutor, as_completed, ProcessPoolExecutor
+)
 
 mongo = MongoIo()
 STOCK_CODE_PATH = "config/stock_codes.conf"
@@ -220,7 +223,9 @@ def do_calc_2top(code, last_day):
     # return 后炮.iloc[-1]
     if 后炮.iloc[-1]:
         top_codes.append(code)
-    # return code
+        return code
+    else:
+        return None
 
 def calc_toptop_codes(_code_type, last_day):
     # redis=RedisIo()
@@ -255,7 +260,41 @@ def calc_toptop_codes_process(_code_type, last_day):
     # redis=RedisIo()
     config_name = 'stock_list.json'
     # codes=[]
-    pool = Pool(cpu_count())
+    executor = ThreadPoolExecutor(max_workers=cpu_count()*8)
+    # task_list = [executor.submit(fib, n) for n in range(3, 35)]
+    # pool = Pool(cpu_count())
+    task_list = []
+    with open(stock_code_path(config_name), 'r') as f:
+        data = json.load(f)
+        for code in data['code']:
+            # res = pool.apply_async(do_calc_2top, args=(code, last_day,))
+            res = executor.submit(do_calc_2top, code, last_day)
+            task_list.append(res)
+            # do_calc_2top(code, last_day)
+            # poolThread.append(TopTopCalcThread(code, last_day))
+
+    # pool.close()
+    # pool.join()
+    # calc_codes = []
+    # pool.terminate()
+    # thread_results = [task.result() for task in as_completed(task_list)]
+
+    codes = []
+    for task in as_completed(task_list):
+        result = task.result()
+        if result is not None:
+            codes.append(result)
+    # for mc in top_codes:
+    #     codes.append(mc)
+    with open(stock_code_path("toptop_list.json"), "w") as f:
+        f.write(json.dumps(dict(code=codes)))
+
+def calc_toptop_codes_process_bak(_code_type, last_day):
+    # redis=RedisIo()
+    config_name = 'stock_list.json'
+    # codes=[]
+    print(cpu_count())
+    pool = Pool(cpu_count()*8)
     poolThread = []
     with open(stock_code_path(config_name), 'r') as f:
         data = json.load(f)
@@ -276,6 +315,36 @@ def calc_toptop_codes_process(_code_type, last_day):
     with open(stock_code_path("toptop_list.json"), "w") as f:
         f.write(json.dumps(dict(code=codes)))
 
+
+def calc_toptop_codes_process_new(_code_type, last_day):
+    # redis=RedisIo()
+    config_name = 'stock_list.json'
+    # codes=[]
+    executor = ProcessPoolExecutor(max_workers=cpu_count())
+    # task_list = [executor.submit(fib, n) for n in range(3, 35)]
+    # pool = Pool(cpu_count())
+    task_list = []
+    with open(stock_code_path(config_name), 'r') as f:
+        data = json.load(f)
+        for code in data['code']:
+            # res = pool.apply_async(do_calc_2top, args=(code, last_day,))
+            res = executor.submit(do_calc_2top, code, last_day)
+            task_list.append(res)
+            # do_calc_2top(code, last_day)
+            # poolThread.append(TopTopCalcThread(code, last_day))
+    # thread_results = [task.result() for task in as_completed(task_list)]
+
+    codes = []
+    for task in as_completed(task_list):
+        # pass
+        result = task.result()
+        if result is not None:
+            codes.append(result)
+    # for mc in top_codes:
+    #     codes.append(mc)
+    with open(stock_code_path("toptop_list.json"), "w") as f:
+        f.write(json.dumps(dict(code=codes)))
+
 @click.command ()
 # @click.option ('--count', default=1, help = 'Number of greetings.') 
 @click.option ('--last-day', default="5", help = 'Number of greetings.') 
@@ -288,7 +357,9 @@ def main_func(code_type, last_day):
         print("do toptop-codes-calc")
         start_time = time.time()
         # calc_toptop_codes(code_type, last_day)
-        calc_toptop_codes_process(code_type, last_day)
+        # calc_toptop_codes_process(code_type, last_day)
+        # calc_toptop_codes_process_bak(code_type, last_day)
+        calc_toptop_codes_process_new(code_type, last_day)
         end_time = time.time()
         print("总耗费时间%.2f秒" % (end_time - start_time))
     else:

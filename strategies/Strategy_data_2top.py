@@ -19,6 +19,7 @@ from easyquant import MongoIo
 from easyquant import EasyTime
 from multiprocessing import Process, Pool, cpu_count, Manager
 from easyquant.indicator.base import *
+from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 
 
 # calc_thread_dict = Manager().dict()
@@ -27,7 +28,7 @@ data_buf_day = Manager().dict()
 # data_buf_5min_0 = Manager().dict()
 mongo = MongoIo()
 easytime=EasyTime()
-
+executor = ThreadPoolExecutor(max_workers=cpu_count() * 50)
 def do_init_data_buf(code, idx):
     freq = 5
     # 进程必须在里面, 线程可以在外部

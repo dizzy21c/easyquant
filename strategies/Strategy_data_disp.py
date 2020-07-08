@@ -16,8 +16,9 @@ import pika
 from easyquant import EasyMq
 from easyquant import MongoIo
 from multiprocessing import Pool, cpu_count
-
+from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 mongo = MongoIo()
+executor = ThreadPoolExecutor(max_workers=cpu_count() * 50)
 class SaveData(Thread):
     def __init__(self, code,data):
         Thread.__init__(self)
@@ -41,6 +42,10 @@ class SaveData(Thread):
         self.data['_id'] = "%s-%s" %( self.code, self.data['datetime'])
         self.data['price'] = self.data['now']
         mongo.save_realtime(self.data)
+def save_monto_realtime(code, data):
+    data['_id'] = "{}-{}".format( code, data['datetime'])
+    data['price'] = data['now']
+    mongo.save_realtime(data)
 
 class Strategy(StrategyTemplate):
     name = 'save-data-disp'
@@ -62,7 +67,7 @@ class Strategy(StrategyTemplate):
             return
 
         self.log.info('Strategy =%s, event_type=%s' %(self.name, event.event_type))
-        threads = []
+        task_list = []
         rtn = {}
         # print(datetime.datetime.now())
         for stcode in event.data:
@@ -73,11 +78,13 @@ class Strategy(StrategyTemplate):
             # self.log.info("code=%s, data=%s" % (stcode, aa))
             self.easymq.pub(json.dumps(stdata), stcode)
             rtn=self.data_util.day_summary(data=stdata, rtn=rtn)
-            threads.append(SaveData(stcode, stdata))
+            task_list.append(executor.submit(save_monto_realtime, stcode, stdata))
+            # threads.append(SaveData(stcode, stdata))
         self.log.info(rtn)
 
-        for c in threads:
-            c.start()
+        for _task in as_completed(task_list)
+            # c.start()
+            pass
 
 class CJsonEncoder(json.JSONEncoder):
     def default(self, obj):
