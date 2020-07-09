@@ -24,30 +24,6 @@ MAVOL3: MA(VOLUME,M3);
   如果有多次成交量趋势拐点怎么办？有多少次成交量趋势拐点，就等于是可以多少次买入机会！也可以做波段操作。
 
 
-2,
-光辉岁月
-
-A1:=(IF(BARSTATUS=2,O,C));
-A2:=((0.36095*A1-0.03309*REF(C,1)-0.04242* REF(C,2)-0.02674* REF(C,3)-0.00701*REF(C,4) - 0.00265 * REF(C,5) - 0.00084 * REF(C,6) - 0.00029 * REF(C,7) - 0.0000956266 * REF(C,8) - 0.0000321286 * REF(C,9) - 0.0000106773 * REF(C,10) - 0.00000354576 * REF(C,11) - 0.00000116707 * REF(C,12)) / (1 - 0.75224));
-A3:=O/REF(C,1)>0.5 AND O/REF(C,1)<1.07;
-B:=CAPITAL<15000000;{流通盘小于15亿}
-竞价量:=DYNAINFO(15)/DYNAINFO(4)/100;
-KF:=(DYNAINFO(4)/DYNAINFO(3)-1)*100;
-竞价量比:=竞价量/REF(MA(V,5),1)*240;
-LTP:=IF(CAPITAL<100000,100000,CAPITAL);{流通盘}
-竞价换手率:=竞价量/LTP*10000;
-竞价动能:=KF*竞价换手率;
-光辉岁月:(A2 - A1) / A1 * 1000>60
-    AND A3
-     AND CODELIKE('688')=0
-      AND NAMELIKE('S')=0
-       AND NAMELIKE('ST')=0
-        AND NAMELIKE('*ST')=0
-         AND NAMELIKE('SST')=0
-          AND NAMELIKE('S*ST')=0
-           AND B
-            AND 竞价换手率>0.5
-             AND 竞价动能>200;
 
 
 
@@ -182,3 +158,202 @@ VAR15A:=C/MA(C,60)-1;
 大顶:IF(CROSS(VAR14A,-95) AND VAR15A>=0.35,0,1)COLORRED;
 };
 
+
+
+
+======================
+https://www.55188.com/thread-9280472-1-1.html
+光辉岁月（指标 选股 通达信 贴图）无加密
+
+2,
+光辉岁月
+
+A1:=(IF(BARSTATUS=2,O,C));
+A2:=((0.36095*A1-0.03309*REF(C,1)-0.04242* REF(C,2)-0.02674* REF(C,3)-0.00701*REF(C,4) - 0.00265 * REF(C,5) - 0.00084 * REF(C,6) - 0.00029 * REF(C,7) - 0.0000956266 * REF(C,8) - 0.0000321286 * REF(C,9) - 0.0000106773 * REF(C,10) - 0.00000354576 * REF(C,11) - 0.00000116707 * REF(C,12)) / (1 - 0.75224));
+A3:=O/REF(C,1)>0.5 AND O/REF(C,1)<1.07;
+B:=CAPITAL<15000000;{流通盘小于15亿}
+竞价量:=DYNAINFO(15)/DYNAINFO(4)/100;
+KF:=(DYNAINFO(4)/DYNAINFO(3)-1)*100;
+竞价量比:=竞价量/REF(MA(V,5),1)*240;
+LTP:=IF(CAPITAL<100000,100000,CAPITAL);{流通盘}
+竞价换手率:=竞价量/LTP*10000;
+竞价动能:=KF*竞价换手率;
+光辉岁月:(A2 - A1) / A1 * 1000>60
+    AND A3
+     AND CODELIKE('688')=0
+      AND NAMELIKE('S')=0
+       AND NAMELIKE('ST')=0
+        AND NAMELIKE('*ST')=0
+         AND NAMELIKE('SST')=0
+          AND NAMELIKE('S*ST')=0
+           AND B
+            AND 竞价换手率>0.5
+             AND 竞价动能>200;
+
+
+
+#####
+追涨博板:CLOSE/(REF(C,1))>1.05 AND (H/C<1.01);
+用法盘中实时追击，如果信号出的位置太高或拉升速度太快放弃
+简单说明，只要当天收盘涨停的票，盘后选股搜索一网打尽不会漏掉一个。盘后选出看着好看是没用的。
+我们操作要看出信号后是否有机会买入是否具有可操作性。用指标不是为了选出来好看而没有操作机会。
+建议一点：需配合均线系统辅助分析决策。既然被有心人爬楼看到分享出来，那么希望对大家有点参考价值。
+其定义：爆发涨停K线（非一字板）盘中攻击形态K线特征或直到收盘一直保持这种特征。
+以上这段文字是18年的理想16周年征文长帖中给学生和网友的解答。。
+现在找出来复制出来，希望能给大家有所启发。折腾指标是好事，但不要过分迷恋期望能折腾出神器。
+关于竞价，其实可以把开盘量手进行分组。。
+不同的流通盘竞价量的效果是不同的。
+迷你超小盘股开盘量超过1500手就很可观了。
+1亿以下流通盘2000-手，1亿以上3000手，3-5亿的3500手以上。
+大家可以试试观察一下，不同的流通盘的开盘量引发的涨停当日情况。。
+盘大盘小开盘涨幅一样，开盘量是不可同日而语的！！
+你们继续玩。。。
+
+======================
+1, https://www.55188.com/thread-3945223-1-1.html
+
+
+不知道我这样做算不算无聊，不过有点好奇，对比了几个指标，源码不同，效果差不多，晕向：）细微之处还是有区别的，请同学仔细比较一下。
+
+攻击反转1
+
+INPUT:N(9,1,60),M(3,1,30),N1(3,1,30),M1(9,1,60);
+VAR2:=REF(LOW,1);
+VAR3:=SMA(ABS(LOW-VAR2),3,1)/SMA(MAX(LOW-VAR2,0),3,1)*100;
+VAR4:=EMA(IF(CLOSE*1.3,VAR3*10,VAR3/10),3);
+VAR5:=LLV(LOW,13);
+VAR6:=HHV(VAR4,13);
+VAR7:=IF(MA(CLOSE,34),1,0);
+VAR8:=EMA(IF(LOW<=VAR5,(VAR4+VAR6*2)/2,0),3)/6800*VAR7;
+VAR9:=IF(VAR8>100,100,VAR8);
+吸筹:VAR9;
+MD:=(CLOSE-LLV(LOW,N))/(HHV(HIGH,N)-LLV(LOW,N))*100;
+FH:=SMA(MD,M,1);
+DG:=SMA(FH,N1,1);
+攻击反转:=IF(BARSLAST(CROSS(FH,MD))>=3 AND CROSS(MD,FH) AND FH<30,20,0);
+STICKLINE(VAR9>-120,0,VAR9,8,1),COLORYELLOW;
+STICKLINE(攻击反转,0,VAR9,9,0),COLORred;
+　
+（链接：http://www.55188.com/viewthread.php?tid=3942096 ）
+
+
+攻击反转2
+N:=1;
+VAR2:=REF(LOW,1);
+VAR3:=SMA(ABS(LOW-VAR2),3,1)/SMA(MAX(LOW-VAR2,0),3,1)*100;
+VAR4:=EMA(VAR3*10,3);
+VAR5:=LLV(LOW,13);
+VAR6:=HHV(VAR4,13);
+VAR7:=IF(BARSCOUNT(CLOSE) >34,1,0);
+VAR8:=EMA(IF(LOW<=VAR5,(VAR4+VAR6*2)/2,0),3)/618*VAR7;
+VAR9:=IF(VAR8>100,100,VAR8);
+{吸筹:VAR9,LINETHICK0,COLOREE00EE;}
+STICKLINE(VAR9>-120,0,VAR9,8,1);
+STICKLINE(VAR9>1 AND "KDJ.J">REF("KDJ.J",1) AND REF("KDJ.J",1)<REF("KDJ.J",2),0,VAR9,8,0),COLORRED;
+STICKLINE(VAR9>0.1 AND VAR9<1 AND "KDJ.J">REF("KDJ.J",1) AND REF("KDJ.J",1)<REF("KDJ.J",2),0,VAR9,8,0),COLOR00FFFF;
+公鸡:VAR9>N/10 AND "KDJ.J">REF("KDJ.J",1) AND REF("KDJ.J",1)<REF("KDJ.J",2);
+DRAWTEXT(公鸡,LOW*0.970,'★起'),LINETHICK1,COLORYELLOW;　
+
+（链接：http://www.55188.com/viewthread.php?tid=3941651 ）
+
+
+攻击反转3（根据网上新发布的DDX版本变通：链接：http://www.55188.com/viewthread.php?tid=3944614 ）
+
+
+N:=22;
+JJ:=(HIGH+LOW+CLOSE)/3;QJ0:=VOL/IF(HIGH=LOW,4,HIGH-LOW);
+QJ1:=IF(CAPITAL=0,QJ0*(JJ-MIN(CLOSE,OPEN)),QJ0*IF(HIGH=LOW,1,(MIN(OPEN,CLOSE)-LOW)));
+QJ2:=IF(CAPITAL=0,QJ0*(MIN(OPEN,CLOSE)-LOW),QJ0*IF(HIGH=LOW,1,(JJ-MIN(CLOSE,OPEN))));
+QJ3:=IF(CAPITAL=0,QJ0*(HIGH-MAX(OPEN,CLOSE)),QJ0*IF(HIGH=LOW,1,(HIGH-MAX(OPEN,CLOSE))));
+QJ4:=IF(CAPITAL=0,QJ0*(MAX(CLOSE,OPEN)-JJ),QJ0*IF(HIGH=LOW,1,(MAX(CLOSE,OPEN)-JJ)));
+
+
+DDX:=((QJ1+QJ2)-(QJ3+QJ4))/IF(CAPITAL=0,1000000,10000);
+DX:=MA(DDX,5)*N;
+DDX1:=SMA(DX,3,1);
+DDX2:=SMA(DDX1,3,1);
+DDX3:=EMA(DDX2,5);
+
+AA1:=FILTER(LOW=LLV(LOW,13),8);
+AA2:=IF(LLV(LOW,3)=LLV(LOW,13) AND CLOSE<REF((HIGH+LOW)/2,1),MAX(REF(LLV(LOW,12),BARSLAST(AA1)+1)-LOW,0),0);
+AA3:=EMA(AA2,3)*3;
+AA4:=SUMBARS(AA3>0,21);
+AA5:=SUM(AA3,AA4)/21;
+AA6:=REF(AA3,1)=HHV(AA3,3) AND REF(AA3,1)>AA5*3 AND COUNT(CLOSE/REF(CLOSE,1)<0.9025,8)=0 AND C>O AND LLV(LOW,3)/HHV(HIGH,18)<0.88;
+AA7:=(COUNT(DDX>0,5)>0 OR NOT(DDX1<DDX2 AND DDX2<DDX3)) AND COUNT(DDX>REF(DDX,1),10)>=4;
+反转:FILTER(AA6 AND AA7,5),COLORBLACK;
+
+STICKLINE(CLOSE,0,AA3,3,1),COLORYELLOW;
+STICKLINE(反转,0,AA3,3,0),COLORRED;
+
+
+
+攻击反转4（链接：http://www.55188.com/viewthread.php?tid=3945016 ）
+
+AA1:=FILTER(LOW=LLV(LOW,13),8);
+AA2:=IF(LLV(LOW,3)=LLV(LOW,13) AND CLOSE<REF((HIGH+LOW)/2,1),MAX(REF(LLV(LOW,12),BARSLAST(AA1)+1)-LOW,0),0);
+AA3:=EMA(AA2,3)*3;
+AA4:=SUMBARS(AA3>0,21);
+AA5:=SUM(AA3,AA4)/21;
+AA6:=REF(AA3,1)=HHV(AA3,3) AND REF(AA3,1)>AA5*3 AND COUNT(CLOSE/REF(CLOSE,1)<0.9025,8)=0  AND LLV(LOW,3)/HHV(HIGH,18)<0.88;
+
+反转:FILTER(AA6 AND AA5 AND AA4  AND AA3,3),COLORBLACK;
+
+STICKLINE(CLOSE,0,AA3,3,1),COLORYELLOW;
+STICKLINE(反转,0,AA3,3,0),COLORRED;
+
+
+
+======================
+https://www.55188.com/thread-9324901-1-1.html
+超级低吸（源码 副图 通达信 贴图）
+
+10,DOTLINE,COLORWHITE;80,DOTLINE,COLORGREEN;
+主力:=EMA((C-LLV(L,60))/(HHV(H,60)-LLV(L,60))*100,3);
+V12:=(主力-REF(主力,1))/REF(主力,1)*100;
+AA:=(主力<=13)&&FILTER((主力<=13),15);
+STICKLINE(主力<10,主力,10,2,0),COLORYELLOW;
+STICKLINE(主力>80,主力,80,2,0),COLORWHITE;
+B:=EMA(((2*C+H+L)/4-LLV(L,26))/(HHV(H,34)-LLV(L,26))*100,16);
+做多:=EMA(B,5);
+做空:=EMA(做多,26);
+JAA:=C-REF(C,1);
+JAB:=100*EMA(EMA(JAA,6),6)/EMA(EMA(ABS(JAA),6),6);
+买:=LLV(JAB,2)=LLV(JAB,7)&&COUNT(JAB<0,2)&&CROSS(JAB,MA(JAB,2));
+MA1:=100-100*(HHV(H,42)-C)/(HHV(H,42)-LLV(L,42));
+ZLCM:=EMA(WINNER(C)*70,3);
+SHCM:=EMA((WINNER(C*1.1)-WINNER(C*0.9))*80,3);
+散户:=ZLCM/(ZLCM+SHCM)*100;
+低吸:=散户<=30&&MA1>REF(MA1,1)&&MA1<30&&买&&C>O&&(主力>REF(主力,1)||做多>REF(做多,1))&&COUNT(AA,7)>=1;
+STICKLINE(低吸,0,40,1,0),COLORWHITE;
+DRAWTEXT(低吸,40,' 低吸'),COLORWHITE;
+机会线:做多,COLORWHITE;
+风险线:做空,COLORD9D919;
+主力筹码:主力,COLORLIRED;
+
+
+======================
+https://www.55188.com/thread-3849135-1-1.html
+送自用的5分钟预警
+
+dp:=INDEXV;lb1:=vol/ref(sum(vol,5),1);lb2:=dp/ref(sum(dp,5),1);
+ST:=STRFIND(STKNAME,'ST',1)>0
+OR
+STRFIND(STKNAME,'S',1)>0;
+lt:=(CAPITAL/100)/10000<=10;AA:=o/DYNAINFO(3);a1:=lb1/lb2;
+jd1:=atan((MA(C,5)/ref(MA(C,5),1)-1)*100)*57.3;
+jd2:=atan((MA(C,15)/ref(MA(C,15),1)-1)*100)*57.3;
+PX:=jd1>45
+and jd2>17 ;z2:=aa>1 and aa<1.05;
+XG:ST=0 and lt and z2 and px and
+a1>3.5;
+
+
+稍加改动通达信也可通过
+DP:=INDEXV;LB1:=VOL/REF(SUM(VOL,5),1);LB2:=DP/REF(SUM(DP,5),1);
+ST:=EXIST(C/REF(C,1)>1.06,60);
+LT:=(CAPITAL/100)/10000<=10;AA:=O/DYNAINFO(3);A1:=LB1/LB2;
+JD1:=ATAN((MA(C,5)/REF(MA(C,5),1)-1)*100)*57.3;
+JD2:=ATAN((MA(C,15)/REF(MA(C,15),1)-1)*100)*57.3;
+PX:=JD1>45 AND JD2>17 ;Z2:=AA>1 AND AA<1.05;
+XG:ST=0 AND LT AND Z2 AND PX AND A1>3.5;

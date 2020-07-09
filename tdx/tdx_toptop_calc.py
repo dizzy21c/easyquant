@@ -31,7 +31,8 @@ def tdx_base_func(data, code_list = None):
     CLOSE=data.close
     C=data.close
     前炮 = CLOSE > REF(CLOSE, 1) * 1.099
-    小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
+    小阴小阳1 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
+    小阴小阳 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
     时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
     后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
     # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
