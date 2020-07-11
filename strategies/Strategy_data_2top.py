@@ -10,9 +10,9 @@ from datetime import datetime, date
 import pandas as pd
 
 # import pymongo
-import talib as tdx
-from easyquant import QATdx as qatdx
 import pika
+from QUANTAXIS.QAFetch import QATdx as tdx
+
 
 from easyquant import EasyMq
 from easyquant import MongoIo
@@ -33,7 +33,7 @@ def do_init_data_buf(code, idx):
     freq = 5
     # 进程必须在里面, 线程可以在外部
     # mc = MongoIo()
-    mongo = MongoIo()
+    # mongo = MongoIo()
     if idx == 0:
         data_day = mongo.get_stock_day(code=code, st_start="2020-05-15")
         # data_min = mc.get_stock_min_realtime(code=code, freq=freq)
@@ -46,6 +46,8 @@ def do_init_data_buf(code, idx):
     # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_day)))
 
 def toptop_calc(data):
+    if len(data):
+        return False
     CLOSE=data.close
     C=data.close
     前炮 = CLOSE > REF(CLOSE, 1) * 1.099
@@ -54,15 +56,15 @@ def toptop_calc(data):
     后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, True, False)
     # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
     return 后炮.iloc[-1]
-
-class UpdateDataThread(Thread):
-    def __init__(self, code, idx):
-        Thread.__init__(self)
-        self.code = code
-        self.idx = idx
-
-    def run(self):
-        do_init_data_buf(self.code, self.idx)
+#
+# class UpdateDataThread(Thread):
+#     def __init__(self, code, idx):
+#         Thread.__init__(self)
+#         self.code = code
+#         self.idx = idx
+#
+#     def run(self):
+#         do_init_data_buf(self.code, self.idx)
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, idx):
@@ -114,9 +116,9 @@ class calcStrategy(Thread):
         # self.log.info()
         # if now_vol > df_v.m5.iloc[-1]:
         # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
-        if toptop_calc(df_day):
-            chag_pct = (self._data['now'] - self._data['close']) / self._data['close'] * 100
-            self.log.info("toptop code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, chag_pct, df.m5.iloc[-1], self._data['high'], self._data['low']))
+        # if toptop_calc(df_day):
+        chag_pct = (self._data['now'] - self._data['close']) / self._data['close'] * 100
+        self.log.info("toptop code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, chag_pct, df.m5.iloc[-1], self._data['high'], self._data['low']))
 
 
         # self.working = False
@@ -136,26 +138,32 @@ class Strategy(StrategyTemplate):
         self.calc_thread_dict = {}
         # init data
         start_time = time.time()
-        pool = Pool(cpu_count())
-        poolThread = []
+        task_list = []
+        # pool = Pool(cpu_count())
+        # poolThread = []
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
                 if len(d) > 6:
                     d = d[len(d)-6:len(d)]
                 # self.code_list.append(d)
-                pool.apply_async(do_init_data_buf, args=(d, self.idx))
+                # pool.apply_async(do_init_data_buf, args=(d, self.idx))
+                task_list.append(executor.submit(do_init_data_buf, d, self.idx))
                 # do_init_data_buf(d, self.idx)
                 # poolThread.append(UpdateDataThread(d, self.idx))
                 # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
-        pool.close()
-        pool.join()
+        # pool.close()
+        # pool.join()
         # pool.terminate()
         # for c in poolThread:
         #     c.start()
         #
         # for c in poolThread:
         #     c.join()
+        for task in as_completed(task_list):
+            # result = task.result()
+            pass
+
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
         ## init message queue

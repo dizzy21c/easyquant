@@ -11,13 +11,15 @@ import pandas as pd
 
 # import pymongo
 import talib as tdx
-from easyquant import QATdx as qatdx
+from QUANTAXIS.QAFetch import QATdx as tdx
+
 import pika
 
 from easyquant import EasyMq
 from easyquant import MongoIo
 from easyquant import EasyTime
 from multiprocessing import Process, Pool, cpu_count, Manager
+from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 
 
 # calc_thread_dict = Manager().dict()
@@ -27,28 +29,35 @@ data_buf_5min_0 = Manager().dict()
 mongo = MongoIo()
 easytime=EasyTime()
 
+executor = ThreadPoolExecutor(max_workers=cpu_count() * 50)
+
 def do_init_data_buf(code, idx):
     freq = 5
     # mongo = MongoIo()
     if idx == 0:
         data_day = mongo.get_stock_day(code=code)
-        data_min = mongo.get_stock_min_realtime(code=code, freq=freq)
+        # data_min = mongo.get_stock_min_realtime(code=code, freq=freq)
+        data_min = mongo.get_stock_min(code=code, freq=freq)
     else:
         data_day = mongo.get_index_day(code=code)
-        data_min = mongo.get_index_min_realtime(code=code)
+        # data_min = mongo.get_index_min_realtime(code=code)
+        data_min = mongo.get_index_min(code=code)
     ## TODO fuquan
     data_buf_day[code] = data_day
     data_buf_5min[code] = data_min
-    # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_buf_5min)))
+    print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_buf_5min)))
 
-class UpdateDataThread(Thread):
-    def __init__(self, code, idx):
-        Thread.__init__(self)
-        self.code = code
-        self.idx = idx
+def do_init_data_ext(code_list, idx):
+    pass
 
-    def run(self):
-        do_init_data_buf(self.code, self.idx)
+# class UpdateDataThread(Thread):
+#     def __init__(self, code, idx):
+#         Thread.__init__(self)
+#         self.code = code
+#         self.idx = idx
+#
+#     def run(self):
+#         do_init_data_buf(self.code, self.idx)
 
 class calcStrategy(Thread):
     def __init__(self, code, data, log, idx):
@@ -143,10 +152,10 @@ class calcStrategy(Thread):
         self.upd_min(5)
         # self.log.info()
         # if now_vol > df_v.m5.iloc[-1]:
-        if self._data['close'] > 0:
-            chag_pct = (self._data['now'] - self._data['close']) / self._data['close'] * 100
-        else:
-            chag_pct = 0.0
+        # if self._data['close'] > 0:
+        chag_pct = (self._data['now'] - self._data['close']) / self._data['close'] * 100
+        # else:
+        #     chag_pct = 0.0
         # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
         self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, chag_pct, df.m5.iloc[-1], self._data['high'], self._data['low']))
 
@@ -168,26 +177,32 @@ class Strategy(StrategyTemplate):
         self.calc_thread_dict = {}
         # init data
         start_time = time.time()
-        # pool = Pool(cpu_count())
-        poolThread = []
+        task_list = []
+        code_list = []
         with open(self.config_name, 'r') as f:
             data = json.load(f)
             for d in data['code']:
                 if len(d) > 6:
                     d = d[len(d)-6:len(d)]
+                    code_list.append(d)
                 # self.code_list.append(d)
                 # pool.apply_async(do_init_data_buf, args=(d, self.idx))
                 # do_init_data_buf(d, self.idx)
-                poolThread.append(UpdateDataThread(d, self.idx))
+                # poolThread.append(UpdateDataThread(d, self.idx))
+                task_list.append(executor.submit(do_init_data_buf, d, self.idx))
                 # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
         # pool.close()
         # pool.join()
         # pool.terminate()
-        for c in poolThread:
-            c.start()
+        # for c in poolThread:
+        #     c.start()
+        #
+        # for c in poolThread:
+        #     c.join()
+        for task in as_completed(task_list):
+            # result = task.result()
+            pass
 
-        for c in poolThread:
-            c.join()
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
         ## init message queue
@@ -216,6 +231,7 @@ class Strategy(StrategyTemplate):
         
     def callback(self, a, b, c, data):
         # self.log.info('Strategy =%s, start calc...' % self.name)
-        data = json.loads(data)
-        t = calcStrategy(data['code'], data, self.log, self.idx)
-        t.start()
+        # data = json.loads(data)
+        # t = calcStrategy(data['code'], data, self.log, self.idx)
+        # t.start()
+        pass

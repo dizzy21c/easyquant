@@ -1,4 +1,5 @@
-from easyquant import QATdx as tdx
+from QUANTAXIS.QAFetch import QATdx as tdx
+
 from easyquant import RedisIo
 from easyquant.indicator.base import *
 from easyquant.indicator.udf_formula import *

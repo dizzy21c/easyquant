@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from datetime import date
 import time
-from easyquant.qafetch import QATdx as tdx
+from QUANTAXIS.QAFetch import QATdx as tdx
 from easyquant.easydealutils.easytime import EasyTime
 
 class MongoIo(object):
@@ -77,8 +77,8 @@ class MongoIo(object):
 
         data_min = self.get_stock_min(code=code, freq=freq)
         if len(data_min) > 0:
-            if freq < (time.time() - data_min.index[-1].timestamp()) / 60:
-                start = data_min.index[-1].strftime('%Y-%m-%d %H:%M:01')  ## %S=>01
+            if freq < (time.time() - data_min.index[-1][0].timestamp()) / 60:
+                start = data_min.index[-1][0].strftime('%Y-%m-%d %H:%M:01')  ## %S=>01
                 add_df = tdx.QA_fetch_get_stock_min(code, start=start, end=st_end, frequence='%dmin' % freq)
                 if len(add_df) > 0:
                     add_df.drop(['date_stamp', 'datetime'], axis=1, inplace=True)
@@ -111,8 +111,8 @@ class MongoIo(object):
         
         data_min = self.get_index_min(code=code, freq=freq)
         if len(data_min) > 0:
-            if freq < (time.time() - data_min.index[-1].timestamp()) / 60:
-                start=data_min.index[-1].strftime('%Y-%m-%d %H:%M:01') ## %S=>01
+            if freq < (time.time() - data_min.index[-1][0].timestamp()) / 60:
+                start=data_min.index[-1][0].strftime('%Y-%m-%d %H:%M:01') ## %S=>01
                 add_df=tdx.QA_fetch_get_index_min(code,start=start,end=st_end, frequence='%dmin' % freq)
                 if len(add_df) > 0:
                     add_df.drop(['date_stamp','datetime'],axis=1,inplace=True)

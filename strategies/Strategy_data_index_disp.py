@@ -8,8 +8,19 @@ import time
 # import pymongo
 # import pandas as pd
 # import talib
-import pika
+
 from easyquant import EasyMq
+from easyquant import MongoIo
+from multiprocessing import Pool, cpu_count
+from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
+mongo = MongoIo()
+executor = ThreadPoolExecutor(max_workers=cpu_count() * 50)
+
+def save_monto_realtime(code, data):
+    data['_id'] = "{}-{}".format( code, data['datetime'])
+    data['price'] = data['now']
+    mongo.save_realtime(data=data, idx=1)
+
 
 class Strategy(StrategyTemplate):
     name = 'save-index-data-disp'
@@ -32,15 +43,21 @@ class Strategy(StrategyTemplate):
         self.log.info('Strategy =%s, event_type=%s' %(self.name, event.event_type))
         
         threads = []
+        task_list = []
         # rtn = {}
         for stcode in event.data:
             stdata= event.data[stcode]
             self.easymq.pub(json.dumps(stdata), stcode)
             # rtn=self.data_util.day_summary(data=stdata,rtn=rtn)
             # threads.append(calcStrategy(stcode, stdata, self.log, self.idx))
+            task_list.append(executor.submit(save_monto_realtime, stcode, stdata))
 
         # for c in threads:
         #     c.start()
+        for task in as_completed(task_list):
+            # result = task.result()
+            pass
+        self.log.info('Strategy =%s, event_type=%s done.' %(self.name, event.event_type))
 
         
 

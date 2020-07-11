@@ -11,7 +11,4 @@ from .easydealutils.datautil import DataUtil
 from .easydealutils.easytime import EasyTime
 from .indicator import base
 from .indicator import udf_formula 
-# from .indicator import UdfIndexRisk
-# from .indicator import UdfMarketStart
 from .indicator import talib_indicators as talib_qa
-from QUANTAXIS.QAFetch import QATdx

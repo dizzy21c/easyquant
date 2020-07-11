@@ -23,9 +23,6 @@ setup(
       'easyquant/log_handler',
       'easyquant/multiprocess',
       'easyquant/push_engine',
-      'easyquant/qafetch',
-      'easyquant/qafetch/qasetting',
-      'easyquant/qafetch/qautil',
       'easyquant/strategy',
       ],  # 需要打包的目录列表
 

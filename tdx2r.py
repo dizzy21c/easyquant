@@ -2,7 +2,7 @@
 import redis
 from easyquant import RedisIo
 from codelist_utils import get_udf_code_list
-from easyquant import QATdx as tdx
+from QUANTAXIS.QAFetch import QATdx as tdx
 import json
 import sys
 import os

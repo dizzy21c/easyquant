@@ -19,7 +19,8 @@ from easyquant import EasyMq
 from easyquant import MongoIo
 from multiprocessing import Process, Pool, cpu_count, Manager
 
-from easyquant import QATdx as tdx
+from QUANTAXIS.QAFetch import QATdx as tdx
+
 # import tushare as ts
 
 data_buf_day = Manager().dict()

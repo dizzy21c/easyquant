@@ -4,7 +4,7 @@ import os
 import re
 import xlrd
 import requests
-from easyquant import QATdx as tdx
+from QUANTAXIS.QAFetch import QATdx as tdx
 from easyquant.indicator.udf_formula import *
 from easyquant import RedisIo
 from easyquant import MongoIo

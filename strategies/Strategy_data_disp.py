@@ -19,29 +19,29 @@ from multiprocessing import Pool, cpu_count
 from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 mongo = MongoIo()
 executor = ThreadPoolExecutor(max_workers=cpu_count() * 50)
-class SaveData(Thread):
-    def __init__(self, code,data):
-        Thread.__init__(self)
-        self.data = data
-        self.code = code
-        # self.log = log
-        # # self.redis = redis
-        # self.idx = idx
-        # self.m = MongoIo()
-        # self.last_time = None
-        # self.working = False
-
-    # def set_data(self, code, data, idx):
-    #     Thread.__init__(self)
-    #     self._data = data
-    #     self.code = code
-    #     self.log = log
-    #     # self.redis = redis
-
-    def run(self):
-        self.data['_id'] = "%s-%s" %( self.code, self.data['datetime'])
-        self.data['price'] = self.data['now']
-        mongo.save_realtime(self.data)
+# class SaveData(Thread):
+#     def __init__(self, code,data):
+#         Thread.__init__(self)
+#         self.data = data
+#         self.code = code
+#         # self.log = log
+#         # # self.redis = redis
+#         # self.idx = idx
+#         # self.m = MongoIo()
+#         # self.last_time = None
+#         # self.working = False
+#
+#     # def set_data(self, code, data, idx):
+#     #     Thread.__init__(self)
+#     #     self._data = data
+#     #     self.code = code
+#     #     self.log = log
+#     #     # self.redis = redis
+#
+#     def run(self):
+#         self.data['_id'] = "%s-%s" %( self.code, self.data['datetime'])
+#         self.data['price'] = self.data['now']
+#         mongo.save_realtime(self.data)
 
 def save_monto_realtime(code, data):
     data['_id'] = "{}-{}".format( code, data['datetime'])
@@ -52,7 +52,7 @@ class Strategy(StrategyTemplate):
     name = 'save-data-disp'
     idx = 0
     EventType = 'data-sina'
-    config_name = './config/worker_list.json'
+    # config_name = './config/worker_list.json'
 
     def __init__(self, user, log_handler, main_engine):
         StrategyTemplate.__init__(self, user, log_handler, main_engine)
@@ -84,8 +84,9 @@ class Strategy(StrategyTemplate):
         self.log.info(rtn)
 
         for task in as_completed(task_list):
-            # c.start()
+            # result = task.result()
             pass
+        self.log.info('Strategy =%s, event_type=%s done.' %(self.name, event.event_type))
 
 class CJsonEncoder(json.JSONEncoder):
     def default(self, obj):
