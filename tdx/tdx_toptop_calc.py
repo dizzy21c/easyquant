@@ -296,7 +296,7 @@ if __name__ == '__main__':
     start_t = datetime.datetime.now()
     print("begin-time:", start_t)
 
-    st_start="2019-12-01"
+    st_start="2010-12-01"
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
