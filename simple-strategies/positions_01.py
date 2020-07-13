@@ -1,4 +1,4 @@
-from easyquant import StrategyTemplate
+# from easyquant import StrategyTemplate
 # from easyquant import RedisIo
 from easyquant import DataUtil
 from threading import Thread, current_thread, Lock
@@ -11,7 +11,8 @@ import pandas as pd
 
 # import pymongo
 import pika
-from QUANTAXIS.QAFetch import QATdx as tdx
+# from QUANTAXIS.QAFetch import QATdx as tdx
+from easyquant import DefaultLogHandler
 
 
 from easyquant import EasyMq
@@ -20,6 +21,7 @@ from easyquant import EasyTime
 from multiprocessing import Process, Pool, cpu_count, Manager
 from easyquant.indicator.base import *
 from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
+from pyalgotrade.strategy import position
 
 
 # calc_thread_dict = Manager().dict()
@@ -28,86 +30,45 @@ data_buf_day = Manager().dict()
 # data_buf_5min_0 = Manager().dict()
 mongo = MongoIo()
 easytime=EasyTime()
-executor = ThreadPoolExecutor(max_workers=cpu_count())
-def do_init_data_buf(code, idx):
+executor = ThreadPoolExecutor(max_workers=cpu_count() * 50)
+def do_init_data_buf(code):
     # freq = 5
     # 进程必须在里面, 线程可以在外部
     # mc = MongoIo()
     # mongo = MongoIo()
-    # print(idx)
-    if idx == 0:
-        data_day = mongo.get_stock_day(code=code)#, st_start="2020-05-15")
+    # if idx == 0:
+    data_day = mongo.get_stock_day(code=code) #, st_start="2020-05-15")
         # data_min = mc.get_stock_min_realtime(code=code, freq=freq)
-    else:
-        data_day = mongo.get_index_day(code=code) #, st_start="2020-01-15")
+    # else:
+    #     data_day = mongo.get_index_day(code=code)
         # data_min = mc.get_index_min_realtime(code=code)
     ## TODO fuquan
     data_buf_day[code] = data_day
     # data_buf_5min[code] = data_min
     # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_day)))
 
-def tdxfunc_calc(data, N1=6, N2=12):
-    qc=3.5
-    jb=3.3
-    j3=1.3
-    j5=0.5
-    L=data.low
-    H=data.high
-    C=data.close
-    VAR2=LLV(L, N1)
-    VAR3=HHV(H, N2)
-    DLX=EMA(((C-VAR2)/(VAR3-VAR2))*4, 4)
-    sj5=CROSS(DLX,j5)
-    sj3=CROSS(DLX,j3)
-    sjb=CROSS(DLX,jb)
-    sqc=CROSS(DLX,qc)
-    dict_rt = {'BUY50':sj5, 'ADD30':sj3, 'SELL50':sjb, 'SELL0':sqc}
-    return pd.DataFrame(dict_rt)
-
-# def tdxfunc_calc(data):
-#     if len(data):
-#         return False
-#     CLOSE=data.close
-#     C=data.close
-#     前炮 = CLOSE > REF(CLOSE, 1) * 1.099
-#     小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
-#     时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
-#     后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, True, False)
-#     # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
-#     return 后炮.iloc[-1]
-#
-# class UpdateDataThread(Thread):
-#     def __init__(self, code, idx):
-#         Thread.__init__(self)
-#         self.code = code
-#         self.idx = idx
-#
-#     def run(self):
-#         do_init_data_buf(self.code, self.idx)
-
 class calcStrategy(Thread):
-    def __init__(self, code, data, log, idx):
+    def __init__(self, code, data, log, idx, positions):
         Thread.__init__(self)
         self._data = data
         self.code = code
         self.log = log
         # self.redis = redis
         self.idx = idx
+        self.positions = positions
         # self.last_time = None
         # self.working = False
+        self.price = self.positions['price']
     
-    # def set_data(self, code, data, idx):
-    #     Thread.__init__(self)
-    #     self._data = data
-    #     self.code = code
-    #     self.log = log
-    #     # self.redis = redis
     def run(self):
-        # if self.working:
-        #     return
         
         # self.working = True
         now_price = self._data['now']
+        ##TODO 绝对条件１
+        if now_price < self.price / 1.05:
+            pass
+            # 卖出
+        
         now_vol = self._data['volume']
         last_time = pd.to_datetime(self._data['datetime'][0:10])
         # print("code=%s, data=%s" % (self.code, self._data['datetime']))
@@ -135,55 +96,31 @@ class calcStrategy(Thread):
         # self.log.info()
         # if now_vol > df_v.m5.iloc[-1]:
         # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
-
-        flg = tdxfunc_calc(df_day)
         # if toptop_calc(df_day):
         chag_pct = (self._data['now'] - self._data['close']) / self._data['close'] * 100
         self.log.info("toptop code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, chag_pct, df.m5.iloc[-1], self._data['high'], self._data['low']))
-        # if flg['BUY50'].iloc[-1] > 0:
-        #     self.log.info("buy code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, chag_pct, df.m5.iloc[-1], self._data['high'], self._data['low']))
-        
-        # if flg['SELL50'].iloc[-1] > 0:
-        #     self.log.info("sell code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (self.code, now_price, chag_pct, df.m5.iloc[-1], self._data['high'], self._data['low']))
-        # self.working = False
-class Strategy(StrategyTemplate):
-    name = 'calc-day-index'  ### day
-    idx = 1
-    # EventType = 'data-sina'
-    config_name = './config/index2_list.json'
 
-    def __init__(self, user, log_handler, main_engine):
-        StrategyTemplate.__init__(self, user, log_handler, main_engine)
+
+        # self.working = False
+class Strategy:
+    name = 'calc-stock'  ### day
+
+    def __init__(self, log_handler):
+        self.log = log_handler
         self.log.info('init event:%s'% self.name)
-        # self.redis = RedisIo()
-        # self.data_util = DataUtil()
-        # self.code_list = []
-        # self.idx=0
-        self.calc_thread_dict = {}
-        # init data
+        
+        self.df_positions = mongo.get_positions()
+        
+        self.easymq = EasyMq()
+        self.easymq.init_receive(exchange="stockcn")
+        self.easymq.callback = self.callback
+        
         start_time = time.time()
         task_list = []
-        # pool = Pool(cpu_count())
-        # poolThread = []
-        with open(self.config_name, 'r') as f:
-            data = json.load(f)
-            for d in data['code']:
-                if len(d) > 6:
-                    d = d[len(d)-6:len(d)]
-                # self.code_list.append(d)
-                # pool.apply_async(do_init_data_buf, args=(d, self.idx))
-                task_list.append(executor.submit(do_init_data_buf, d, self.idx))
-                # do_init_data_buf(d, self.idx)
-                # poolThread.append(UpdateDataThread(d, self.idx))
-                # self.calc_thread_dict[d] = calcStrategy(data['code'], self.log)
-        # pool.close()
-        # pool.join()
-        # pool.terminate()
-        # for c in poolThread:
-        #     c.start()
-        #
-        # for c in poolThread:
-        #     c.join()
+        for code in self.df_positions.index:
+            task_list.append(executor.submit(do_init_data_buf, code))
+            self.easymq.add_sub_key(routing_key=code)
+            
         for task in as_completed(task_list):
             # result = task.result()
             pass
@@ -191,16 +128,16 @@ class Strategy(StrategyTemplate):
         self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
         ## init message queue
-        self.started=False
-        self.easymq = EasyMq()
-        self.easymq.init_receive(exchange="stockcn.idx")
-        self.easymq.callback = self.callback
-        with open(self.config_name, 'r') as f:
-            data = json.load(f)
-            for d in data['code']:
-                if len(d) > 6:
-                    d = d[len(d)-6:len(d)]
-                self.easymq.add_sub_key(routing_key=d)
+        # self.started=False
+        # self.easymq = EasyMq()
+        # self.easymq.init_receive(exchange="stockcn")
+        # self.easymq.callback = self.callback
+        # with open(self.config_name, 'r') as f:
+        #     data = json.load(f)
+        #     for d in data['code']:
+        #         if len(d) > 6:
+        #             d = d[len(d)-6:len(d)]
+        #         self.easymq.add_sub_key(routing_key=d)
                 # self.code_list.append(d)
                 # 
                 # pool.apply_async(do_init_data_buf, args=(d, self.idx, self.data_type))
@@ -208,9 +145,7 @@ class Strategy(StrategyTemplate):
         # self.easymq.start()
 
 
-    def strategy(self, event):
-        if self.started:
-            return
+    def start(self):
         self.log.info('Strategy =%s, easymq started' % self.name)
         self.started = True
         self.easymq.start()
@@ -218,5 +153,15 @@ class Strategy(StrategyTemplate):
     def callback(self, a, b, c, data):
         # self.log.info('Strategy =%s, start calc...' % self.name)
         data = json.loads(data)
-        t = calcStrategy(data['code'], data, self.log, self.idx)
+        code =data['code']
+        t = calcStrategy(code, data, self.log, self.idx, self.df_positions.loc[code])
         t.start()
+
+if __name__ == "__main__":
+    log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
+    # log_name = Strategy.name
+    log_filepath = 'logs/%s.txt' % Strategy.name
+    log_handler = DefaultLogHandler(name='calc-data', log_type=log_type, filepath=log_filepath)
+    
+    s = Strategy(log_handler)
+    s.start()

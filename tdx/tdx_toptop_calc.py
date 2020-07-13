@@ -31,8 +31,8 @@ def tdx_base_func(data, code_list = None):
     CLOSE=data.close
     C=data.close
     前炮 = CLOSE > REF(CLOSE, 1) * 1.099
-    小阴小阳1 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
-    小阴小阳 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
+    小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
+    小阴小阳1 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
     时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
     后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
     # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
@@ -138,21 +138,22 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
     data = price.copy()
     data['flag'] = 0 # 买卖标记
     data['position'] = 0 # 持仓标记
-    data['hprice'] = 0  # 持仓价格
+    data['hold_price'] = 0  # 持仓价格
     bflag = data.columns.get_loc('bflg')
     # beta = data.columns.get_loc('beta')
     flag = data.columns.get_loc('flag')
     position_col = data.columns.get_loc('position')
     close_col = data.columns.get_loc('close')
+    high_col = data.columns.get_loc('high')
     open_col = data.columns.get_loc('open')
-    hprice_col = data.columns.get_loc('hprice')
+    hold_price_col = data.columns.get_loc('hold_price')
     position = 0 # 是否持仓，持仓：1，不持仓：0
     for i in range(1,data.shape[0] - 1):
         # 开仓
         if data.iat[i, bflag] > 0 and position == 0:
             data.iat[i + 1, flag] = 1
             data.iat[i + 1, position_col] = 1
-            data.iat[i + 1, hprice_col] = data.iat[i+1, open_col]
+            data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
             position = 1
             print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
         # 平仓
@@ -160,20 +161,34 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
         elif data.iat[i, position_col] > 0 and position == 1:
             cprice = data.iat[i, close_col]
             # oprice = data.iat[i, open_col]
-            hprice = data.iat[i, hprice_col]
-            if cprice < hprice * 0.95 or cprice > hprice * 1.2:
+            hole_price = data.iat[i, hold_price_col]
+            high_price = data.iat[i, high_col]
+            if cprice < hole_price * 0.95:# or cprice > hprice * 1.2:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
-                data.iat[i + 1, hprice_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
                 position = 0
                 print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+            elif cprice > hole_price * 1.1 and high_price / cprice > 1.05:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+            elif cprice > hole_price * 1.2 and high_price / cprice > 1.06:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell : code=%s date=%s  price=%.2f" % (
+                data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
             else:
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
-                data.iat[i + 1, hprice_col] = data.iat[i, hprice_col]
+                data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
         # 保持
         else:
             data.iat[i + 1, position_col] = data.iat[i, position_col]
-            data.iat[i + 1, hprice_col] = data.iat[i, hprice_col]
+            data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
     data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
     return data

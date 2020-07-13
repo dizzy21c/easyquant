@@ -27,7 +27,7 @@ class DataSinaEngine(SinaEngine):
 class IndexSinaEngine(SinaEngine):
     EventType = 'index-sina'
     PushInterval = 10
-    config = "index_list"
+    config = "index2_list"
 
 # quotaton_engine = DefaultQuotationEngine if quotation_choose == '1' else LFEngine
 

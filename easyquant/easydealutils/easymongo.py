@@ -180,6 +180,41 @@ class MongoIo(object):
             pass
 
         return df_data_min
+    
+    def get_positions(self):
+        table = 'positions'
+        # self.db[table].insert_many(
+        #     [data]
+        # )
+        dtd=self.db[table].find({'amount':{'$gte':0}})
+        ptd=pd.DataFrame(list(dtd))
+        if len(ptd) > 0:
+            del ptd['_id']
+            ptd = ptd.set_index(["code"])
+        return ptd
+
+    
+    def upd_positions(self, code, amount, price):
+        table = 'positions'
+        # self.db[table].insert_many(
+        #     [data]
+        # )
+        # data = self.db[table].
+        # data = list()
+        # self.db[table].replace_one({'_id':code}, {'$set':{'trade_amount':amount,'trade_price':price}}, True)
+        # data=list(self.db[table].find({'_id':code}))[0]
+        data=self.db[table].find_one({'_id':code})
+        if data is not None:
+            old_trade_amount = data['trade_amount']
+            old_trade_price = data['trade_price']
+            if old_trade_price == 0:
+                data['trade_amount'] = amount
+                data['trade_price'] = price
+            else:
+                data['trade_amount'] = old_trade_amount + amount
+                recal_price = ( old_trade_amount * old_trade_price + amount * price ) / (old_trade_amount + amount)
+                data['trade_price'] = recal_price
+            self.db[table].replace_one({'_id':data['_id']}, data, True)
 
 def main():
     md = MongoIo()

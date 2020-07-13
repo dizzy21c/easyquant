@@ -21,7 +21,7 @@ class DataSinaEngine(SinaEngine):
 
 @click.command ()
 @click.option ('--log-name', default="SAME_NAME", help = 'log-name')
-@click.option('--calc-name', default = "calc-day-data", help= 'calc-name[calc-day-data, calc-min-data,calc-day-data-idx]')
+@click.option('--calc-name', default = "calc-day-data", help= 'calc-name[calc-day-data, calc-min-data,calc-day-index]')
 def startWork(calc_name, log_name):
     # log_type_choose = '2' #input('请输入 log 记录方式: 1: 显示在屏幕 2: 记录到指定文件\n: ')
     log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'

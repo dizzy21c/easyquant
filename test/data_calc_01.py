@@ -12,7 +12,6 @@ import pandas as pd
 
 # import pymongo
 # import pandas as pd
-import talib as tdx
 import pika
 
 from easyquant import EasyMq
