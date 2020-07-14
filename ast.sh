@@ -13,7 +13,9 @@ echo "start data-monitoring"
 /home/zhangjx/anaconda3/envs/qawork/bin/python mydata2.py &
 echo "start calc-monitoring"
 #calc-day-data, calc-min-data,calc-day-data-idx
-/home/zhangjx/anaconda3/envs/qawork/bin/python mycalc.py --calc-name calc-day-data &
-/home/zhangjx/anaconda3/envs/qawork/bin/python mycalc.py --calc-name calc-min-data &
-/home/zhangjx/anaconda3/envs/qawork/bin/python mycalc.py --calc-name calc-day-index &
+##/home/zhangjx/anaconda3/envs/qawork/bin/python mycalc.py --calc-name calc-day-data &
+##/home/zhangjx/anaconda3/envs/qawork/bin/python mycalc.py --calc-name calc-min-data &
+##/home/zhangjx/anaconda3/envs/qawork/bin/python mycalc.py --calc-name calc-day-index &
 #/home/zhangjx/anaconda3/bin/python mydata2.py  &
+
+/home/zhangjx/anaconda3/envs/qawork/bin/python simple-strategies/positions_01.py &
