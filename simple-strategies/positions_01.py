@@ -53,7 +53,7 @@ def do_main_work(code, data, log, positions):
 
     ##TODO 绝对条件１
     if now_price < hold_price / 1.05:
-        pass
+        log.info("code=%s now=%6.2f solding..." % (code, now_price))
         # 卖出
     now_vol = data['volume']
     last_time = pd.to_datetime(data['datetime'][0:10])

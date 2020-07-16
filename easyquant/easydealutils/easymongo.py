@@ -181,12 +181,12 @@ class MongoIo(object):
 
         return df_data_min
     
-    def get_positions(self):
+    def get_positions(self, idx=0):
         table = 'positions'
         # self.db[table].insert_many(
         #     [data]
         # )
-        dtd=self.db[table].find({'amount':{'$gte':0}})
+        dtd=self.db[table].find({'amount':{'$gte':0},"idx":idx})
         ptd=pd.DataFrame(list(dtd))
         if len(ptd) > 0:
             del ptd['_id']

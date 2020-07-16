@@ -1,6 +1,7 @@
 #!/bin/bash
-ps -ef|grep mydata2 | grep -v grep | awk '{print $2}' |xargs kill -9
-ps -ef|grep mycalc | grep -v grep | awk '{print $2}' |xargs kill -9
+# ps -ef|grep mydata2 | grep -v grep | awk '{print $2}' |xargs kill -9
+# ps -ef|grep mycalc | grep -v grep | awk '{print $2}' |xargs kill -9
+./stop.sh
 
 cd /home/zhangjx/backup/bk/easyquant
 dt=`date +%H%M`
@@ -19,3 +20,4 @@ echo "start calc-monitoring"
 #/home/zhangjx/anaconda3/bin/python mydata2.py  &
 
 /home/zhangjx/anaconda3/envs/qawork/bin/python simple-strategies/positions_01.py &
+/home/zhangjx/anaconda3/envs/qawork/bin/python simple-strategies/positions_etf.py &
