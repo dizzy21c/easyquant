@@ -57,4 +57,5 @@ def test_pub_fanout():
 
 if __name__ == "__main__":
     test_pub_fanout()
+    # test_pub_direct()
 
