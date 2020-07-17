@@ -57,8 +57,8 @@ class EasyMq(object):
                                   durable=False,
                                   auto_delete=False)
     
-  
-  def pub(self, text, routing_key):
+
+  def pub(self, text, routing_key='default'):
     # channel.basic_publish向队列中发送信息
     # exchange -- 它使我们能够确切地指定消息应该到哪个队列去。
     # routing_key 指定向哪个队列中发送消息
@@ -87,14 +87,15 @@ class EasyMq(object):
       self.connection.close()
       
 
-  def init_receive(self, exchange='', queue='qa_sub.{}'.format(random.randint(0, 1000000)),
-                routing_key='default', durable=False):
+  def init_sub(self, exchange='', queue='qa_sub.{}'.format(random.randint(0, 1000000)),
+                routing_key='default', durable=False, exchange_type='direct'):
       # super().__init__(host=host, port=port, user=user, vhost=vhost,
       #                   password=password, exchange=exchange)
       self.exchange = exchange
       self.queue = queue
+      self.exchange_type = exchange_type
       self.channel.exchange_declare(exchange=exchange,
-                                    exchange_type='direct',
+                                    exchange_type=exchange_type,
                                     passive=False,
                                     durable=durable,
                                     auto_delete=False)
@@ -109,7 +110,7 @@ class EasyMq(object):
   def add_sub_key(self, routing_key):
       # 非常不优雅的多订阅实现
       u = EasyMq()
-      u.init_receive(exchange=self.exchange, routing_key=routing_key)
+      u.init_sub(exchange=self.exchange, routing_key=routing_key, exchange_type=self.exchange_type)
       u.callback = self.callback
 
       import threading
@@ -119,7 +120,7 @@ class EasyMq(object):
   def add_sub(self, exchange, routing_key):
       # 非常不优雅的多订阅实现
       u = EasyMq()
-      u.init_receive(exchange=exchange, routing_key=routing_key)
+      u.init_sub(exchange=exchange, routing_key=routing_key)
       u.callback = self.callback
 
       import threading
