@@ -37,7 +37,7 @@ def test_pub_fanout():
 
 
     zsorder = gpzs_order_pb2.gpzs_order()
-    zsorder.code = '000001'
+    zsorder.code = '002626'
     zsorder.vol = 1000
     zsorder.price = 0.0
     zsorder.bsflg = 1
