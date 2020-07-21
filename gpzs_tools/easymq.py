@@ -2,10 +2,11 @@
 import pika
 import json
 import random
+from setting import rabbitmq_ip, rabbitmq_port, rabbitmq_user, rabbitmq_password
 
 class EasyMq(object):
   # def __init__(self, , host=host, port=port, user=user, password=password, channel_number=1, queue_name='', routing_key='default',  exchange='', exchange_type='fanout', vhost='/'):
-  def __init__(self, host='127.0.0.1', port=5672, user='admin', password='admin', channel_number=1, vhost='/'):
+  def __init__(self, host=rabbitmq_ip, port=rabbitmq_port, user=rabbitmq_user, password=rabbitmq_password, channel_number=1, vhost='/'):
     self.host = host
     self.port = port
     self.user = user
