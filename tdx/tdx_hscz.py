@@ -13,6 +13,7 @@ import json
 from easyquant import MongoIo
 import statsmodels.api as sm
 from multiprocessing import Process, Pool, cpu_count, Manager
+# plt.switch_backend('agg')
 
 mongo = MongoIo()
 
@@ -27,21 +28,32 @@ def tdx_base_func(data, code_list = None):
     # highs = data.high
     # start_t = datetime.datetime.now()
     # print("begin-tdx_base_func:", start_t)
+    if len(data) < 10:
+        data = data.copy()
+        data['bflg'] = 0
+        data['sflg'] = 0
+        return data
 
     CLOSE=data.close
     C=data.close
-    前炮 = CLOSE > REF(CLOSE, 1) * 1.099
-    小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
-    小阴小阳1 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
-    时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
-    后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
+    花 = SLOPE(EMA(C, 3), 3)
+    神 = SLOPE(EMA(C, 7), 7)
+    买 = IFAND(COUNT(花 < 神, 5)==4 , 花 >= 神,1,0)
+    卖 = IFAND(COUNT(花 >= 神, 5)==4, 花 < 神,1,0)
+    钻石 = IFAND(CROSS(花, 神), CLOSE / REF(CLOSE, 1) > 1.03, 1, 0)
+    买股 = IFAND(买, 钻石,1,0)
+    # AND(CROSS(花, 神)
+    # AND
+    # CLOSE / REF(CLOSE, 1) > 1.03);
+
     # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
     # return 后炮.iloc[-1]
 
     # 斜率
     data = data.copy()
     # data['bflg'] = IF(REF(后炮,1) > 0, 1, 0)
-    data['bflg'] = 后炮
+    data['bflg'] = 买股
+    data['sflg'] = 卖
     # print("code=%s, bflg=%s" % (code, data['bflg'].iloc[-1]))
     # data['beta'] = 0
     # data['R2'] = 0
@@ -106,20 +118,22 @@ def tdx_func(datam, code_list = None):
 
 def tdx_func_mp():
     start_t = datetime.datetime.now()
-    print("begin-tdx_func:", start_t)
+    print("begin-tdx_func_mp:", start_t)
     pool = Pool(cpu_count())
     for i in range(pool_size):
         pool.apply_async(do_tdx_func, args=(i, ))
+        # do_tdx_func(i)
 
     pool.close()
     pool.join()
-
+    # print("databuf_tdx_func_mp=%d" % len(databuf_tdxfunc))
     # todo begin
     dataR = pd.DataFrame()
     for i in range(pool_size):
         if len(dataR) == 0:
             dataR = databuf_tdxfunc[i]
         else:
+            # if i < len(databuf_tdxfunc):
             dataR = dataR.append(databuf_tdxfunc[i])
         # print(len(dataR))
     dataR.sort_index()
@@ -127,7 +141,7 @@ def tdx_func_mp():
 
 
     end_t = datetime.datetime.now()
-    print(end_t, 'tdx_func spent:{}'.format((end_t - start_t)))
+    print(end_t, 'tdx_func_mp spent:{}'.format((end_t - start_t)))
 
     return dataR
 
@@ -140,6 +154,7 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
     data['position'] = 0 # 持仓标记
     data['hold_price'] = 0  # 持仓价格
     bflag = data.columns.get_loc('bflg')
+    sflag = data.columns.get_loc('sflg')
     # beta = data.columns.get_loc('beta')
     flag = data.columns.get_loc('flag')
     position_col = data.columns.get_loc('position')
@@ -151,11 +166,14 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
     for i in range(1,data.shape[0] - 1):
         # 开仓
         if data.iat[i, bflag] > 0 and position == 0:
-            data.iat[i + 1, flag] = 1
+            data.iat[i, flag] = 1
+            data.iat[i, position_col] = 1
+            data.iat[i, hold_price_col] = data.iat[i, open_col]
             data.iat[i + 1, position_col] = 1
-            data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
+            data.iat[i + 1, hold_price_col] = data.iat[i, open_col]
+
             position = 1
-            print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
+            print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
         # 平仓
         # elif data.iat[i, bflag] == S2 and position == 1:
         elif data.iat[i, position_col] > 0 and position == 1:
@@ -176,6 +194,13 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
                 position = 0
                 print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
             elif cprice > hole_price * 1.2 and high_price / cprice > 1.06:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell : code=%s date=%s  price=%.2f" % (
+                data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+            elif data.iat[i, sflag] > 0:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
@@ -263,6 +288,8 @@ def get_data(st_start):
     with open(code_file, 'r') as f:
         data = json.load(f)
         for d in data['code']:
+            if d[0:3] == '688':
+                continue
             if len(d) > 6:
                 d = d[len(d) - 6:len(d)]
             codelist.append(d)

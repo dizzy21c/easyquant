@@ -27,7 +27,8 @@ from functools import reduce
 import math
 import numpy as np
 import pandas as pd
-from ctypes import * 
+from ctypes import *
+from .talib_series import LINEARREG_SLOPE
 import os
 # lib  = cdll.LoadLibrary("%s/%s" % (os.path.abspath("."), "talib_ext.so"))
 lib  = cdll.LoadLibrary("/usr/share/talib/%s" % ("talib_ext.so"))
@@ -379,3 +380,6 @@ def WINNER(Series,N=60):
     x=MA(Series, N)
     return (Series / x - 1)
 
+def SLOPE(Series, timeperiod=14):
+    return LINEARREG_SLOPE(Series, timeperiod)
+    # return pd.Series(res, index=SerLINEARREG_SLOPEies.index)
