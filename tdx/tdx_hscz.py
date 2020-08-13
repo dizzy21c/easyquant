@@ -1,8 +1,10 @@
 import pandas as pd
 import os
+import QUANTAXIS as QA
 import datetime
 import numpy as np 
 import statsmodels.formula.api as sml
+from QAStrategy.qastockbase import QAStrategyStockBase
 
 import matplotlib.pyplot as plt
 import scipy.stats as scs
@@ -20,6 +22,24 @@ mongo = MongoIo()
 databuf_mongo = Manager().dict()
 databuf_tdxfunc = Manager().dict()
 pool_size = cpu_count()
+
+class strategy(QAStrategyStockBase):
+    def on_bar(self, data):
+        pass
+# order = strategy(code=codelist, frequence='day', start='2019-01-01', end='2019-02-01', strategy_id='x')
+# codelist=QA.QA_fetch_stock_block_adv().code[0:1]
+# order = strategy(
+#     code=codelist
+#     # code=QA.QA_fetch_stock_block_adv().code[0:10]
+#     # , frequence='30min'
+#     , frequence='day'
+#     , start='2020-01-01', end='2020-01-31'
+#     , portfolio='example2'
+#     , strategy_id='super-example2-day')
+# order.run_backtest()
+codelist = QA.QA_fetch_stock_block_adv().code[0:1]
+qa_order = strategy(code=codelist, frequence='day', start='2020-01-01', end='2020-12-31', strategy_id='x')
+qa_order.run_backtest()
 # print("pool size=%d" % pool_size)
 def tdx_base_func(data, code_list = None):
     """
@@ -36,12 +56,16 @@ def tdx_base_func(data, code_list = None):
 
     CLOSE=data.close
     C=data.close
+    # df_macd = MACD(C,12,26,9)
+    # mtj1 = IFAND(df_macd.DIFF < 0, df_macd.DEA < 0, 1, 0)
+    # mtj2 = IFAND(mtj1, df_macd.MACD < 0, 1, 0)
     花 = SLOPE(EMA(C, 3), 3)
     神 = SLOPE(EMA(C, 7), 7)
     买 = IFAND(COUNT(花 < 神, 5)==4 , 花 >= 神,1,0)
     卖 = IFAND(COUNT(花 >= 神, 5)==4, 花 < 神,1,0)
     钻石 = IFAND(CROSS(花, 神), CLOSE / REF(CLOSE, 1) > 1.03, 1, 0)
     买股 = IFAND(买, 钻石,1,0)
+    # 买股 = IFAND(mtj2, 买股1, 1, 0)
     # AND(CROSS(花, 神)
     # AND
     # CLOSE / REF(CLOSE, 1) > 1.03);
@@ -173,7 +197,12 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
             data.iat[i + 1, hold_price_col] = data.iat[i, open_col]
 
             position = 1
+
             print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+            code = data.iloc[i].name[1]
+            price = data.iloc[i].close
+            qa_order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
+            # order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
         # 平仓
         # elif data.iat[i, bflag] == S2 and position == 1:
         elif data.iat[i, position_col] > 0 and position == 1:
@@ -187,26 +216,43 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
                 print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                code = data.iloc[i].name[1]
+                price = data.iloc[i].close
+                # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
+                qa_order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
+
             elif cprice > hole_price * 1.1 and high_price / cprice > 1.05:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
                 print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                code = data.iloc[i].name[1]
+                price = data.iloc[i].close
+                # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
+                qa_order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
+
             elif cprice > hole_price * 1.2 and high_price / cprice > 1.06:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (
-                data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                code = data.iloc[i].name[1]
+                price = data.iloc[i].close
+                # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
+                qa_order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
+
             elif data.iat[i, sflag] > 0:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (
-                data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                code = data.iloc[i].name[1]
+                price = data.iloc[i].close
+                # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
+                qa_order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
             else:
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
@@ -333,6 +379,7 @@ def get_data(st_start):
     print(end_t, 'get_data spent:{}'.format((end_t - start_t)))
 
     # return data_day
+# order = QAStrategyStockBase()
 
 if __name__ == '__main__':
     start_t = datetime.datetime.now()
@@ -371,11 +418,15 @@ if __name__ == '__main__':
     # plt.plot(np.arange(result.shape[0]), result2.nav,label = 'RSRS2',linewidth = 2)
     # plt.plot(np.arange(result.shape[0]), result3.nav,label = 'RSRS3',linewidth = 2)
     # plt.plot(np.arange(result.shape[0]), result4.nav,label = 'RSRS4',linewidth = 2)
-    plt.plot(np.arange(result.shape[0]), result.close / result.close[0], label = benchcode, linewidth = 2)
+    # plt.plot(np.arange(result.shape[0]), result.close / result.close[0], label = benchcode, linewidth = 2)
+    #
+    # fig.set_xticks(range(0, len(xticklabel),
+    #                      round(len(xticklabel) / 12)))
+    # fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
+    #                     rotation = 45)
+    # plt.legend()
+    # plt.show()
 
-    fig.set_xticks(range(0, len(xticklabel),
-                         round(len(xticklabel) / 12)))
-    fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
-                        rotation = 45)
-    plt.legend()
-    plt.show()
+    risk = QA.QA_Risk(qa_order.acc)
+    risk.plot_assets_curve().show()
+    print(risk.profit_construct)
