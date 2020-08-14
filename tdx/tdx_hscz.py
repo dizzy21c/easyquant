@@ -38,8 +38,8 @@ class strategy(QAStrategyStockBase):
 #     , strategy_id='super-example2-day')
 # order.run_backtest()
 codelist = QA.QA_fetch_stock_block_adv().code[0:1]
-qa_order = strategy(code=codelist, frequence='day', start='2020-01-01', end='2020-12-31', strategy_id='x')
-qa_order.run_backtest()
+qa_order = strategy(code=codelist, frequence='day', start='2019-12-01', end='2020-12-31', strategy_id='x')
+qa_order.run_backtest2()
 # print("pool size=%d" % pool_size)
 def tdx_base_func(data, code_list = None):
     """
@@ -261,7 +261,8 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
             data.iat[i + 1, position_col] = data.iat[i, position_col]
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
-    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
+    # data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
+    data['nav'] = data.close * data.position
     return data
 
 def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
@@ -284,10 +285,13 @@ def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
 
 
     result01 = dataR['nav'].groupby(level=['date']).sum()
-    result02 = dataR['nav'].groupby(level=['date']).count()
-
+    # result02 = dataR['nav'].groupby(level=['date']).count()
+    max_dropback = round(float(max([(result01.iloc[idx] - result01.iloc[idx::].min()) / result01.iloc[idx] for idx in range(len(result01))])), 2)
+    result02 = 0
+    result02.iloc[0] = max_dropback
     num = dataR.flag.abs().sum()
-    dataR2 = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
+    # dataR2 = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
+    dataR2 = pd.DataFrame({'nav': result02, 'flag': 0})
     # dataR2['flag'] = 0
     dataR2.iat[-1,1] = num
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
@@ -394,9 +398,9 @@ if __name__ == '__main__':
     resultT = buy_sell_fun_mp(indices_rsrsT)
     num = resultT.flag.abs().sum() / 2
     nav = resultT.nav[resultT.shape[0] - 1]
-    mnav = min(resultT.nav)
+    mnav = max(resultT.nav)
     print('RSRS1_T 交易次数 = ',num)
-    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, (1 - mnav) * 100))
+    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, mnav))
 
     end_t = datetime.datetime.now()
     print(end_t, 'spent:{}'.format((end_t - start_t)))
@@ -427,6 +431,6 @@ if __name__ == '__main__':
     # plt.legend()
     # plt.show()
 
-    risk = QA.QA_Risk(qa_order.acc)
-    risk.plot_assets_curve().show()
-    print(risk.profit_construct)
+    # risk = QA.QA_Risk(qa_order.acc)
+    # risk.plot_assets_curve().show()
+    # print(risk.profit_construct)
