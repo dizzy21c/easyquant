@@ -13,6 +13,9 @@ import json
 from easyquant import MongoIo
 import statsmodels.api as sm
 from multiprocessing import Process, Pool, cpu_count, Manager
+from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
+
+executor = ProcessPoolExecutor(max_workers=cpu_count() * 2)
 
 mongo = MongoIo()
 
@@ -148,40 +151,103 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
     open_col = data.columns.get_loc('open')
     hold_price_col = data.columns.get_loc('hold_price')
     position = 0 # 是否持仓，持仓：1，不持仓：0
+    sflg = 0
+    hdays = 0
     for i in range(1,data.shape[0] - 1):
         # 开仓
+        if position > 0:
+            hdays = hdays + 1
+        else:
+            hdays = 0
         if data.iat[i, bflag] > 0 and position == 0:
-            data.iat[i + 1, flag] = 1
-            data.iat[i + 1, position_col] = 1
-            data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
-            position = 1
-            print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
+            sflg = 0
+            if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
+                    and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02:
+            # if data.iat[i+1,open_col] > data.iat[i,close_col] * 1.07:
+                data.iat[i + 1, flag] = 1
+                data.iat[i + 1, position_col] = 1
+                data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
+                position = 1
+                print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
+                # hdays = 0
+            else:
+                data.iat[i + 1, position_col] = data.iat[i, position_col]
+                data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
+                # pass
         # 平仓
         # elif data.iat[i, bflag] == S2 and position == 1:
         elif data.iat[i, position_col] > 0 and position == 1:
             cprice = data.iat[i, close_col]
             # oprice = data.iat[i, open_col]
-            hole_price = data.iat[i, hold_price_col]
-            high_price = data.iat[i, high_col]
-            if cprice < hole_price * 0.95:# or cprice > hprice * 1.2:
+            hold_price = data.iat[i, hold_price_col]
+            if cprice < hold_price * 0.95:
+                sflg = -1
+            elif cprice > hold_price * 1.1 and sflg <= 0:
+                sflg = 1
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.2 and sflg < 2:
+                sflg = 2
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.3 and sflg < 3:
+                sflg = 3
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.4 and sflg < 4:
+                sflg = 4
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.5 and sflg < 5:
+                sflg = 5
+                high_price = data.iat[i, high_col]
+            if sflg < 0:# or cprice > hprice * 1.2:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-            elif cprice > hole_price * 1.1 and high_price / cprice > 1.05:
+                print("sell -5 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 5 and high_price / cprice > 1.08:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-            elif cprice > hole_price * 1.2 and high_price / cprice > 1.06:
+                print("sell 50 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 4 and high_price / cprice > 1.07:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (
+                print("sell 40 : code=%s date=%s  price=%.2f" % (
                 data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 3 and high_price / cprice > 1.06:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 30 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 2 and high_price / cprice > 1.05:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 20 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 1 and high_price / cprice > 1.04:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 10 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 0 and hdays > 3:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+
             else:
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
@@ -194,6 +260,42 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
     return data
 
 def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
+    """
+    斜率指标交易策略标准分策略
+    """
+    # dataR = pd.DataFrame()
+    task_list = []
+    for code in datam.index.levels[1]:
+        # data = price.copy()
+        price = datam.query("code=='%s'" % code)
+        data = price.copy()
+        # data = buy_sell_fun(data)
+        task_list.append(executor.submit(buy_sell_fun, data))
+        # if code == '000732':
+        #     print(data.tail(22))
+        # if len(dataR) == 0:
+        #     dataR = data
+        # else:
+        #     dataR = dataR.append(data)
+
+    dataR = pd.DataFrame()
+    for task in as_completed(task_list):
+        if len(dataR) == 0:
+            dataR = task.result()
+        else:
+            dataR = dataR.append(task.result())
+
+    result01 = dataR['nav'].groupby(level=['date']).sum()
+    result02 = dataR['nav'].groupby(level=['date']).count()
+
+    num = dataR.flag.abs().sum()
+    dataR2 = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
+    # dataR2['flag'] = 0
+    dataR2.iat[-1,1] = num
+    # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
+    return dataR2
+
+def buy_sell_fun_mp_org(datam, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
@@ -321,8 +423,10 @@ if __name__ == '__main__':
     num = resultT.flag.abs().sum() / 2
     nav = resultT.nav[resultT.shape[0] - 1]
     mnav = min(resultT.nav)
+    max_dropback = round(float(max([(resultT.nav.iloc[idx] - resultT.nav.iloc[idx::].min()) / resultT.nav.iloc[idx] for idx in range(len(resultT.nav))])),2)
+    # max_dropback = 0
     print('RSRS1_T 交易次数 = ',num)
-    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, (1 - mnav) * 100))
+    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, max_dropback * 100))
 
     end_t = datetime.datetime.now()
     print(end_t, 'spent:{}'.format((end_t - start_t)))
