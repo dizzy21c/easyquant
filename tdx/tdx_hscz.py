@@ -15,8 +15,10 @@ import json
 from easyquant import MongoIo
 import statsmodels.api as sm
 from multiprocessing import Process, Pool, cpu_count, Manager
-# plt.switch_backend('agg')
+from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 
+# plt.switch_backend('agg')
+executor = ThreadPoolExecutor(max_workers=cpu_count() * 50)
 mongo = MongoIo()
 
 databuf_mongo = Manager().dict()
@@ -215,7 +217,7 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 code = data.iloc[i].name[1]
                 price = data.iloc[i].close
                 # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
@@ -226,7 +228,7 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 code = data.iloc[i].name[1]
                 price = data.iloc[i].close
                 # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
@@ -237,7 +239,7 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 code = data.iloc[i].name[1]
                 price = data.iloc[i].close
                 # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
@@ -248,7 +250,7 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 code = data.iloc[i].name[1]
                 price = data.iloc[i].close
                 # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
@@ -261,8 +263,8 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
             data.iat[i + 1, position_col] = data.iat[i, position_col]
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
-    # data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
-    data['nav'] = data.close * data.position
+    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
+    # data['nav'] = data.close * data.position
     return data
 
 def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
@@ -285,13 +287,13 @@ def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
 
 
     result01 = dataR['nav'].groupby(level=['date']).sum()
-    # result02 = dataR['nav'].groupby(level=['date']).count()
-    max_dropback = round(float(max([(result01.iloc[idx] - result01.iloc[idx::].min()) / result01.iloc[idx] for idx in range(len(result01))])), 2)
-    result02 = 0
-    result02.iloc[0] = max_dropback
+    result02 = dataR['nav'].groupby(level=['date']).count()
+    # max_dropback = round(float(max([(result01.iloc[idx] - result01.iloc[idx::].min()) / result01.iloc[idx] for idx in range(len(result01))])), 2)
+    # result02 = 0
+    # result02.iloc[0] = max_dropback
     num = dataR.flag.abs().sum()
-    # dataR2 = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
-    dataR2 = pd.DataFrame({'nav': result02, 'flag': 0})
+    dataR2 = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
+    # dataR2 = pd.DataFrame({'nav': result02, 'flag': 0})
     # dataR2['flag'] = 0
     dataR2.iat[-1,1] = num
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
@@ -334,15 +336,17 @@ def get_data(st_start):
     # codelist = ['600380','600822']
 
     code_file = "../config/stock_list.json"
-    codelist = []
-    with open(code_file, 'r') as f:
-        data = json.load(f)
-        for d in data['code']:
-            if d[0:3] == '688':
-                continue
-            if len(d) > 6:
-                d = d[len(d) - 6:len(d)]
-            codelist.append(d)
+    # codelist = []
+    # with open(code_file, 'r') as f:
+    #     data = json.load(f)
+    #     for d in data['code']:
+    #         if d[0:3] == '688':
+    #             continue
+    #         if len(d) > 6:
+    #             d = d[len(d) - 6:len(d)]
+    #         codelist.append(d)
+
+    codelist = QA.QA_fetch_stock_list_adv()
     subcode_len = int(len(codelist) / pool_size)
     code_dict = {}
     pool = Pool(cpu_count())
@@ -397,10 +401,13 @@ if __name__ == '__main__':
     indices_rsrsT = tdx_func_mp()
     resultT = buy_sell_fun_mp(indices_rsrsT)
     num = resultT.flag.abs().sum() / 2
+
+    max_dropback = round(float(max([(resultT.nav.iloc[idx] - resultT.nav.iloc[idx::].min()) / resultT.nav.iloc[idx] for idx in range(len(resultT.nav))])),
+                         2)
     nav = resultT.nav[resultT.shape[0] - 1]
-    mnav = max(resultT.nav)
+    # mnav = max(resultT.nav)
     print('RSRS1_T 交易次数 = ',num)
-    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, mnav))
+    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, max_dropback))
 
     end_t = datetime.datetime.now()
     print(end_t, 'spent:{}'.format((end_t - start_t)))

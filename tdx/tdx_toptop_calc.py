@@ -15,7 +15,7 @@ import statsmodels.api as sm
 from multiprocessing import Process, Pool, cpu_count, Manager
 from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 
-executor = ProcessPoolExecutor(max_workers=cpu_count() * 2)
+executor = ThreadPoolExecutor(max_workers=cpu_count() * 2)
 
 mongo = MongoIo()
 
@@ -134,10 +134,12 @@ def tdx_func_mp():
 
     return dataR
 
-def buy_sell_fun(price, S1=1.0, S2=0.8):
+def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
+    price = datam.query("code=='%s'" % code)
+    # data = price.copy()
     data = price.copy()
     data['flag'] = 0 # 买卖标记
     data['position'] = 0 # 持仓标记
@@ -202,21 +204,21 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell -5 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell -5 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
             elif sflg == 5 and high_price / cprice > 1.08:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell 50 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell 50 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
             elif sflg == 4 and high_price / cprice > 1.07:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell 40 : code=%s date=%s  price=%.2f" % (
+                print("sell 40 : date=%s code=%s  price=%.2f" % (
                 data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
             elif sflg == 3 and high_price / cprice > 1.06:
@@ -224,28 +226,28 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell 30 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell 30 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
             elif sflg == 2 and high_price / cprice > 1.05:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell 20 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell 20 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
             elif sflg == 1 and high_price / cprice > 1.04:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell 10 : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell 10 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
             elif sflg == 0 and hdays > 3:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell : code=%s date=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
 
             else:
@@ -264,26 +266,34 @@ def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
     斜率指标交易策略标准分策略
     """
     # dataR = pd.DataFrame()
+    start_t = datetime.datetime.now()
+    print("begin-buy_sell_fun_mp-01:", start_t)
     task_list = []
     for code in datam.index.levels[1]:
         # data = price.copy()
-        price = datam.query("code=='%s'" % code)
-        data = price.copy()
+        # price = datam.query("code=='%s'" % code)
+        # data = price.copy()
         # data = buy_sell_fun(data)
-        task_list.append(executor.submit(buy_sell_fun, data))
+        task_list.append(executor.submit(buy_sell_fun, datam, code))
         # if code == '000732':
         #     print(data.tail(22))
         # if len(dataR) == 0:
         #     dataR = data
         # else:
         #     dataR = dataR.append(data)
+    end_t = datetime.datetime.now()
+    print(end_t, 'buy_sell_fun_mp-01 spent:{}'.format((end_t - start_t)))
 
     dataR = pd.DataFrame()
+    start_t = datetime.datetime.now()
+    print("begin-buy_sell_fun_mp-02:", start_t)
     for task in as_completed(task_list):
         if len(dataR) == 0:
             dataR = task.result()
         else:
             dataR = dataR.append(task.result())
+    end_t = datetime.datetime.now()
+    print(end_t, 'buy_sell_fun_mp-02 spent:{}'.format((end_t - start_t)))
 
     result01 = dataR['nav'].groupby(level=['date']).sum()
     result02 = dataR['nav'].groupby(level=['date']).count()
@@ -299,12 +309,14 @@ def buy_sell_fun_mp_org(datam, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
+    start_t = datetime.datetime.now()
+    print("begin-buy_sell_fun_mp:", start_t)
     dataR = pd.DataFrame()
     for code in datam.index.levels[1]:
         # data = price.copy()
-        price = datam.query("code=='%s'" % code)
-        data = price.copy()
-        data = buy_sell_fun(data)
+        # price = datam.query("code=='%s'" % code)
+        # data = price.copy()
+        data = buy_sell_fun(datam, code)
         # if code == '000732':
         #     print(data.tail(22))
         if len(dataR) == 0:
@@ -312,7 +324,8 @@ def buy_sell_fun_mp_org(datam, S1=1.0, S2=0.8):
         else:
             dataR = dataR.append(data)
 
-
+    end_t = datetime.datetime.now()
+    print(end_t, 'buy_sell_fun_mp spent:{}'.format((end_t - start_t)))
 
     result01 = dataR['nav'].groupby(level=['date']).sum()
     result02 = dataR['nav'].groupby(level=['date']).count()
