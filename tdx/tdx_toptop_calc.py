@@ -81,8 +81,9 @@ def tdx_base_func(data, code_list = None):
     # data['beta_right'] = data.RSRS_R2 * data.beta
     # if code == '000732':
     #     print(data.tail(22))
+    return do_buy_sell_fun(data)
+    # return data
 
-    return data
 def do_tdx_func(key):
     databuf_tdxfunc[key] = tdx_func(databuf_mongo[key])
 
@@ -109,7 +110,7 @@ def tdx_func(datam, code_list = None):
 
 def tdx_func_mp():
     start_t = datetime.datetime.now()
-    print("begin-tdx_func:", start_t)
+    print("begin-tdx_func_mp :", start_t)
     pool = Pool(cpu_count())
     for i in range(pool_size):
         pool.apply_async(do_tdx_func, args=(i, ))
@@ -130,10 +131,9 @@ def tdx_func_mp():
 
 
     end_t = datetime.datetime.now()
-    print(end_t, 'tdx_func spent:{}'.format((end_t - start_t)))
+    print(end_t, 'tdx_func_mp spent:{}'.format((end_t - start_t)))
 
     return dataR
-
 def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
@@ -141,6 +141,15 @@ def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
     price = datam.query("code=='%s'" % code)
     # data = price.copy()
     data = price.copy()
+    return do_buy_sell_fun(data)
+
+def do_buy_sell_fun(data, S1=1.0, S2=0.8):
+    """
+    斜率指标交易策略标准分策略
+    """
+    # price = datam.query("code=='%s'" % code)
+    # # data = price.copy()
+    # data = price.copy()
     data['flag'] = 0 # 买卖标记
     data['position'] = 0 # 持仓标记
     data['hold_price'] = 0  # 持仓价格
@@ -218,8 +227,7 @@ def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
-                print("sell 40 : date=%s code=%s  price=%.2f" % (
-                data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                print("sell 40 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
             elif sflg == 3 and high_price / cprice > 1.06:
                 data.iat[i, flag] = -1
@@ -260,8 +268,21 @@ def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
 
     data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
     return data
-
 def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
+    start_t = datetime.datetime.now()
+    print("begin-buy_sell_fun_mp-01:", start_t)
+
+    result01 = datam['nav'].groupby(level=['date']).sum()
+    result02 = datam['nav'].groupby(level=['date']).count()
+
+    num = datam.flag.abs().sum()
+    dataR = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
+    # dataR2['flag'] = 0
+    dataR.iat[-1,1] = num
+    # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
+    return dataR
+
+def buy_sell_fun_mp_new(datam, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
@@ -433,9 +454,10 @@ if __name__ == '__main__':
     get_data(st_start)
     indices_rsrsT = tdx_func_mp()
     resultT = buy_sell_fun_mp(indices_rsrsT)
+    # resultT = indices_rsrsT
     num = resultT.flag.abs().sum() / 2
     nav = resultT.nav[resultT.shape[0] - 1]
-    mnav = min(resultT.nav)
+    # mnav = min(resultT.nav)
     max_dropback = round(float(max([(resultT.nav.iloc[idx] - resultT.nav.iloc[idx::].min()) / resultT.nav.iloc[idx] for idx in range(len(resultT.nav))])),2)
     # max_dropback = 0
     print('RSRS1_T 交易次数 = ',num)
@@ -467,5 +489,5 @@ if __name__ == '__main__':
                          round(len(xticklabel) / 12)))
     fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
                         rotation = 45)
-    plt.legend()
-    plt.show()
+    # plt.legend()
+    # plt.show()
