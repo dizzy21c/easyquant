@@ -266,7 +266,7 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
             data.iat[i + 1, position_col] = data.iat[i, position_col]
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
-    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
+    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod() - 1
     return data
 def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
     start_t = datetime.datetime.now()
@@ -276,7 +276,8 @@ def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
     result02 = datam['nav'].groupby(level=['date']).count()
 
     num = datam.flag.abs().sum()
-    dataR = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
+    # dataR = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
+    dataR = pd.DataFrame({'nav': 1 + (result01 - result02) / result02, 'flag': 0})
     # dataR2['flag'] = 0
     dataR.iat[-1,1] = num
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
@@ -349,7 +350,9 @@ def buy_sell_fun_mp_org(datam, S1=1.0, S2=0.8):
     print(end_t, 'buy_sell_fun_mp spent:{}'.format((end_t - start_t)))
 
     result01 = dataR['nav'].groupby(level=['date']).sum()
-    result02 = dataR['nav'].groupby(level=['date']).count()
+    # result02 = dataR['nav'].groupby(level=['date']).count()
+    # TODO
+    result02 = dataR['nav'].groupby(level=['date']).sum()
 
     num = dataR.flag.abs().sum()
     dataR2 = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
@@ -489,5 +492,5 @@ if __name__ == '__main__':
                          round(len(xticklabel) / 12)))
     fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
                         rotation = 45)
-    # plt.legend()
-    # plt.show()
+    plt.legend()
+    plt.show()

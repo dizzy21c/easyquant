@@ -1,8 +1,11 @@
 import pandas as pd
 import os
-import QUANTAXIS as QA
 import datetime
 import numpy as np 
+import statsmodels.formula.api as sml
+import QUANTAXIS as QA
+import datetime
+import numpy as np
 import statsmodels.formula.api as sml
 from QAStrategy.qastockbase import QAStrategyStockBase
 
@@ -17,31 +20,13 @@ import statsmodels.api as sm
 from multiprocessing import Process, Pool, cpu_count, Manager
 from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 
-# plt.switch_backend('agg')
-executor = ThreadPoolExecutor(max_workers=cpu_count() * 50)
+executor = ThreadPoolExecutor(max_workers=cpu_count() * 2)
+
 mongo = MongoIo()
 
 databuf_mongo = Manager().dict()
 databuf_tdxfunc = Manager().dict()
 pool_size = cpu_count()
-
-class strategy(QAStrategyStockBase):
-    def on_bar(self, data):
-        pass
-# order = strategy(code=codelist, frequence='day', start='2019-01-01', end='2019-02-01', strategy_id='x')
-# codelist=QA.QA_fetch_stock_block_adv().code[0:1]
-# order = strategy(
-#     code=codelist
-#     # code=QA.QA_fetch_stock_block_adv().code[0:10]
-#     # , frequence='30min'
-#     , frequence='day'
-#     , start='2020-01-01', end='2020-01-31'
-#     , portfolio='example2'
-#     , strategy_id='super-example2-day')
-# order.run_backtest()
-codelist = QA.QA_fetch_stock_block_adv().code[0:1]
-qa_order = strategy(code=codelist, frequence='day', start='2019-12-01', end='2020-12-31', strategy_id='x')
-qa_order.run_backtest2()
 # print("pool size=%d" % pool_size)
 def tdx_base_func(data, code_list = None):
     """
@@ -50,27 +35,15 @@ def tdx_base_func(data, code_list = None):
     # highs = data.high
     # start_t = datetime.datetime.now()
     # print("begin-tdx_base_func:", start_t)
-    if len(data) < 10:
-        data = data.copy()
-        data['bflg'] = 0
-        data['sflg'] = 0
-        return data
 
     CLOSE=data.close
     C=data.close
-    # df_macd = MACD(C,12,26,9)
-    # mtj1 = IFAND(df_macd.DIFF < 0, df_macd.DEA < 0, 1, 0)
-    # mtj2 = IFAND(mtj1, df_macd.MACD < 0, 1, 0)
     花 = SLOPE(EMA(C, 3), 3)
     神 = SLOPE(EMA(C, 7), 7)
     买 = IFAND(COUNT(花 < 神, 5)==4 , 花 >= 神,1,0)
     卖 = IFAND(COUNT(花 >= 神, 5)==4, 花 < 神,1,0)
     钻石 = IFAND(CROSS(花, 神), CLOSE / REF(CLOSE, 1) > 1.03, 1, 0)
     买股 = IFAND(买, 钻石,1,0)
-    # 买股 = IFAND(mtj2, 买股1, 1, 0)
-    # AND(CROSS(花, 神)
-    # AND
-    # CLOSE / REF(CLOSE, 1) > 1.03);
 
     # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
     # return 后炮.iloc[-1]
@@ -116,8 +89,9 @@ def tdx_base_func(data, code_list = None):
     # data['beta_right'] = data.RSRS_R2 * data.beta
     # if code == '000732':
     #     print(data.tail(22))
+    return do_buy_sell_fun(data)
+    # return data
 
-    return data
 def do_tdx_func(key):
     databuf_tdxfunc[key] = tdx_func(databuf_mongo[key])
 
@@ -144,22 +118,20 @@ def tdx_func(datam, code_list = None):
 
 def tdx_func_mp():
     start_t = datetime.datetime.now()
-    print("begin-tdx_func_mp:", start_t)
+    print("begin-tdx_func_mp :", start_t)
     pool = Pool(cpu_count())
     for i in range(pool_size):
         pool.apply_async(do_tdx_func, args=(i, ))
-        # do_tdx_func(i)
 
     pool.close()
     pool.join()
-    # print("databuf_tdx_func_mp=%d" % len(databuf_tdxfunc))
+
     # todo begin
     dataR = pd.DataFrame()
     for i in range(pool_size):
         if len(dataR) == 0:
             dataR = databuf_tdxfunc[i]
         else:
-            # if i < len(databuf_tdxfunc):
             dataR = dataR.append(databuf_tdxfunc[i])
         # print(len(dataR))
     dataR.sort_index()
@@ -170,12 +142,21 @@ def tdx_func_mp():
     print(end_t, 'tdx_func_mp spent:{}'.format((end_t - start_t)))
 
     return dataR
-
-def buy_sell_fun(price, S1=1.0, S2=0.8):
+def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
+    price = datam.query("code=='%s'" % code)
+    # data = price.copy()
     data = price.copy()
+    return do_buy_sell_fun(data)
+def do_buy_sell_fun(data, S1=1.0, S2=0.8):
+    """
+    斜率指标交易策略标准分策略
+    """
+    # price = datam.query("code=='%s'" % code)
+    # # data = price.copy()
+    # data = price.copy()
     data['flag'] = 0 # 买卖标记
     data['position'] = 0 # 持仓标记
     data['hold_price'] = 0  # 持仓价格
@@ -189,72 +170,156 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
     open_col = data.columns.get_loc('open')
     hold_price_col = data.columns.get_loc('hold_price')
     position = 0 # 是否持仓，持仓：1，不持仓：0
+    sflg = 0
+    hdays = 0
     for i in range(1,data.shape[0] - 1):
         # 开仓
+        if position > 0:
+            hdays = hdays + 1
+        else:
+            hdays = 0
         if data.iat[i, bflag] > 0 and position == 0:
             data.iat[i, flag] = 1
             data.iat[i, position_col] = 1
-            data.iat[i, hold_price_col] = data.iat[i, open_col]
+            data.iat[i + 1, flag] = 1
             data.iat[i + 1, position_col] = 1
-            data.iat[i + 1, hold_price_col] = data.iat[i, open_col]
-
+            data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
             position = 1
+            print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
+                # hdays = 0
+        elif data.iat[i, sflag] > 0 and position == 1:
+            cprice = data.iat[i, close_col]
+            # oprice = data.iat[i, open_col]
+            hold_price = data.iat[i, hold_price_col]
+            data.iat[i, flag] = -1
+            data.iat[i + 1, position_col] = 0
+            data.iat[i + 1, hold_price_col] = 0
+            position = 0
+            print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+            sflg = 0
+        # 保持
+        else:
+            data.iat[i + 1, position_col] = data.iat[i, position_col]
+            data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
-            print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-            code = data.iloc[i].name[1]
-            price = data.iloc[i].close
-            qa_order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
-            # order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
+    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
+    return data
+
+def do_buy_sell_fun_zz(data, S1=1.0, S2=0.8):
+    """
+    斜率指标交易策略标准分策略
+    """
+    # price = datam.query("code=='%s'" % code)
+    # # data = price.copy()
+    # data = price.copy()
+    data['flag'] = 0 # 买卖标记
+    data['position'] = 0 # 持仓标记
+    data['hold_price'] = 0  # 持仓价格
+    bflag = data.columns.get_loc('bflg')
+    # beta = data.columns.get_loc('beta')
+    flag = data.columns.get_loc('flag')
+    position_col = data.columns.get_loc('position')
+    close_col = data.columns.get_loc('close')
+    high_col = data.columns.get_loc('high')
+    open_col = data.columns.get_loc('open')
+    hold_price_col = data.columns.get_loc('hold_price')
+    position = 0 # 是否持仓，持仓：1，不持仓：0
+    sflg = 0
+    hdays = 0
+    for i in range(1,data.shape[0] - 1):
+        # 开仓
+        if position > 0:
+            hdays = hdays + 1
+        else:
+            hdays = 0
+        if data.iat[i, bflag] > 0 and position == 0:
+            sflg = 0
+            if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
+                    and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02:
+            # if data.iat[i+1,open_col] > data.iat[i,close_col] * 1.07:
+                data.iat[i + 1, flag] = 1
+                data.iat[i + 1, position_col] = 1
+                data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
+                position = 1
+                print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
+                # hdays = 0
+            else:
+                data.iat[i + 1, position_col] = data.iat[i, position_col]
+                data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
+                # pass
         # 平仓
         # elif data.iat[i, bflag] == S2 and position == 1:
         elif data.iat[i, position_col] > 0 and position == 1:
             cprice = data.iat[i, close_col]
             # oprice = data.iat[i, open_col]
-            hole_price = data.iat[i, hold_price_col]
-            high_price = data.iat[i, high_col]
-            if cprice < hole_price * 0.95:# or cprice > hprice * 1.2:
+            hold_price = data.iat[i, hold_price_col]
+            if cprice < hold_price * 0.95:
+                sflg = -1
+            elif cprice > hold_price * 1.1 and sflg <= 0:
+                sflg = 1
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.2 and sflg < 2:
+                sflg = 2
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.3 and sflg < 3:
+                sflg = 3
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.4 and sflg < 4:
+                sflg = 4
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.5 and sflg < 5:
+                sflg = 5
+                high_price = data.iat[i, high_col]
+            if sflg < 0:# or cprice > hprice * 1.2:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell -5 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 5 and high_price / cprice > 1.08:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 50 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 4 and high_price / cprice > 1.07:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 40 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 3 and high_price / cprice > 1.06:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 30 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 2 and high_price / cprice > 1.05:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 20 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 1 and high_price / cprice > 1.04:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 10 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 0 and hdays > 3:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
                 print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                code = data.iloc[i].name[1]
-                price = data.iloc[i].close
-                # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
-                qa_order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
+                sflg = 0
 
-            elif cprice > hole_price * 1.1 and high_price / cprice > 1.05:
-                data.iat[i, flag] = -1
-                data.iat[i + 1, position_col] = 0
-                data.iat[i + 1, hold_price_col] = 0
-                position = 0
-                print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                code = data.iloc[i].name[1]
-                price = data.iloc[i].close
-                # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
-                qa_order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
-
-            elif cprice > hole_price * 1.2 and high_price / cprice > 1.06:
-                data.iat[i, flag] = -1
-                data.iat[i + 1, position_col] = 0
-                data.iat[i + 1, hold_price_col] = 0
-                position = 0
-                print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                code = data.iloc[i].name[1]
-                price = data.iloc[i].close
-                # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
-                qa_order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
-
-            elif data.iat[i, sflag] > 0:
-                data.iat[i, flag] = -1
-                data.iat[i + 1, position_col] = 0
-                data.iat[i + 1, hold_price_col] = 0
-                position = 0
-                print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                code = data.iloc[i].name[1]
-                price = data.iloc[i].close
-                # order.send_order('BUY', 'OPEN', code=code, price=price, volume=1000)
-                qa_order.send_order('SELL', 'CLOSE', code=code, price=price, volume=1000)
             else:
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
@@ -264,19 +329,77 @@ def buy_sell_fun(price, S1=1.0, S2=0.8):
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
     data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
-    # data['nav'] = data.close * data.position
     return data
-
 def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
+    start_t = datetime.datetime.now()
+    print("begin-buy_sell_fun_mp-01:", start_t)
+
+    result01 = datam['nav'].groupby(level=['date']).sum()
+    result02 = datam['nav'].groupby(level=['date']).count()
+
+    num = datam.flag.abs().sum()
+    dataR = pd.DataFrame({'nav':1 + (result01 - result02) / result02 ,'flag':0})
+    # dataR2['flag'] = 0
+    dataR.iat[-1,1] = num
+    # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
+    return dataR
+
+def buy_sell_fun_mp_new(datam, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
+    # dataR = pd.DataFrame()
+    start_t = datetime.datetime.now()
+    print("begin-buy_sell_fun_mp-01:", start_t)
+    task_list = []
+    for code in datam.index.levels[1]:
+        # data = price.copy()
+        # price = datam.query("code=='%s'" % code)
+        # data = price.copy()
+        # data = buy_sell_fun(data)
+        task_list.append(executor.submit(buy_sell_fun, datam, code))
+        # if code == '000732':
+        #     print(data.tail(22))
+        # if len(dataR) == 0:
+        #     dataR = data
+        # else:
+        #     dataR = dataR.append(data)
+    end_t = datetime.datetime.now()
+    print(end_t, 'buy_sell_fun_mp-01 spent:{}'.format((end_t - start_t)))
+
+    dataR = pd.DataFrame()
+    start_t = datetime.datetime.now()
+    print("begin-buy_sell_fun_mp-02:", start_t)
+    for task in as_completed(task_list):
+        if len(dataR) == 0:
+            dataR = task.result()
+        else:
+            dataR = dataR.append(task.result())
+    end_t = datetime.datetime.now()
+    print(end_t, 'buy_sell_fun_mp-02 spent:{}'.format((end_t - start_t)))
+
+    result01 = dataR['nav'].groupby(level=['date']).sum()
+    result02 = dataR['nav'].groupby(level=['date']).count()
+
+    num = dataR.flag.abs().sum()
+    dataR2 = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
+    # dataR2['flag'] = 0
+    dataR2.iat[-1,1] = num
+    # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
+    return dataR2
+
+def buy_sell_fun_mp_org(datam, S1=1.0, S2=0.8):
+    """
+    斜率指标交易策略标准分策略
+    """
+    start_t = datetime.datetime.now()
+    print("begin-buy_sell_fun_mp:", start_t)
     dataR = pd.DataFrame()
     for code in datam.index.levels[1]:
         # data = price.copy()
-        price = datam.query("code=='%s'" % code)
-        data = price.copy()
-        data = buy_sell_fun(data)
+        # price = datam.query("code=='%s'" % code)
+        # data = price.copy()
+        data = buy_sell_fun(datam, code)
         # if code == '000732':
         #     print(data.tail(22))
         if len(dataR) == 0:
@@ -284,16 +407,14 @@ def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
         else:
             dataR = dataR.append(data)
 
-
+    end_t = datetime.datetime.now()
+    print(end_t, 'buy_sell_fun_mp spent:{}'.format((end_t - start_t)))
 
     result01 = dataR['nav'].groupby(level=['date']).sum()
     result02 = dataR['nav'].groupby(level=['date']).count()
-    # max_dropback = round(float(max([(result01.iloc[idx] - result01.iloc[idx::].min()) / result01.iloc[idx] for idx in range(len(result01))])), 2)
-    # result02 = 0
-    # result02.iloc[0] = max_dropback
+
     num = dataR.flag.abs().sum()
     dataR2 = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
-    # dataR2 = pd.DataFrame({'nav': result02, 'flag': 0})
     # dataR2['flag'] = 0
     dataR2.iat[-1,1] = num
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
@@ -336,17 +457,13 @@ def get_data(st_start):
     # codelist = ['600380','600822']
 
     code_file = "../config/stock_list.json"
-    # codelist = []
-    # with open(code_file, 'r') as f:
-    #     data = json.load(f)
-    #     for d in data['code']:
-    #         if d[0:3] == '688':
-    #             continue
-    #         if len(d) > 6:
-    #             d = d[len(d) - 6:len(d)]
-    #         codelist.append(d)
-
-    codelist = QA.QA_fetch_stock_list_adv()
+    codelist = []
+    with open(code_file, 'r') as f:
+        data = json.load(f)
+        for d in data['code']:
+            if len(d) > 6:
+                d = d[len(d) - 6:len(d)]
+            codelist.append(d)
     subcode_len = int(len(codelist) / pool_size)
     code_dict = {}
     pool = Pool(cpu_count())
@@ -387,7 +504,6 @@ def get_data(st_start):
     print(end_t, 'get_data spent:{}'.format((end_t - start_t)))
 
     # return data_day
-# order = QAStrategyStockBase()
 
 if __name__ == '__main__':
     start_t = datetime.datetime.now()
@@ -400,14 +516,14 @@ if __name__ == '__main__':
     get_data(st_start)
     indices_rsrsT = tdx_func_mp()
     resultT = buy_sell_fun_mp(indices_rsrsT)
+    # resultT = indices_rsrsT
     num = resultT.flag.abs().sum() / 2
-
-    max_dropback = round(float(max([(resultT.nav.iloc[idx] - resultT.nav.iloc[idx::].min()) / resultT.nav.iloc[idx] for idx in range(len(resultT.nav))])),
-                         2)
     nav = resultT.nav[resultT.shape[0] - 1]
-    # mnav = max(resultT.nav)
+    # mnav = min(resultT.nav)
+    max_dropback = round(float(max([(resultT.nav.iloc[idx] - resultT.nav.iloc[idx::].min()) / resultT.nav.iloc[idx] for idx in range(len(resultT.nav))])),2)
+    # max_dropback = 0
     print('RSRS1_T 交易次数 = ',num)
-    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, max_dropback))
+    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, max_dropback * 100))
 
     end_t = datetime.datetime.now()
     print(end_t, 'spent:{}'.format((end_t - start_t)))
@@ -429,15 +545,11 @@ if __name__ == '__main__':
     # plt.plot(np.arange(result.shape[0]), result2.nav,label = 'RSRS2',linewidth = 2)
     # plt.plot(np.arange(result.shape[0]), result3.nav,label = 'RSRS3',linewidth = 2)
     # plt.plot(np.arange(result.shape[0]), result4.nav,label = 'RSRS4',linewidth = 2)
-    # plt.plot(np.arange(result.shape[0]), result.close / result.close[0], label = benchcode, linewidth = 2)
-    #
-    # fig.set_xticks(range(0, len(xticklabel),
-    #                      round(len(xticklabel) / 12)))
-    # fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
-    #                     rotation = 45)
+    plt.plot(np.arange(result.shape[0]), result.close / result.close[0], label = benchcode, linewidth = 2)
+
+    fig.set_xticks(range(0, len(xticklabel),
+                         round(len(xticklabel) / 12)))
+    fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
+                        rotation = 45)
     # plt.legend()
     # plt.show()
-
-    # risk = QA.QA_Risk(qa_order.acc)
-    # risk.plot_assets_curve().show()
-    # print(risk.profit_construct)
