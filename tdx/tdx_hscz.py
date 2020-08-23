@@ -150,7 +150,7 @@ def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
     # data = price.copy()
     data = price.copy()
     return do_buy_sell_fun(data)
-def do_buy_sell_fun(data, S1=1.0, S2=0.8):
+def do_buy_sell_fun_nm(data, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
@@ -202,10 +202,10 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
             data.iat[i + 1, position_col] = data.iat[i, position_col]
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
-    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
+    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod() - 1
     return data
 
-def do_buy_sell_fun_zz(data, S1=1.0, S2=0.8):
+def do_buy_sell_fun(data, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
@@ -234,8 +234,8 @@ def do_buy_sell_fun_zz(data, S1=1.0, S2=0.8):
             hdays = 0
         if data.iat[i, bflag] > 0 and position == 0:
             sflg = 0
-            if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
-                    and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02:
+            if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.05\
+                    and data.iat[i+1,open_col] > data.iat[i,close_col]:
             # if data.iat[i+1,open_col] > data.iat[i,close_col] * 1.07:
                 data.iat[i + 1, flag] = 1
                 data.iat[i + 1, position_col] = 1
@@ -328,17 +328,26 @@ def do_buy_sell_fun_zz(data, S1=1.0, S2=0.8):
             data.iat[i + 1, position_col] = data.iat[i, position_col]
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
-    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod()
+    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod() - 1
     return data
 def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
     start_t = datetime.datetime.now()
     print("begin-buy_sell_fun_mp-01:", start_t)
 
     result01 = datam['nav'].groupby(level=['date']).sum()
-    result02 = datam['nav'].groupby(level=['date']).count()
+    # result02 = datam['nav'].groupby(level=['date']).count()
+    result02 = datam['position'].groupby(level=['date']).sum()
+    for i in range(len(result02)):
+        if result02[i] <= 0:
+            result02[i] = 1
+        if i > 0:
+            if result02[i] < result02[i - 1]:
+                result02.iloc[i] = result02.iloc[i - 1]
 
     num = datam.flag.abs().sum()
-    dataR = pd.DataFrame({'nav':1 + (result01 - result02) / result02 ,'flag':0})
+    # dataR = pd.DataFrame({'nav':1 + (result01 - result02) / result02 ,'flag':0})
+    dataR = pd.DataFrame({'nav': 1 + result01 / result02, 'flag': 0})
+
     # dataR2['flag'] = 0
     dataR.iat[-1,1] = num
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
@@ -519,6 +528,7 @@ if __name__ == '__main__':
     # resultT = indices_rsrsT
     num = resultT.flag.abs().sum() / 2
     nav = resultT.nav[resultT.shape[0] - 1]
+    print(resultT)
     # mnav = min(resultT.nav)
     max_dropback = round(float(max([(resultT.nav.iloc[idx] - resultT.nav.iloc[idx::].min()) / resultT.nav.iloc[idx] for idx in range(len(resultT.nav))])),2)
     # max_dropback = 0
@@ -551,5 +561,5 @@ if __name__ == '__main__':
                          round(len(xticklabel) / 12)))
     fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
                         rotation = 45)
-    # plt.legend()
-    # plt.show()
+    plt.legend()
+    plt.show()
