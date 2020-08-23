@@ -21,7 +21,44 @@ mongo = MongoIo()
 
 databuf_mongo = Manager().dict()
 databuf_tdxfunc = Manager().dict()
+# buy_ctl_dict = Manager().dict()
+# share_lock = Manager().Lock()
+buy_nums = 6
 pool_size = cpu_count()
+
+def buy_ctl_check_3(dateStr, buy_ctl_dict, share_lock):
+    return True
+
+def buy_ctl_check(dateStr, buy_ctl_dict, share_lock, addFlg=0):
+    # 获取锁
+    # print("enter lock %s" % dateStr)
+    resultT = False
+    # print("enter lock1 %s" % dateStr)
+    share_lock.acquire()
+    # print("enter lock2 %s" % dateStr)
+    # print("enter lock3 %s" % dateStr)
+    if dateStr in buy_ctl_dict:
+        buyed_num = buy_ctl_dict[dateStr]
+        # print("enter lock5 %s" % dateStr)
+        if buyed_num < buy_nums and addFlg == 0:
+            buy_ctl_dict[dateStr] = buyed_num + 1
+            resultT = True
+        if addFlg == 1:
+            buy_ctl_dict[dateStr] = buyed_num + 1
+        if addFlg == 2:
+            buy_ctl_dict[dateStr] = buyed_num - 1
+    else:
+        # print("enter lock4 %s" % dateStr)
+        buy_ctl_dict[dateStr] = 1
+        resultT = True
+        if addFlg == 2:
+            buy_ctl_dict[dateStr] = 0
+    # 释放锁
+    # print("enter lock6 %s" % dateStr)
+    share_lock.release()
+    # print("out lock %s" % dateStr)
+    return resultT
+
 # print("pool size=%d" % pool_size)
 def tdx_base_func(data, code_list = None):
     """
@@ -30,21 +67,71 @@ def tdx_base_func(data, code_list = None):
     # highs = data.high
     # start_t = datetime.datetime.now()
     # print("begin-tdx_base_func:", start_t)
-
-    CLOSE=data.close
-    C=data.close
-    前炮 = CLOSE > REF(CLOSE, 1) * 1.099
-    小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
-    小阴小阳1 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
-    时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
-    后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
-    # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
-    # return 后炮.iloc[-1]
+    CLOSE = data.close
+    OPEN = data.open
+    C = data.close
+    H = data.high
+    O = data.open
+    # TDX-FUNC
+    # QQ := ABS(MA(C, 10) / MA(C, 20) - 1) < 0.01;
+    # DD := ABS(MA(C, 5) / MA(C, 10) - 1) < 0.01;
+    # QD := ABS(MA(C, 5) / MA(C, 20) - 1) < 0.01;
+    # DQ := MA(C, 5) > REF(MA(C, 5), 1) and QQ and DD and QD;
+    # QQ1 := (MA(C, 3) + MA(C, 6) + MA(C, 12) + MA(C, 24)) / 4;
+    # QQ2 := QQ1 + 6 * STD(QQ1, 11);
+    # QQ3 := QQ1 - 6 * STD(QQ1, 11);
+    # DD1 := MAX(MAX(MA(C, 5), MA(C, 10)), MAX(MA(C, 10), MA(C, 20)));
+    # DD2 := MIN(MIN(MA(C, 5), MA(C, 10)), MIN(MA(C, 10), MA(C, 20)));
+    # B: EVERY(OPEN > CLOSE, 3);
+    # B9 := "MACD.MACD" > 0;
+    # B1 := C / REF(C, 1) > 1.03;
+    # ZZ: O <= DD2 and C >= DD1 and REF(C < O, 1) and C > QQ2 and C > QQ1 and QQ1 > O and O / QQ3 < 1.005 and DQ;
+    # B2 := SMA(MAX(CLOSE - REF(C, 1), 0), 2, 1) * C * 102;
+    # B3 := SMA(ABS(CLOSE - REF(C, 1)), 2, 1) * C * 100;
+    # B4 := B2 / B3 * 100 < 10;
+    # B5 := B and B4;
+    # B6 := MA(C, 5) < REF(MA(C, 5), 1);
+    # B7 := REF(MA(C, 5), 4) > REF(MA(C, 5), 5);
+    # B8 := (H - C) / C * 100 < 1 and REF((O - C) / C * 100 > 1, 1) and KDJ.J > 25;
+    # 大黑马出笼: C > O and B1 and B6 and B7 and B8 and REF(B5, 1) and B9 or ZZ;
+    # python
+    QQ = ABS(MA(C, 10) / MA(C, 20) - 1) < 0.01
+    DD = ABS(MA(C, 5) / MA(C, 10) - 1) < 0.01
+    QD = ABS(MA(C, 5) / MA(C, 20) - 1) < 0.01
+    DQ = IFAND4(MA(C, 5) > REF(MA(C, 5), 1), QQ, DD, QD, True, False)
+    QQ1 = (MA(C, 3) + MA(C, 6) + MA(C, 12) + MA(C, 24)) / 4
+    QQ2 = QQ1 + 6 * STD(QQ1, 11)
+    QQ3 = QQ1 - 6 * STD(QQ1, 11)
+    DD1 = MAX(MAX(MA(C, 5), MA(C, 10)), MAX(MA(C, 10), MA(C, 20)))
+    DD2 = MIN(MIN(MA(C, 5), MA(C, 10)), MIN(MA(C, 10), MA(C, 20)))
+    # BT1=IFAND3(REF(OPEN,1)>REF(CLOSE,1),REF(OPEN,2)>REF(CLOSE,2),True,False)
+    # B = EVERY(OPEN > CLOSE, 3)
+    B = IFAND3(O > C, REF(OPEN, 1) > REF(CLOSE, 1), REF(OPEN, 2) > REF(CLOSE, 2), True, False)
+    # B9=MACD(C,12,26,9)
+    B9 = MACD(C).MACD > 0
+    B1 = C / REF(C, 1) > 1.03
+    # ZZ = O <= DD2 and C >= DD1 and REF(C < O, 1) and C > QQ2 and C > QQ1 and QQ1 > O and O / QQ3 < 1.005 and DQ
+    ZZ1 = IFAND6(O <= DD2, C >= DD1, REF(IF(C < O, 1, 0), 1) > 0, C > QQ2, C > QQ1, QQ1 > O, True, False)
+    ZZ = IFAND3(ZZ1, O / QQ3 < 1.005, DQ, True, False)
+    B2 = SMA(MAX(CLOSE - REF(C, 1), 0), 2, 1) * C * 102
+    B3 = SMA(ABS(CLOSE - REF(C, 1)), 2, 1) * C * 100
+    B4 = B2 / B3 * 100 < 10
+    # B5 = B and B4
+    B5 = IFAND(B, B4, True, False)
+    B6 = MA(C, 5) < REF(MA(C, 5), 1)
+    B7 = REF(MA(C, 5), 4) > REF(MA(C, 5), 5)
+    # B8 = (H - C) / C * 100 < 1 and REF((O - C) / C * 100 > 1, 1) and KDJ.J > 25
+    B81 = IFAND((H - C) / C * 100 < 1, REF(IF((O - C) / C * 100 > 1, 1, 0), 1), True, False)
+    B8 = IFAND(B81, KDJ(data).KDJ_J > 25, True, False)
+    HMTJ1 = IFAND5(C > O, B1, B6, B7, B8, True, False)
+    HMTJ2 = IFAND3(HMTJ1, REF(IF(B5, 1, 0), 1) > 0, B9, True, False)
+    # 大黑马出笼= C > O and B1 and B6 and B7 and B8 and REF(B5, 1) and B9 OR ZZ
+    大黑马出笼 = IFOR(HMTJ2, ZZ, True, False)
 
     # 斜率
     data = data.copy()
     # data['bflg'] = IF(REF(后炮,1) > 0, 1, 0)
-    data['bflg'] = 后炮
+    data['bflg'] = 大黑马出笼
     # print("code=%s, bflg=%s" % (code, data['bflg'].iloc[-1]))
     # data['beta'] = 0
     # data['R2'] = 0
@@ -153,11 +240,13 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
     data['flag'] = 0 # 买卖标记
     data['position'] = 0 # 持仓标记
     data['hold_price'] = 0  # 持仓价格
+    data['sell_close'] = data['close']  # 卖出价格
     bflag = data.columns.get_loc('bflg')
     # beta = data.columns.get_loc('beta')
     flag = data.columns.get_loc('flag')
     position_col = data.columns.get_loc('position')
     close_col = data.columns.get_loc('close')
+    sell_close_col = data.columns.get_loc('sell_close')
     high_col = data.columns.get_loc('high')
     open_col = data.columns.get_loc('open')
     hold_price_col = data.columns.get_loc('hold_price')
@@ -172,26 +261,33 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
             hdays = 0
         if data.iat[i, bflag] > 0 and position == 0:
             sflg = 0
-            if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
-                    and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02:
+            # if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
+            #         and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02:
             # if data.iat[i+1,open_col] > data.iat[i,close_col] * 1.07:
-                data.iat[i + 1, flag] = 1
+            if buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
+                data.iat[i, flag] = 1
+                data.iat[i, position_col] = 1
+                # data.iat[i + 1, flag] = 1
                 data.iat[i + 1, position_col] = 1
-                data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
-                position = 1
-                print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
-                # hdays = 0
-            else:
-                data.iat[i + 1, position_col] = data.iat[i, position_col]
+                data.iat[i, hold_price_col] = data.iat[i, close_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
+                position = 1
+                print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                # hdays = 0
+            # else:
+            #     # data.iat[i, position_col] = 0
+            #     data.iat[i + 1, position_col] = data.iat[i, position_col]
+            #     data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
                 # pass
         # 平仓
         # elif data.iat[i, bflag] == S2 and position == 1:
         elif data.iat[i, position_col] > 0 and position == 1:
+            buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock)
             cprice = data.iat[i, close_col]
+            # cprice = data.iat[i, open_col]
             # oprice = data.iat[i, open_col]
             hold_price = data.iat[i, hold_price_col]
-            if cprice < hold_price * 0.95:
+            if cprice < hold_price * 0.95:# or oprice < hold_price * 0.95:
                 sflg = -1
             elif cprice > hold_price * 1.1 and sflg <= 0:
                 sflg = 1
@@ -208,6 +304,12 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
             elif cprice > hold_price * 1.5 and sflg < 5:
                 sflg = 5
                 high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.6 and sflg < 6:
+                sflg = 6
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.7 and sflg < 7:
+                sflg = 7
+                high_price = data.iat[i, high_col]
             if sflg < 0:# or cprice > hprice * 1.2:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
@@ -215,14 +317,29 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
                 position = 0
                 print("sell -5 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
-            elif sflg == 5 and high_price / cprice > 1.08:
+            elif sflg == 7 and high_price / cprice > 1.1:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 70 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+
+            elif sflg == 6 and high_price / cprice > 1.1:
+                data.iat[i, flag] = -1
+                data.iat[i + 1, position_col] = 0
+                data.iat[i + 1, hold_price_col] = 0
+                position = 0
+                print("sell 60 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+                sflg = 0
+            elif sflg == 5 and high_price / cprice > 1.09:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
                 print("sell 50 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
-            elif sflg == 4 and high_price / cprice > 1.07:
+            elif sflg == 4 and high_price / cprice > 1.08:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
@@ -250,17 +367,19 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
                 position = 0
                 print("sell 10 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
-            elif sflg == 0 and hdays > 3:
+            elif sflg == 0 and hdays > 5:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
                 position = 0
                 print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
-
             else:
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
+
+            if position == 0:
+                buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock, False)
         # 保持
         else:
             data.iat[i + 1, position_col] = data.iat[i, position_col]
@@ -268,24 +387,26 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
 
     data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod() - 1
     return data
+
 def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
     start_t = datetime.datetime.now()
     print("begin-buy_sell_fun_mp-01:", start_t)
-
+    # datam.to_csv("datam.csv")
+    datam.sort_index()
     result01 = datam['nav'].groupby(level=['date']).sum()
     # result02 = datam['nav'].groupby(level=['date']).count()
     result02 = datam['position'].groupby(level=['date']).sum()
-    # print(result02)
+    # result02.to_csv("result02.csv")
     for i in range(len(result02)):
         if result02[i] <= 0:
             result02[i] = 1
         if i > 0:
             if result02[i] < result02[i - 1]:
                 result02.iloc[i] = result02.iloc[i - 1]
-    # print(result02)
+    print(result02)
     num = datam.flag.abs().sum()
     # dataR = pd.DataFrame({'nav':result01 - result02 + 1,'flag':0})
-    dataR = pd.DataFrame({'nav': 1 + result01 / result02, 'flag': 0})
+    dataR = pd.DataFrame({'nav': 1 + result01 / result02, 'flag': 0, 'pos':result02})
     # dataR2['flag'] = 0
     dataR.iat[-1,1] = num
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
@@ -457,8 +578,10 @@ def get_data(st_start):
 if __name__ == '__main__':
     start_t = datetime.datetime.now()
     print("begin-time:", start_t)
+    buy_ctl_dict = Manager().dict()
+    share_lock = Manager().Lock()
 
-    st_start="2019-12-01"
+    st_start="2010-01-01"
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
@@ -468,7 +591,8 @@ if __name__ == '__main__':
     # resultT = indices_rsrsT
     num = resultT.flag.abs().sum() / 2
     nav = resultT.nav[resultT.shape[0] - 1]
-    print(resultT)
+    # print(resultT.tail(300))
+    # resultT.to_csv("resultT.csv")
     # mnav = min(resultT.nav)
     max_dropback = round(float(max([(resultT.nav.iloc[idx] - resultT.nav.iloc[idx::].min()) / resultT.nav.iloc[idx] for idx in range(len(resultT.nav))])),2)
     # max_dropback = 0
