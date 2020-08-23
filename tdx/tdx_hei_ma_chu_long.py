@@ -23,10 +23,11 @@ databuf_mongo = Manager().dict()
 databuf_tdxfunc = Manager().dict()
 # buy_ctl_dict = Manager().dict()
 # share_lock = Manager().Lock()
-buy_nums = 6
+max_buy_nums = 3
+max_hold_days = 5
 pool_size = cpu_count()
 
-def buy_ctl_check_3(dateStr, buy_ctl_dict, share_lock):
+def buy_ctl_check_3(dateStr, buy_ctl_dict, share_lock, addFlg=0):
     return True
 
 def buy_ctl_check(dateStr, buy_ctl_dict, share_lock, addFlg=0):
@@ -40,7 +41,7 @@ def buy_ctl_check(dateStr, buy_ctl_dict, share_lock, addFlg=0):
     if dateStr in buy_ctl_dict:
         buyed_num = buy_ctl_dict[dateStr]
         # print("enter lock5 %s" % dateStr)
-        if buyed_num < buy_nums and addFlg == 0:
+        if buyed_num < max_buy_nums and addFlg == 0:
             buy_ctl_dict[dateStr] = buyed_num + 1
             resultT = True
         if addFlg == 1:
@@ -367,7 +368,7 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
                 position = 0
                 print("sell 10 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
                 sflg = 0
-            elif sflg == 0 and hdays > 5:
+            elif sflg == 0 and hdays > max_hold_days:
                 data.iat[i, flag] = -1
                 data.iat[i + 1, position_col] = 0
                 data.iat[i + 1, hold_price_col] = 0
@@ -581,7 +582,7 @@ if __name__ == '__main__':
     buy_ctl_dict = Manager().dict()
     share_lock = Manager().Lock()
 
-    st_start="2010-01-01"
+    st_start="2020-01-01"
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
