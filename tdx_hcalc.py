@@ -4,10 +4,12 @@ from easyquant import DataUtil
 from threading import Thread, current_thread, Lock
 import QUANTAXIS as QA
 import json
+import datetime
+
 # import redis
 import time
 # import datetime
-from datetime import datetime, date
+# from datetime import datetime, date
 import pandas as pd
 
 # import pymongo
@@ -30,13 +32,14 @@ import easyquotation
 data_buf_day = Manager().dict()
 # data_buf_5min = Manager().dict()
 # data_buf_5min_0 = Manager().dict()
-mongo = MongoIo()
+# mongo = MongoIo()
 easytime=EasyTime()
-executor = ThreadPoolExecutor(max_workers=cpu_count() * 4)
+executor = ProcessPoolExecutor(max_workers=cpu_count() * 4)
 # class DataSinaEngine(SinaEngine):
 #     EventType = 'data-sina'
 #     PushInterval = 10
 #     config = "stock_list"
+
 def fetch_quotation_data(config="stock_list"):
     source = easyquotation.use("sina")
     config_name = './config/%s.json' % config
@@ -57,6 +60,7 @@ def do_init_data_buf(code):
     # mc = MongoIo()
     # mongo = MongoIo()
     # if idx == 0:
+    mongo = MongoIo()
     data_day = mongo.get_stock_day(code=code, st_start="2020-01-01")
         # data_min = mc.get_stock_min_realtime(code=code, freq=freq)
     # else:
@@ -66,25 +70,30 @@ def do_init_data_buf(code):
     # data_buf_5min[code] = data_min
     # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_day)))
     
-def do_main_work(code, data, log, positions):
-    hold_price = positions['price']
+def do_main_work(code, data):
+    # hold_price = positions['price']
     now_price = data['now']
+    # print("code=%s, price=%.2f" % (code, now_price))
     high_price = data['high']
     ##TODO 绝对条件１
     ## 止损卖出
-    if now_price < hold_price / 1.05:
-        log.info("code=%s now=%6.2f solding..." % (code, now_price))
+    # if now_price < hold_price / 1.05:
+    #     log.info("code=%s now=%6.2f solding..." % (code, now_price))
     ## 止赢回落 %5，卖出
-    if now_price > hold_price * 1.02 and now_price < high_price / 1.03:
-        log.info("code=%s now=%6.2f solding..." % (code, now_price))
+    # if now_price > hold_price * 1.02 and now_price < high_price / 1.03:
+    #     log.info("code=%s now=%6.2f solding..." % (code, now_price))
         # 卖出
 
     # now_vol = data['volume']
     # last_time = pd.to_datetime(data['datetime'][0:10])
     # print("code=%s, data=%s" % (self.code, self._data['datetime']))
     df_day = data_buf_day[code]
+    # print(len(df_day))
+    # print("code=%s, nums=%d" % (code, len(df_day)))
+    # print("code=%s, data=%s" % (data['code'], data['datetime']))
+    # print(data)
     df_day = new_df(df_day, data, now_price)
-    
+    # print(df_day.tail())
     chk_flg = tdx_func(df_day)
     # df_day.loc[last_time]=[0 for x in range(len(df_day.columns))]
     # df_day.loc[(last_time,code),'open'] = data['open']
@@ -112,9 +121,11 @@ def do_main_work(code, data, log, positions):
     # if toptop_calc(df_day):
     # if now_price < df.m5.iloc[-1]:
     ## 低于５日线，卖出
+    # print(chk_flg[-1])
     if chk_flg[-1]:
-        log.info("code=%s now=%6.2f DHM" % (code, now_price))
+        # log.info("code=%s now=%6.2f DHM" % (code, now_price))
         # 卖出
+        print("calc code=%s now=%6.2f DHM" % (code, now_price))
 
 class Strategy:
     name = 'calc-stock-dhm'  ### day
@@ -131,24 +142,27 @@ class Strategy:
         # self.easymq.callback = self.callback
         
         # start_time = time.time()
+        start_t = datetime.datetime.now()
+        print("read data-begin-time:", start_t)
+
         task_list = []
         codelist = QA.QA_fetch_stock_list_adv()
         print("read data...")
-        idx = 1
+        # idx = 1
         for code in codelist.index:
             task_list.append(executor.submit(do_init_data_buf, code))
             # self.easymq.add_sub_key(routing_key=code)
             # print("read %s..." % code)
-            idx = idx + 1
-            if idx > 10:
-                break
+            # idx = idx + 1
+            # if idx > 10:
+            #     break
         
         for task in as_completed(task_list):
             # result = task.result()
             pass
         
-        print("read end.")
-            # pass
+        end_t = datetime.datetime.now()
+        print(end_t, 'read data-spent:{}'.format((end_t - start_t)))
 
         # self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
@@ -175,6 +189,7 @@ class Strategy:
         # self.started = True
         # self.easymq.start()
         # self.log.info('Strategy =%s, start calc...')
+        task_list = []
         datas = fetch_quotation_data()
         for stcode in datas:
             data = datas[stcode]
@@ -187,14 +202,21 @@ class Strategy:
             jsdata = json.dumps(data)
             # self.easymq.pub(json.dumps(stdata), stcode)
             # rtn=self.data_util.day_summary(data=stdata, rtn=rtn)
-            # task_list.append(executor.submit(save_monto_realtime, stcode, stdata))          
-            print(jsdata)
+            # print(stcode)
+            task_list.append(executor.submit(do_main_work, stcode, data,))
+            # print(jsdata)
         # data = json.loads(data)
         # code =data['code']
         # t.start()
         # executor.submit(do_main_work, code, data, self.log, self.df_positions.loc[code])
-        
+        for task in as_completed(task_list):
+            # result = task.result()
+            pass
+
 if __name__ == "__main__":
+    start_t = datetime.datetime.now()
+    print("begin-time:", start_t)
+
     log_type = 'file'#'stdout' if log_type_choose == '1' else 'file'
     # log_name = Strategy.name
     # log_filepath = 'logs/%s.txt' % Strategy.name
@@ -202,3 +224,5 @@ if __name__ == "__main__":
     
     s = Strategy()
     s.start()
+    end_t = datetime.datetime.now()
+    print(end_t, 'spent:{}'.format((end_t - start_t)))
