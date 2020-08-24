@@ -66,6 +66,7 @@ def SMA(Series, N, M=1):
     # 跳过X中前面几个 nan 值
     while i < length:
         if np.isnan(Series.iloc[i]):
+            ret.append(0)
             i += 1
         else:
             break
@@ -214,11 +215,66 @@ def IFAND(COND1, COND2, V1, V2):
         COND1 = COND1[COND1.index >= COND2.index[0]]
     var = np.where(np.logical_and(COND1,COND2), V1, V2)
     return pd.Series(var, index=COND1.index)
+
+def IFAND3(COND1, COND2, COND3, V1, V2):
+    if len(COND1) < len(COND2):
+        COND2=COND2[COND2.index>=COND1.index[0]]
+    elif len(COND1) > len(COND2):
+        COND1 = COND1[COND1.index >= COND2.index[0]]
+    var1 = np.where(np.logical_and(COND1,COND2), True, False)
+    var = np.where(np.logical_and(var1, COND3), V1, V2)
+    return pd.Series(var, index=COND1.index)
     # if isinstance(V1, pd.Series):
     #     return pd.Series(var, index=V1.index)
     # else:
     #     return pd.Series(var, index=COND1.index)
-    
+
+def IFAND4(COND1, COND2, COND3, COND4, V1, V2):
+    if len(COND1) < len(COND2):
+        COND2=COND2[COND2.index>=COND1.index[0]]
+    elif len(COND1) > len(COND2):
+        COND1 = COND1[COND1.index >= COND2.index[0]]
+    var1 = np.where(np.logical_and(COND1,COND2), True, False)
+    var2 = np.where(np.logical_and(var1, COND3), True, False)
+    var = np.where(np.logical_and(var2, COND4), V1, V2)
+    return pd.Series(var, index=COND1.index)
+    # if isinstance(V1, pd.Series):
+    #     return pd.Series(var, index=V1.index)
+    # else:
+    #     return pd.Series(var, index=COND1.index)
+
+def IFAND5(COND1, COND2, COND3, COND4, COND5, V1, V2):
+    if len(COND1) < len(COND2):
+        COND2=COND2[COND2.index>=COND1.index[0]]
+    elif len(COND1) > len(COND2):
+        COND1 = COND1[COND1.index >= COND2.index[0]]
+    var1 = np.where(np.logical_and(COND1,COND2), True, False)
+    var2 = np.where(np.logical_and(var1, COND3), True, False)
+    var3 = np.where(np.logical_and(var2, COND4), True, False)
+    var = np.where(np.logical_and(var3, COND5), V1, V2)
+    return pd.Series(var, index=COND1.index)
+    # if isinstance(V1, pd.Series):
+    #     return pd.Series(var, index=V1.index)
+    # else:
+    #     return pd.Series(var, index=COND1.index)
+
+
+def IFAND6(COND1, COND2, COND3, COND4, COND5, COND6, V1, V2):
+    if len(COND1) < len(COND2):
+        COND2=COND2[COND2.index>=COND1.index[0]]
+    elif len(COND1) > len(COND2):
+        COND1 = COND1[COND1.index >= COND2.index[0]]
+    var1 = np.where(np.logical_and(COND1,COND2), True, False)
+    var2 = np.where(np.logical_and(var1, COND3), True, False)
+    var3 = np.where(np.logical_and(var2, COND4), True, False)
+    var4 = np.where(np.logical_and(var3, COND5), True, False)
+    var = np.where(np.logical_and(var4, COND6), V1, V2)
+    return pd.Series(var, index=COND1.index)
+    # if isinstance(V1, pd.Series):
+    #     return pd.Series(var, index=V1.index)
+    # else:
+    #     return pd.Series(var, index=COND1.index)
+
 def IFOR(COND1, COND2, V1, V2):
     if len(COND1) < len(COND2):
         COND2=COND2[COND2.index>=COND1.index[0]]
@@ -236,8 +292,8 @@ def FILTER(COND,N):
     return COND
 
 def REF(Series, N):
-    if isinstance(Series[0], bool):
-        N = pd.Series(np.full(len(Series),N))
+    if isinstance(Series[0], bool) or isinstance(Series[0], np.bool_):
+        N = pd.Series(np.full(len(Series),N), index=Series.index)
         
     if isinstance(N, pd.Series):
         # var = np.where(N > 0, Series[N.index - N], Series)
@@ -280,7 +336,7 @@ def AVEDEV(Series, N):
     return Series.rolling(N).apply(lambda x: (np.abs(x - x.mean())).mean(), raw=True)
 
 
-def MACD(Series, FAST, SLOW, MID):
+def MACD(Series, FAST=12, SLOW=26, MID=9):
     """macd指标 仅适用于Series
     对于DATAFRAME的应用请使用QA_indicator_macd
     """
@@ -292,6 +348,18 @@ def MACD(Series, FAST, SLOW, MID):
     DICT = {'DIFF': DIFF, 'DEA': DEA, 'MACD': MACD}
     VAR = pd.DataFrame(DICT)
     return VAR
+
+def KDJ(DataFrame, N=9, M1=3, M2=3):
+    C = DataFrame['close']
+    H = DataFrame['high']
+    L = DataFrame['low']
+
+    RSV = (C - LLV(L, N)) / (HHV(H, N) - LLV(L, N)) * 100
+    K = SMA(RSV, M1)
+    D = SMA(K, M2)
+    J = 3 * K - 2 * D
+    DICT = {'KDJ_K': K, 'KDJ_D': D, 'KDJ_J': J}
+    return pd.DataFrame(DICT)
 
 
 def BBIBOLL(Series, N1, N2, N3, N4, N, M):  # 多空布林线
