@@ -34,7 +34,9 @@ data_buf_day = Manager().dict()
 # data_buf_5min_0 = Manager().dict()
 # mongo = MongoIo()
 easytime=EasyTime()
-executor = ProcessPoolExecutor(max_workers=cpu_count() * 4)
+executor = ProcessPoolExecutor(max_workers=cpu_count())
+executor2 = ThreadPoolExecutor(max_workers=cpu_count() * 4)
+
 # class DataSinaEngine(SinaEngine):
 #     EventType = 'data-sina'
 #     PushInterval = 10
@@ -74,7 +76,7 @@ def do_main_work(code, data):
     # hold_price = positions['price']
     now_price = data['now']
     # print("code=%s, price=%.2f" % (code, now_price))
-    high_price = data['high']
+    # high_price = data['high']
     ##TODO 绝对条件１
     ## 止损卖出
     # if now_price < hold_price / 1.05:
@@ -133,7 +135,7 @@ class Strategy:
     def __init__(self):
         # self.log = log_handler
         # self.log.info('init event:%s'% self.name)
-        print("init...")
+        # print("init...")
         
         # self.df_positions = mongo.get_positions()
         
@@ -143,11 +145,11 @@ class Strategy:
         
         # start_time = time.time()
         start_t = datetime.datetime.now()
-        print("read data-begin-time:", start_t)
+        print("read db data-begin-time:", start_t)
 
         task_list = []
         codelist = QA.QA_fetch_stock_list_adv()
-        print("read data...")
+        # print("read data...")
         # idx = 1
         for code in codelist.index:
             task_list.append(executor.submit(do_init_data_buf, code))
@@ -162,7 +164,7 @@ class Strategy:
             pass
         
         end_t = datetime.datetime.now()
-        print(end_t, 'read data-spent:{}'.format((end_t - start_t)))
+        print(end_t, 'read db data-spent:{}'.format((end_t - start_t)))
 
         # self.log.info('init event end:%s, user-time=%d' % (self.name, time.time() - start_time))
         
@@ -190,7 +192,15 @@ class Strategy:
         # self.easymq.start()
         # self.log.info('Strategy =%s, start calc...')
         task_list = []
+        start_t = datetime.datetime.now()
+        print("read web data-begin-time:", start_t)
+        
         datas = fetch_quotation_data()
+        end_t = datetime.datetime.now()
+        print(end_t, 'read web data-spent:{}'.format((end_t - start_t)))
+        
+        start_t = datetime.datetime.now()
+        print("do-task1-begin-time:", start_t)
         for stcode in datas:
             data = datas[stcode]
         # for stcode in event.data:
@@ -199,19 +209,27 @@ class Strategy:
             # self.easymq.pub(json.dumps(stdata, cls=CJsonEncoder), stcode)
             # aa = json.dumps(stdata)
             # self.log.info("code=%s, data=%s" % (stcode, aa))
-            jsdata = json.dumps(data)
+            # jsdata = json.dumps(data)
             # self.easymq.pub(json.dumps(stdata), stcode)
             # rtn=self.data_util.day_summary(data=stdata, rtn=rtn)
             # print(stcode)
             task_list.append(executor.submit(do_main_work, stcode, data,))
             # print(jsdata)
+        end_t = datetime.datetime.now()
+        print(end_t, 'do-task1-spent:{}'.format((end_t - start_t)))
+
         # data = json.loads(data)
         # code =data['code']
         # t.start()
         # executor.submit(do_main_work, code, data, self.log, self.df_positions.loc[code])
+        start_t = datetime.datetime.now()
+        print("do-task2-begin-time:", start_t)
+        
         for task in as_completed(task_list):
             # result = task.result()
             pass
+        end_t = datetime.datetime.now()
+        print(end_t, 'do-task2-spent:{}'.format((end_t - start_t)))
 
 if __name__ == "__main__":
     start_t = datetime.datetime.now()
