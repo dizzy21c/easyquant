@@ -14,7 +14,7 @@ from easyquant import MongoIo
 import statsmodels.api as sm
 from multiprocessing import Process, Pool, cpu_count, Manager
 from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
-
+from func.tdx_func import tdx_dhmcl, tdx_hm
 executor = ThreadPoolExecutor(max_workers=cpu_count() * 2)
 
 mongo = MongoIo()
@@ -68,71 +68,72 @@ def tdx_base_func(data, code_list = None):
     # highs = data.high
     # start_t = datetime.datetime.now()
     # print("begin-tdx_base_func:", start_t)
-    CLOSE = data.close
-    OPEN = data.open
-    C = data.close
-    H = data.high
-    O = data.open
-    # TDX-FUNC
-    # QQ := ABS(MA(C, 10) / MA(C, 20) - 1) < 0.01;
-    # DD := ABS(MA(C, 5) / MA(C, 10) - 1) < 0.01;
-    # QD := ABS(MA(C, 5) / MA(C, 20) - 1) < 0.01;
-    # DQ := MA(C, 5) > REF(MA(C, 5), 1) and QQ and DD and QD;
-    # QQ1 := (MA(C, 3) + MA(C, 6) + MA(C, 12) + MA(C, 24)) / 4;
-    # QQ2 := QQ1 + 6 * STD(QQ1, 11);
-    # QQ3 := QQ1 - 6 * STD(QQ1, 11);
-    # DD1 := MAX(MAX(MA(C, 5), MA(C, 10)), MAX(MA(C, 10), MA(C, 20)));
-    # DD2 := MIN(MIN(MA(C, 5), MA(C, 10)), MIN(MA(C, 10), MA(C, 20)));
-    # B: EVERY(OPEN > CLOSE, 3);
-    # B9 := "MACD.MACD" > 0;
-    # B1 := C / REF(C, 1) > 1.03;
-    # ZZ: O <= DD2 and C >= DD1 and REF(C < O, 1) and C > QQ2 and C > QQ1 and QQ1 > O and O / QQ3 < 1.005 and DQ;
-    # B2 := SMA(MAX(CLOSE - REF(C, 1), 0), 2, 1) * C * 102;
-    # B3 := SMA(ABS(CLOSE - REF(C, 1)), 2, 1) * C * 100;
-    # B4 := B2 / B3 * 100 < 10;
-    # B5 := B and B4;
-    # B6 := MA(C, 5) < REF(MA(C, 5), 1);
-    # B7 := REF(MA(C, 5), 4) > REF(MA(C, 5), 5);
-    # B8 := (H - C) / C * 100 < 1 and REF((O - C) / C * 100 > 1, 1) and KDJ.J > 25;
-    # 大黑马出笼: C > O and B1 and B6 and B7 and B8 and REF(B5, 1) and B9 or ZZ;
-    # python
-    QQ = ABS(MA(C, 10) / MA(C, 20) - 1) < 0.01
-    DD = ABS(MA(C, 5) / MA(C, 10) - 1) < 0.01
-    QD = ABS(MA(C, 5) / MA(C, 20) - 1) < 0.01
-    DQ = IFAND4(MA(C, 5) > REF(MA(C, 5), 1), QQ, DD, QD, True, False)
-    QQ1 = (MA(C, 3) + MA(C, 6) + MA(C, 12) + MA(C, 24)) / 4
-    QQ2 = QQ1 + 6 * STD(QQ1, 11)
-    QQ3 = QQ1 - 6 * STD(QQ1, 11)
-    DD1 = MAX(MAX(MA(C, 5), MA(C, 10)), MAX(MA(C, 10), MA(C, 20)))
-    DD2 = MIN(MIN(MA(C, 5), MA(C, 10)), MIN(MA(C, 10), MA(C, 20)))
-    # BT1=IFAND3(REF(OPEN,1)>REF(CLOSE,1),REF(OPEN,2)>REF(CLOSE,2),True,False)
-    # B = EVERY(OPEN > CLOSE, 3)
-    B = IFAND3(O > C, REF(OPEN, 1) > REF(CLOSE, 1), REF(OPEN, 2) > REF(CLOSE, 2), True, False)
-    # B9=MACD(C,12,26,9)
-    B9 = MACD(C).MACD > 0
-    B1 = C / REF(C, 1) > 1.03
-    # ZZ = O <= DD2 and C >= DD1 and REF(C < O, 1) and C > QQ2 and C > QQ1 and QQ1 > O and O / QQ3 < 1.005 and DQ
-    ZZ1 = IFAND6(O <= DD2, C >= DD1, REF(IF(C < O, 1, 0), 1) > 0, C > QQ2, C > QQ1, QQ1 > O, True, False)
-    ZZ = IFAND3(ZZ1, O / QQ3 < 1.005, DQ, True, False)
-    B2 = SMA(MAX(CLOSE - REF(C, 1), 0), 2, 1) * C * 102
-    B3 = SMA(ABS(CLOSE - REF(C, 1)), 2, 1) * C * 100
-    B4 = B2 / B3 * 100 < 10
-    # B5 = B and B4
-    B5 = IFAND(B, B4, True, False)
-    B6 = MA(C, 5) < REF(MA(C, 5), 1)
-    B7 = REF(MA(C, 5), 4) > REF(MA(C, 5), 5)
-    # B8 = (H - C) / C * 100 < 1 and REF((O - C) / C * 100 > 1, 1) and KDJ.J > 25
-    B81 = IFAND((H - C) / C * 100 < 1, REF(IF((O - C) / C * 100 > 1, 1, 0), 1), True, False)
-    B8 = IFAND(B81, KDJ(data).KDJ_J > 25, True, False)
-    HMTJ1 = IFAND5(C > O, B1, B6, B7, B8, True, False)
-    HMTJ2 = IFAND3(HMTJ1, REF(IF(B5, 1, 0), 1) > 0, B9, True, False)
-    # 大黑马出笼= C > O and B1 and B6 and B7 and B8 and REF(B5, 1) and B9 OR ZZ
-    大黑马出笼 = IFOR(HMTJ2, ZZ, True, False)
+    # CLOSE = data.close
+    # OPEN = data.open
+    # C = data.close
+    # H = data.high
+    # O = data.open
+    # # TDX-FUNC
+    # # QQ := ABS(MA(C, 10) / MA(C, 20) - 1) < 0.01;
+    # # DD := ABS(MA(C, 5) / MA(C, 10) - 1) < 0.01;
+    # # QD := ABS(MA(C, 5) / MA(C, 20) - 1) < 0.01;
+    # # DQ := MA(C, 5) > REF(MA(C, 5), 1) and QQ and DD and QD;
+    # # QQ1 := (MA(C, 3) + MA(C, 6) + MA(C, 12) + MA(C, 24)) / 4;
+    # # QQ2 := QQ1 + 6 * STD(QQ1, 11);
+    # # QQ3 := QQ1 - 6 * STD(QQ1, 11);
+    # # DD1 := MAX(MAX(MA(C, 5), MA(C, 10)), MAX(MA(C, 10), MA(C, 20)));
+    # # DD2 := MIN(MIN(MA(C, 5), MA(C, 10)), MIN(MA(C, 10), MA(C, 20)));
+    # # B: EVERY(OPEN > CLOSE, 3);
+    # # B9 := "MACD.MACD" > 0;
+    # # B1 := C / REF(C, 1) > 1.03;
+    # # ZZ: O <= DD2 and C >= DD1 and REF(C < O, 1) and C > QQ2 and C > QQ1 and QQ1 > O and O / QQ3 < 1.005 and DQ;
+    # # B2 := SMA(MAX(CLOSE - REF(C, 1), 0), 2, 1) * C * 102;
+    # # B3 := SMA(ABS(CLOSE - REF(C, 1)), 2, 1) * C * 100;
+    # # B4 := B2 / B3 * 100 < 10;
+    # # B5 := B and B4;
+    # # B6 := MA(C, 5) < REF(MA(C, 5), 1);
+    # # B7 := REF(MA(C, 5), 4) > REF(MA(C, 5), 5);
+    # # B8 := (H - C) / C * 100 < 1 and REF((O - C) / C * 100 > 1, 1) and KDJ.J > 25;
+    # # 大黑马出笼: C > O and B1 and B6 and B7 and B8 and REF(B5, 1) and B9 or ZZ;
+    # # python
+    # QQ = ABS(MA(C, 10) / MA(C, 20) - 1) < 0.01
+    # DD = ABS(MA(C, 5) / MA(C, 10) - 1) < 0.01
+    # QD = ABS(MA(C, 5) / MA(C, 20) - 1) < 0.01
+    # DQ = IFAND4(MA(C, 5) > REF(MA(C, 5), 1), QQ, DD, QD, True, False)
+    # QQ1 = (MA(C, 3) + MA(C, 6) + MA(C, 12) + MA(C, 24)) / 4
+    # QQ2 = QQ1 + 6 * STD(QQ1, 11)
+    # QQ3 = QQ1 - 6 * STD(QQ1, 11)
+    # DD1 = MAX(MAX(MA(C, 5), MA(C, 10)), MAX(MA(C, 10), MA(C, 20)))
+    # DD2 = MIN(MIN(MA(C, 5), MA(C, 10)), MIN(MA(C, 10), MA(C, 20)))
+    # # BT1=IFAND3(REF(OPEN,1)>REF(CLOSE,1),REF(OPEN,2)>REF(CLOSE,2),True,False)
+    # # B = EVERY(OPEN > CLOSE, 3)
+    # B = IFAND3(O > C, REF(OPEN, 1) > REF(CLOSE, 1), REF(OPEN, 2) > REF(CLOSE, 2), True, False)
+    # # B9=MACD(C,12,26,9)
+    # B9 = MACD(C).MACD > 0
+    # B1 = C / REF(C, 1) > 1.03
+    # # ZZ = O <= DD2 and C >= DD1 and REF(C < O, 1) and C > QQ2 and C > QQ1 and QQ1 > O and O / QQ3 < 1.005 and DQ
+    # ZZ1 = IFAND6(O <= DD2, C >= DD1, REF(IF(C < O, 1, 0), 1) > 0, C > QQ2, C > QQ1, QQ1 > O, True, False)
+    # ZZ = IFAND3(ZZ1, O / QQ3 < 1.005, DQ, True, False)
+    # B2 = SMA(MAX(CLOSE - REF(C, 1), 0), 2, 1) * C * 102
+    # B3 = SMA(ABS(CLOSE - REF(C, 1)), 2, 1) * C * 100
+    # B4 = B2 / B3 * 100 < 10
+    # # B5 = B and B4
+    # B5 = IFAND(B, B4, True, False)
+    # B6 = MA(C, 5) < REF(MA(C, 5), 1)
+    # B7 = REF(MA(C, 5), 4) > REF(MA(C, 5), 5)
+    # # B8 = (H - C) / C * 100 < 1 and REF((O - C) / C * 100 > 1, 1) and KDJ.J > 25
+    # B81 = IFAND((H - C) / C * 100 < 1, REF(IF((O - C) / C * 100 > 1, 1, 0), 1), True, False)
+    # B8 = IFAND(B81, KDJ(data).KDJ_J > 25, True, False)
+    # HMTJ1 = IFAND5(C > O, B1, B6, B7, B8, True, False)
+    # HMTJ2 = IFAND3(HMTJ1, REF(IF(B5, 1, 0), 1) > 0, B9, True, False)
+    # # 大黑马出笼= C > O and B1 and B6 and B7 and B8 and REF(B5, 1) and B9 OR ZZ
+    # 大黑马出笼 = IFOR(HMTJ2, ZZ, True, False)
+    TDX_FUNC_RESULT = tdx_hm(data)
 
     # 斜率
     data = data.copy()
     # data['bflg'] = IF(REF(后炮,1) > 0, 1, 0)
-    data['bflg'] = 大黑马出笼
+    data['bflg'] = TDX_FUNC_RESULT
     # print("code=%s, bflg=%s" % (code, data['bflg'].iloc[-1]))
     # data['beta'] = 0
     # data['R2'] = 0
@@ -249,6 +250,7 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
     close_col = data.columns.get_loc('close')
     sell_close_col = data.columns.get_loc('sell_close')
     high_col = data.columns.get_loc('high')
+    low_col = data.columns.get_loc('low')
     open_col = data.columns.get_loc('open')
     hold_price_col = data.columns.get_loc('hold_price')
     position = 0 # 是否持仓，持仓：1，不持仓：0
@@ -265,7 +267,7 @@ def do_buy_sell_fun(data, S1=1.0, S2=0.8):
             # if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
             #         and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02:
             # if data.iat[i+1,open_col] > data.iat[i,close_col] * 1.07:
-            if buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
+            if data.iat[i, high_col] > data.iat[i, low_col] and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
                 data.iat[i, flag] = 1
                 data.iat[i, position_col] = 1
                 # data.iat[i + 1, flag] = 1
@@ -582,7 +584,7 @@ if __name__ == '__main__':
     buy_ctl_dict = Manager().dict()
     share_lock = Manager().Lock()
 
-    st_start="2020-01-01"
+    st_start="2015-01-01"
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)

@@ -139,8 +139,24 @@ def SUMS(Series, NS):
     np_N=cast(na_NS.ctypes.data, POINTER(c_int))
     
     lib.sum(ncount, np_OUT, np_S, np_N)
-    
+
     return pd.Series(np.asarray(np_OUT))
+
+
+def DMA(Series, Weight):
+    ncount = len(Series)
+    tf_p = c_float * ncount
+    np_OUT = tf_p(0)
+    na_Series = np.asarray(Series).astype(np.float32)
+    na_Weight = np.asarray(Weight.fillna(1)).astype(np.float32)
+
+    np_S = cast(na_Series.ctypes.data, POINTER(c_float))
+    np_W = cast(na_Weight.ctypes.data, POINTER(c_float))
+
+    lib.dma(ncount, np_OUT, np_S, np_W)
+
+    return pd.Series(np.asarray(np_OUT), index=Series.index)
+
 
 def SUM(Series, N):
     return pd.Series.rolling(Series, N).sum()

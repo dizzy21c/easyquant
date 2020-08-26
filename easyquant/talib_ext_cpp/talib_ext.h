@@ -35,6 +35,7 @@ extern "C" {
 
   DLL_PUBLIC void llv(int nCount, float *pfOut, float *pfIn, int *piIn2);
 
+  DLL_PUBLIC void dma(int nCount, float *pfOut, float *pfIn, float *pfWeight);
     // subBuf* subBuf_new(){ return new subBuf(); }
     // int subBuf_sub(subBuf* subfuf, char* data, int num, char* outData){ subfuf->cursubBuf(data, num, outData); }
 #ifdef __cplusplus

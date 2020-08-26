@@ -84,6 +84,23 @@ void llv_list(int nCount, float *pOut, float *pData, int *pNum)
   }
 }
 
+void dma_list(int nCount, float *pOut, float *pData, float *pWeight)
+{
+  float preOut = 0.0;
+  for (int i = 0; i < nCount; i++)
+  {
+    float t_out = 0.0;
+    float weight = pWeight[i];
+    if (i < 1) {
+        t_out = pData[i];
+    } else {
+        t_out = pData[i] * weight + (1 - weight) * preOut;
+    }
+    pOut[i] = t_out;
+    preOut = t_out;
+  }
+}
+
 int Parse2(int nCount, float *pOut, float *pHigh, float *pLow)
 {
   int nSpan = 0;
@@ -264,4 +281,9 @@ void hhv(int nCount, float *pfOut, float *pfIn, int *piIn2)
 void llv(int nCount, float *pfOut, float *pfIn, int *piIn2)
 {
   llv_list(nCount, pfOut, pfIn, piIn2);
+}
+
+void dma(int nCount, float *pfOut, float *pfIn, float *pfWeight)
+{
+  dma_list(nCount, pfOut, pfIn, pfWeight);
 }
