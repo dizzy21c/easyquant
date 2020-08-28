@@ -64,7 +64,7 @@ def do_init_data_buf(code):
     # mongo = MongoIo()
     # if idx == 0:
     mongo = MongoIo()
-    data_day = mongo.get_stock_day(code=code, st_start="2020-01-01")
+    data_day = mongo.get_stock_day(code=code, st_start="2019-01-01")
         # data_min = mc.get_stock_min_realtime(code=code, freq=freq)
     # else:
     #     data_day = mongo.get_index_day(code=code)
@@ -187,9 +187,12 @@ class Strategy:
                 # pool.apply_async(do_init_data_buf, args=(d, self.idx, self.data_type))
         # self.easymq.callback = mycallback
         # self.easymq.start()
-
-
     def start(self):
+        while True:
+            print("*** loop calc begin ***")
+            self.do_calc()
+
+    def do_calc(self):
         # self.log.info('Strategy =%s, easymq started' % self.name)
         # self.started = True
         # self.easymq.start()
