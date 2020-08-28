@@ -16,7 +16,8 @@ import pandas as pd
 import pika
 # from QUANTAXIS.QAFetch import QATdx as tdx
 # from easyquant import DefaultLogHandler
-from custom.util import new_df, tdx_func
+# from custom import tdx_func
+from tdx.func.tdx_func import new_df, tdx_hm, tdx_dhmcl
 
 # from easyquant import EasyMq
 from easyquant import MongoIo
@@ -96,7 +97,8 @@ def do_main_work(code, data):
     # print(data)
     df_day = new_df(df_day, data, now_price)
     # print(df_day.tail())
-    chk_flg = tdx_func(df_day)
+    chk_flg = tdx_dhmcl(df_day)
+    chk_flg2 = tdx_hm(df_day)
     # df_day.loc[last_time]=[0 for x in range(len(df_day.columns))]
     # df_day.loc[(last_time,code),'open'] = data['open']
     # df_day.loc[(last_time,code),'high']= data['high']
@@ -125,9 +127,10 @@ def do_main_work(code, data):
     ## 低于５日线，卖出
     # print(chk_flg[-1])
     if chk_flg[-1]:
-        # log.info("code=%s now=%6.2f DHM" % (code, now_price))
-        # 卖出
         print("calc code=%s now=%6.2f DHM" % (code, now_price))
+
+    if chk_flg2[-1]:
+        print("calc code=%s now=%6.2f HM" % (code, now_price))
 
 class Strategy:
     name = 'calc-stock-dhm'  ### day
