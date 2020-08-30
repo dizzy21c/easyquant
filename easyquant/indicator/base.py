@@ -193,6 +193,10 @@ def CROSS(A, B):
     Returns:
         [type] -- [description]
     """
+    if isinstance(A, int) or isinstance(A, float):
+        A1 = pd.Series(B).copy()
+        A1[:] = A
+        A = A1
 
     var = np.where(A < B, 1, 0)
     return (pd.Series(var, index=A.index).diff() < 0).apply(int)
