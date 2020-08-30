@@ -74,9 +74,9 @@ def tdx_base_func(data, code_list = None):
     """
     try:
         # tdx_func_result, next_buy = tdx_dhmcl(data)
-        # tdx_func_result, next_buy = tdx_hm(data)
+        tdx_func_result, next_buy = tdx_hm(data)
         # tdx_func_result, next_buy = tdx_sxp(data)
-        tdx_func_result, next_buy = tdx_hmdr(data)
+        # tdx_func_result, next_buy = tdx_hmdr(data)
     # 斜率
     except:
         tdx_func_result, next_buy = False, False
@@ -122,14 +122,6 @@ def tdx_base_func(data, code_list = None):
     return do_buy_sell_fun(data, next_buy = next_buy)
     # return data
 
-def do_tdx_func(key):
-    # start_t = datetime.datetime.now()
-    # print("key=", key, ",begin-do_tdx_func:", start_t)
-    # databuf_tdxfunc[key] = tdx_func(databuf_mongo[key])
-    # end_t = datetime.datetime.now()
-    # print("end key=", key, ",", end_t, 'do_tdx_func spent:{}'.format((end_t - start_t)))
-    return tdx_func(databuf_mongo[key])
-
 def tdx_func(datam, code_list = None):
     """
     准备数据
@@ -156,10 +148,10 @@ def tdx_func_mp():
     start_t = datetime.datetime.now()
     print("begin-tdx_func_mp :", start_t)
     task_list = []
-    pool = Pool(cpu_count())
-    for i in range(pool_size):
-        # pool.apply_async(do_tdx_func, args=(i, ))
-        task_list.append(executor_func.submit(do_tdx_func, i))
+    # pool = Pool(cpu_count())
+    for key in range(pool_size):
+        # tdx_func(databuf_mongo[key])
+        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key]))
     # pool.close()
     # pool.join()
 
@@ -208,7 +200,7 @@ def buy_action(data, next_buy, col_pos_tup, i):
     data.iat[i + 1, position_col] = 1
     data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
     # position = 1
-    position = 0
+    position = 1
     hdays = 0
     return position, hdays
 
@@ -258,24 +250,19 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
             hdays = 0
         if data.iat[i, bflag] > 0 and position == 0:
             sflg = 0
+            # 涨停不能买入
             # if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
-            #         and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02:
+            #         and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02\
+            #     and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
             # if data.iat[i+1,open_col] > data.iat[i,close_col] * 1.07:
-            if data.iat[i, high_col] > data.iat[i, low_col] and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
+
+            # # 去除一字板
+            # if data.iat[i, high_col] > data.iat[i, low_col] \
+            #         and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
+            # 去除涨停
+            if data.iat[i, close_col] / data.iat[i - 1, close_col] < 1.095 \
+                    and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
                 position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col), i)
-                # if not next_buy:
-                #     data.iat[i, flag] = 1
-                #     data.iat[i, position_col] = 1
-                # else:
-                #     data.iat[i + 1, flag] = 1
-                #
-                # data.iat[i + 1, position_col] = 1
-                # data.iat[i, hold_price_col] = data.iat[i, close_col]
-                # data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
-                # position = 1
-                # # print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 0, i)
-                # hdays = 0
             # else:
             #     # data.iat[i, position_col] = 0
             #     data.iat[i + 1, position_col] = data.iat[i, position_col]
@@ -321,91 +308,26 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
 
             if sflg < 0:# or cprice > hprice * 1.2:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, -5)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell -5 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, -5)
-                # sflg = 0
             elif sflg == 9 and high_price / cprice > 1.15:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 90)
-
             elif sflg == 8 and high_price / cprice > 1.12:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 80)
-
             elif sflg == 7 and high_price / cprice > 1.1:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 70)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell 70 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, 70)
-                # sflg = 0
             elif sflg == 6 and high_price / cprice > 1.1:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 60)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell 60 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, 60)
-                # sflg = 0
             elif sflg == 5 and high_price / cprice > 1.09:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 50)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell 50 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, 50)
-                # sflg = 0
             elif sflg == 4 and high_price / cprice > 1.08:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 40)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell 40 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, 40)
-                # sflg = 0
             elif sflg == 3 and high_price / cprice > 1.06:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 30)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell 30 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, 30)
-                # sflg = 0
             elif sflg == 2 and high_price / cprice > 1.05:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 20)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell 20 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, 20)
-                # sflg = 0
             elif sflg == 1 and high_price / cprice > 1.04:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 10)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell 10 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, 10)
-                # sflg = 0
             elif sflg == 0 and hdays > max_hold_days:
                 position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 0)
-                # data.iat[i, flag] = -1
-                # data.iat[i + 1, position_col] = 0
-                # data.iat[i + 1, hold_price_col] = 0
-                # position = 0
-                # # print("sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-                # logout_out(data, 1, i, 0)
-                # sflg = 0
             else:
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]

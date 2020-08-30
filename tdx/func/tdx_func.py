@@ -161,5 +161,5 @@ def tdx_hmdr(data):
     金线王 = EMA(A2, 200) * 1.118
     条件 = (C - REF(C, 1)) / REF(C, 1) * 100 > 8
     金K线 = IFAND3(CROSS(C, 金线王), 条件, 有肉肉, True, False)
-    return 金K线, False
-
+    # return 金K线, False
+    return 大肉, False
