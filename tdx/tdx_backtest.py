@@ -22,6 +22,7 @@ mongo = MongoIo()
 
 databuf_mongo = Manager().dict()
 databuf_tdxfunc = Manager().dict()
+databuf_hold = Manager().dict()
 max_buy_nums = 5
 max_hold_days = 5
 pool_size = cpu_count()
@@ -80,6 +81,7 @@ def tdx_base_func(data, code_list = None):
     # 斜率
     except:
         tdx_func_result, next_buy = False, False
+
     data = data.copy()
     # data['bflg'] = IF(REF(后炮,1) > 0, 1, 0)
     data['bflg'] = tdx_func_result
@@ -119,8 +121,8 @@ def tdx_base_func(data, code_list = None):
     # data['beta_right'] = data.RSRS_R2 * data.beta
     # if code == '000732':
     #     print(data.tail(22))
-    return do_buy_sell_fun(data, next_buy = next_buy)
-    # return data
+    # return do_buy_sell_fun(data, next_buy = next_buy)
+    return data
 
 def tdx_func(datam, code_list = None):
     """
@@ -342,7 +344,168 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
     data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod() - 1
     return data
 
-def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
+def do_buy_sell_fun_by_row(data, key, next_buy):
+    hold_info =
+    cur_date = data.name[0]
+    cur_code = data.name[1]
+    """
+    斜率指标交易策略标准分策略
+    """
+    # price = datam.query("code=='%s'" % code)
+    # # data = price.copy()
+    # data = price.copy()
+    data['flag'] = 0 # 买卖标记
+    data['position'] = 0 # 持仓标记
+    data['hold_price'] = 0  # 持仓价格
+    data['sell_close'] = data['close']  # 卖出价格
+    bflag = data.columns.get_loc('bflg')
+    # beta = data.columns.get_loc('beta')
+    flag_col = data.columns.get_loc('flag')
+    position_col = data.columns.get_loc('position')
+    close_col = data.columns.get_loc('close')
+    sell_close_col = data.columns.get_loc('sell_close')
+    high_col = data.columns.get_loc('high')
+    low_col = data.columns.get_loc('low')
+    open_col = data.columns.get_loc('open')
+    hold_price_col = data.columns.get_loc('hold_price')
+    position = 0 # 是否持仓，持仓：1，不持仓：0
+    sflg = 0
+    hdays = 0
+    for i in range(1,data.shape[0] - 1):
+        # 开仓
+        if position > 0:
+            hdays = hdays + 1
+        else:
+            hdays = 0
+        if data.iat[i, bflag] > 0 and position == 0:
+            sflg = 0
+            # 涨停不能买入
+            # if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
+            #         and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02\
+            #     and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
+            # if data.iat[i+1,open_col] > data.iat[i,close_col] * 1.07:
+
+            # # 去除一字板
+            # if data.iat[i, high_col] > data.iat[i, low_col] \
+            #         and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
+            # 去除涨停
+            if data.iat[i, close_col] / data.iat[i - 1, close_col] < 1.095 \
+                    and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
+                position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col), i)
+            # else:
+            #     # data.iat[i, position_col] = 0
+            #     data.iat[i + 1, position_col] = data.iat[i, position_col]
+            #     data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
+                # pass
+        # 平仓
+        # elif data.iat[i, bflag] == S2 and position == 1:
+        elif data.iat[i, position_col] > 0 and position == 1:
+            buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock)
+            cprice = data.iat[i, close_col]
+            # cprice = data.iat[i, open_col]
+            # oprice = data.iat[i, open_col]
+            hold_price = data.iat[i, hold_price_col]
+            if cprice < hold_price * 0.95:# or oprice < hold_price * 0.95:
+                sflg = -1
+            elif cprice > hold_price * 1.1 and sflg <= 0:
+                sflg = 1
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.2 and sflg < 2:
+                sflg = 2
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.3 and sflg < 3:
+                sflg = 3
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.4 and sflg < 4:
+                sflg = 4
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.5 and sflg < 5:
+                sflg = 5
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.6 and sflg < 6:
+                sflg = 6
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.7 and sflg < 7:
+                sflg = 7
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.8 and sflg < 8:
+                sflg = 8
+                high_price = data.iat[i, high_col]
+            elif cprice > hold_price * 1.9 and sflg < 9:
+                sflg = 9
+                high_price = data.iat[i, high_col]
+
+            if sflg < 0:# or cprice > hprice * 1.2:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, -5)
+            elif sflg == 9 and high_price / cprice > 1.15:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 90)
+            elif sflg == 8 and high_price / cprice > 1.12:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 80)
+            elif sflg == 7 and high_price / cprice > 1.1:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 70)
+            elif sflg == 6 and high_price / cprice > 1.1:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 60)
+            elif sflg == 5 and high_price / cprice > 1.09:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 50)
+            elif sflg == 4 and high_price / cprice > 1.08:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 40)
+            elif sflg == 3 and high_price / cprice > 1.06:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 30)
+            elif sflg == 2 and high_price / cprice > 1.05:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 20)
+            elif sflg == 1 and high_price / cprice > 1.04:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 10)
+            elif sflg == 0 and hdays > max_hold_days:
+                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 0)
+            else:
+                data.iat[i + 1, position_col] = data.iat[i, position_col]
+                data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
+
+            if position == 0:
+                buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock, False)
+        # 保持
+        else:
+            data.iat[i + 1, position_col] = data.iat[i, position_col]
+            data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
+
+    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod() - 1
+    return data
+
+def backtest(indices_DataFrame):
+    start_t = datetime.datetime.now()
+    print("begin-backtest:", start_t)
+    result01 = indices_DataFrame['close'].groupby(level=['date']).count()
+    dataR = pd.DataFrame()
+    print("index-len:", len(result01.index))
+    for x in result01.index:
+        # print(x)
+        df_prices = indices_DataFrame.query("date=='%s'" % x)
+        # print(x, len(df_prices))
+        task_list = []
+        for x in df_prices.index:
+            print(df_prices.loc[x].name[0])
+            row_data = df_prices.loc[x]
+            task_list.append(executor.submit(do_buy_sell_fun_by_row, row_data, x))
+        # data = price.copy()
+        # data = price.copy()
+        # codes =
+        start_t = datetime.datetime.now()
+        print("begin-backtest:", start_t)
+        for task in as_completed(task_list):
+            if len(dataR) == 0:
+                dataR = task.result()
+            else:
+                dataR = dataR.append(task.result())
+        end_t = datetime.datetime.now()
+        print(end_t, 'buy_sell_fun_mp-02 spent:{}'.format((end_t - start_t)))
+
+        print(dataR)
+        break
+
+    end_t = datetime.datetime.now()
+    print(end_t, 'backtest spent:{}'.format((end_t - start_t)))
+
+def summary(datam, S1=1.0, S2=0.8):
     start_t = datetime.datetime.now()
     print("begin-buy_sell_fun_mp-01:", start_t)
     # datam.to_csv("datam.csv")
@@ -364,6 +527,16 @@ def buy_sell_fun_mp(datam, S1=1.0, S2=0.8):
     # dataR2['flag'] = 0
     dataR.iat[-1,1] = num
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
+
+    num = dataR.flag.abs().sum() / 2
+    # nav = dataR.nav[resultT.shape[0] - 1]
+    # print(resultT.tail(300))
+    # resultT.to_csv("resultT.csv")
+    # mnav = min(resultT.nav)
+    max_dropback = round(float(max([(dataR.nav.iloc[idx] - dataR.nav.iloc[idx::].min()) / dataR.nav.iloc[idx] for idx in range(len(dataR.nav))])),2)
+    # max_dropback = 0
+    print('RSRS1_T 交易次数 = ',num)
+    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, max_dropback * 100))
     return dataR
 
 def buy_sell_fun_mp_new(datam, S1=1.0, S2=0.8):
@@ -446,11 +619,11 @@ def buy_sell_fun_mp_org(datam, S1=1.0, S2=0.8):
 
 def do_get_data_mp(key, codelist, st_start):
     mongo_mp = MongoIo()
-    start_t = datetime.datetime.now()
-    print("begin-get_data do_get_data_mp: key=%s, time=%s" %( key,  start_t))
+    # start_t = datetime.datetime.now()
+    # print("begin-get_data do_get_data_mp: key=%s, time=%s" %( key,  start_t))
     databuf_mongo[key] = mongo_mp.get_stock_day(codelist, st_start=st_start)
-    end_t = datetime.datetime.now()
-    print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
+    # end_t = datetime.datetime.now()
+    # print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
 
 def get_data(st_start):
     start_t = datetime.datetime.now()
@@ -482,6 +655,8 @@ def get_data(st_start):
 
     code_file = "../config/stock_list.json"
     codelist = []
+    limit_len = 0
+
     with open(code_file, 'r') as f:
         data = json.load(f)
         for d in data['code']:
@@ -494,6 +669,9 @@ def get_data(st_start):
             # if d[0:3] != '002':
             #     continue
             codelist.append(d)
+            limit_len = limit_len + 1
+            if limit_len > 20:
+                break
     subcode_len = int(len(codelist) / pool_size)
     code_dict = {}
     pool = Pool(cpu_count())
@@ -536,28 +714,33 @@ def get_data(st_start):
     # return data_day
 
 if __name__ == '__main__':
+    # # 计算数据步骤
+    # # 1, 读取数据（多进程，读入缓冲）
+    # # 2, 计算公式（多进程，读取缓冲）
+    # # 3, 回测（按照日期循环）
+    # # 3.1, 按照code循环计算（多进程／多线程）
+    # # 4, 结果统计／输出图形
+
     start_t = datetime.datetime.now()
     print("begin-time:", start_t)
     buy_ctl_dict = Manager().dict()
     share_lock = Manager().Lock()
 
+    # 1, 读取数据（多进程，读入缓冲）
+    # 开始日期
     st_start="2019-01-01"
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
     get_data(st_start)
+
+    # 2, 计算公式（多进程，读取缓冲）
     indices_rsrsT = tdx_func_mp()
-    resultT = buy_sell_fun_mp(indices_rsrsT)
-    # resultT = indices_rsrsT
-    num = resultT.flag.abs().sum() / 2
-    nav = resultT.nav[resultT.shape[0] - 1]
-    # print(resultT.tail(300))
-    # resultT.to_csv("resultT.csv")
-    # mnav = min(resultT.nav)
-    max_dropback = round(float(max([(resultT.nav.iloc[idx] - resultT.nav.iloc[idx::].min()) / resultT.nav.iloc[idx] for idx in range(len(resultT.nav))])),2)
-    # max_dropback = 0
-    print('RSRS1_T 交易次数 = ',num)
-    print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, max_dropback * 100))
+
+    # 3, 回测（按照日期循环）
+    result_Back = backtest(indices_rsrsT)
+
+    resultT = summary(indices_rsrsT)
 
     end_t = datetime.datetime.now()
     print(end_t, 'spent:{}'.format((end_t - start_t)))
@@ -576,9 +759,6 @@ if __name__ == '__main__':
     plt.figure(figsize=(15,3))
     fig = plt.axes()
     plt.plot(np.arange(resultT.shape[0]), resultT.nav,label = 'MyCodes',linewidth = 2)
-    # plt.plot(np.arange(result.shape[0]), result2.nav,label = 'RSRS2',linewidth = 2)
-    # plt.plot(np.arange(result.shape[0]), result3.nav,label = 'RSRS3',linewidth = 2)
-    # plt.plot(np.arange(result.shape[0]), result4.nav,label = 'RSRS4',linewidth = 2)
     plt.plot(np.arange(result.shape[0]), result.close / result.close[0], label = benchcode, linewidth = 2)
 
     fig.set_xticks(range(0, len(xticklabel),
