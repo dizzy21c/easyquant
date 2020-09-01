@@ -36,7 +36,11 @@ class MongoIo(object):
             st_end = "2030-12-31 23:59:59"
         if type == 'D':
             if isinstance(code, list):
-                dtd=self.db[table].find({'code':{'$in' : code},'date':{'$gte':st_start, "$lte":st_end}})
+                dtd=self.db[table].find({
+                    'code':{'$in' : code}
+                    ,'date':{'$gte':st_start, "$lte":st_end}}
+                    ,{"_id": 0}
+                    , batch_size=10000)
             else:
                 dtd=self.db[table].find({'code':code,'date':{'$gte':st_start, "$lte":st_end}})
         else:

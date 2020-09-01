@@ -1,24 +1,33 @@
 import datetime
-import pandas as pd
-import random
-
-from strategybase import StrategyBase
-from multiprocessing import Process, Pool, cpu_count, Manager
-from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
-from QUANTAXIS.QAARP import QA_Risk, QA_User
 import QUANTAXIS as QA
+from QAStrategy.qastockbase import QAStrategyStockBase
+import random
+from strategybase import StrategyBase
+import numpy as np
+import pandas as pd
+from func.tdx_func import tdx_dhmcl, tdx_hm, tdx_sxp, tdx_hmdr
+import math
+deal_amount = 50000
 
-executor = ProcessPoolExecutor(max_workers=cpu_count())
+def tdx_base_func(data, code_list = None):
+    try:
+        tdx_func_result, next_buy = tdx_dhmcl(data)
+        # tdx_func_result, next_buy = tdx_hm(data)
+        # tdx_func_result, next_buy = tdx_sxp(data)
+        # tdx_func_result, next_buy = tdx_hmdr(data)
+    # 斜率
+    except:
+        tdx_func_result, next_buy = False, False
 
+    data = data.copy()
+    data['B_FLG'] = tdx_func_result
+    return data
 
-class TdxBacktest(StrategyBase):
-    def on_bar2(self, bar):
-        # print("on-bar333", bar)
-        pass
-
+# class SimpleBacktest01(QAStrategyStockBase):
+class SimpleBacktest01(StrategyBase):
     def on_bar(self, bar):
         # res = self.ma()
-        # print(bar.name)
+        # print(res.iloc[-1])
         # if np.isnan(res.MA2[-1]) or np.isnan(res.MA5[-1]):
         #     return
         code=bar.name[1]
@@ -27,83 +36,85 @@ class TdxBacktest(StrategyBase):
         # print(res)
         # print(self.get_positions(code))
         # if res.MA5[-1] > res.MA30[-1]:
-        if random.random() > 0.5:
-            # print('LONG price=%8.2f' % (bar['close']))
+        if bar['B_FLG']:
+        # if res.DIF[-1] > res.DEA[-1]:
 
-            if self.get_positions(code).volume_long == 0:
-                self.send_order('BUY', 'OPEN', code=code, price=bar['close'], volume=1000)
-                print(bar.name[0], 'code=%s, BUY price=%8.2f ' % (code, bar['close']))
+            # print('LONG price=%8.2f' % (bar['close']))
+            price = bar['close']
+            volume = math.floor(deal_amount / ( price * 100 )) * 100
+            if self.get_positions(code).volume_long == 0 and volume > 0:
+                self.send_order('BUY', 'OPEN', code=code, price=bar['close'], volume=volume)
+
+            # if self.positions.volume_short > 0:
+            #     self.send_order('BUY', 'CLOSE', code=code, price=bar['close'], volume=1)
+
         else:
             # print('SHORT price=%8.2f' % (bar['close']))
+
             # if self.acc.positions == {} or self.acc.positions.volume_short == 0:
             #     self.send_order('SELL', 'OPEN', code=code, price=bar['close'], volume=1)
             if self.get_positions(code).volume_long > 0:
                 self.send_order('SELL', 'CLOSE', code=code, price=bar['close'], volume=1000)
-                print(bar.name[0], 'code=%s, SELL price=%8.2f' % (code, bar['close']))
 
-    def get_sub_data(self, code_list, start):
-        return self.mongo.get_stock_day(code_list, st_start=start)
+    def ma(self,):
+        return QA.QA_indicator_MA(self.market_data, 5, 30)
+        # return QA.QA_indicator_MACD(self.market_data)
 
-    def get_data(self, code, start, end):
+    def risk_check(self):
+        pass
+
+    def get_data(self):
         start_t = datetime.datetime.now()
         print("get_data-begin-time:", start_t)
 
-        data = self.mongo.get_stock_day(code, st_start=start)
-        data = data.sort_index()
+        # data = self.mongo.get_stock_day(code, st_start=start)
+        # data = data.sort_index()
+
+        data = QA.QA_quotation(self.code, self.start, self.end, source=QA.DATASOURCE.MONGO,
+                               frequence=self.frequence, market=self.market_type, output=QA.OUTPUT_FORMAT.DATASTRUCT)
+
+
+        dataR = pd.DataFrame()
+        datam = data.data.sort_index()
+        for code in self.code:
+            data = datam.query("code=='%s'" % code)
+            tdx_func_result = tdx_base_func(data)
+            if len(dataR) == 0:
+                dataR = tdx_func_result
+            else:
+                dataR = dataR.append(tdx_func_result)
+
         end_t = datetime.datetime.now()
         print(end_t, 'get_data-spent:{}'.format((end_t - start_t)))
-
-        return data
-
-    def get_data2(self, code, start, end):
-        # df = pd.DataFrame()
-        if isinstance(code, str):
-            # df = pd.DataFrame()
-            data = self.mongo.get_stock_day(code, st_start=start)
-            return data.sort_index()
-        else:
-            codelist = code
-            pool_size = cpu_count()
-            task_list = []
-            if (len(codelist)) < 20:
-                data = self.mongo.get_stock_day(code, st_start=start)
-                return data.sort_index()
-
-            subcode_len = int(len(codelist) / pool_size)
-            for i in range(pool_size):
-                if i < pool_size - 1:
-                    sub_code_list = codelist[i * subcode_len: (i + 1) * subcode_len]
-                else:
-                    sub_code_list = codelist[i * subcode_len:]
-                task_list.append(executor.submit(self.get_sub_data, sub_code_list, start))
-
-            dataR = pd.DataFrame()
-            for task in as_completed(task_list):
-                if len(dataR) == 0:
-                    dataR = task.result()
-                else:
-                    dataR = dataR.append(task.result())
-
-            return dataR.sort_index()
+        return dataR.sort_index()
 
 if __name__ == '__main__':
     start_t = datetime.datetime.now()
     print("begin-time:", start_t)
-    # code_list = ['600718', '600756']
     codes_df = QA.QA_fetch_stock_list_adv()
     code_list = list(codes_df['code'])
-
-    s = TdxBacktest(code=code_list[0:5], start='2020-08-20', end='2020-05-21'
-                    , init_cash=1000000
-                    , portfolio='default2'
-                    , strategy_id='QA_STRATEGY2')
-
+    # print(code_list)
+    # code = QA.QA_fetch_stock_block_adv().code
+    # print(code)
+    s = SimpleBacktest01(
+                # code=['000001', '000002','600822','000859']
+                code=code_list
+                # code=QA.QA_fetch_stock_block_adv().code
+                # , init_cash = 1000000000000
+                , frequence='day'
+                , start='2020-06-01', end='2020-12-31'
+                , portfolio='example4'
+                , strategy_id='super-simple-backtest13')
+    # s.debug()
     s.run_backtest()
-
+    # msg = s.acc.message
+    # print("alpha=%6.2f, " % (msg['']))
+    # s.update_account()
     end_t = datetime.datetime.now()
     print(end_t, 'spent:{}'.format((end_t - start_t)))
 
-    risk = QA_Risk(s.acc)
-    risk.plot_assets_curve().show()
+    risk = QA.QA_Risk(s.acc)
+    # risk.plot_assets_curve().show()
+    print(risk.annualize_return)
     print(risk.profit_construct)
-
+  
