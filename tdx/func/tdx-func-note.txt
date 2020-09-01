@@ -665,3 +665,59 @@ STICKLINE(A1,30,0,1,0),COLORDD00DD;
 STICKLINE(A1,30,0,0.3,0),COLORFF00FF;
 DRAWTEXT(A1,36,'全仓'),COLORRED;
 
+
+
+
+
+{金风分时精简}
+==========================
+
+
+RQ:=DATETODAY(DATE)-DATETODAY(REF(DATE,TOTALBARSCOUNT-CURRBARSCOUNT))+1;
+JY:=BARSLAST((RQ-REF(RQ,1))!=WEEKDAY-REF(WEEKDAY,1) OR TOTALBARSCOUNT-CURRBARSCOUNT=0)+1;
+MA01:=REF(C,JY);
+MA02:=REF(MA01,JY);
+MA03:=REF(MA02,JY);
+MA04:=REF(MA03,JY);
+MA05:=REF(MA04,JY);
+MA6:=REF(MA05,JY);
+MA7:=REF(MA6,JY);
+MA8:=REF(MA7,JY);
+MA9:=REF(MA8,JY);
+H1:=MAX(DYNAINFO(3),DYNAINFO(5));
+L1:=MIN(DYNAINFO(3),DYNAINFO(6));
+P1:=H1-L1;
+阻力:L1+P1*8/9,COLORLIRED,DOTLINE;
+支撑:L1+P1*0.5/9,COLORGREEN,DOTLINE;
+
+
+
+DRAWICON(LONGCROSS(支撑 ,C,2),C-0.01,7);
+STICKLINE(LONGCROSS(支撑,C,2),C,阻力,0,-1),COLORCYAN;
+
+DRAWICON(LONGCROSS(C,阻力,2)AND C<ZTPRICE(REF(CLOSE,1),0.1),C+0.01,8);
+STICKLINE(LONGCROSS(C,阻力,2),C,支撑,0,-1),COLORRED;
+
+
+====note
+RQ赋值:日期对应的转换天数-总的周期数-到最后交易的周期日前的日期对应的转换天数+1
+JY赋值:上次(RQ-1日前的RQ)不等于星期-1日前的星期ORTOTALBARSCOUNT-到最后交易的周期=0距今天数+1
+MA01赋值:JY日前的收盘价
+MA02赋值:JY日前的MA01
+MA03赋值:JY日前的MA02
+MA04赋值:JY日前的MA03
+MA05赋值:JY日前的MA04
+MA6赋值:JY日前的MA05
+MA7赋值:JY日前的MA6
+MA8赋值:JY日前的MA7
+MA9赋值:JY日前的MA8
+H1赋值:前收盘价和最高价的较大值
+L1赋值:前收盘价和最低价的较小值
+P1赋值:H1-L1
+输出 阻力:L1+P1*8/9,画淡红色,DOTLINE
+输出 支撑:L1+P1*0.5/9,画绿色,DOTLINE
+当满足条件支撑小于收盘价保持2个交易日后交叉上穿时,在收盘价-0.01位置画7号图标
+当满足条件支撑小于收盘价保持2个交易日后交叉上穿时,在收盘价和阻力位置之间画柱状线,宽度为0,-1不为0则画空心柱.,画青色
+当满足条件收盘价小于阻力保持2个交易日后交叉上穿ANDC<计算涨停价时,在收盘价+0.01位置画8号图标
+当满足条件收盘价小于阻力保持2个交易日后交叉上穿时,在收盘价和支撑位置之间画柱状线,宽度为0,-1不为0则画空心柱.,画红色
+
