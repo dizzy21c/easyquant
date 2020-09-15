@@ -13,7 +13,7 @@ def new_df(df_day, data, now_price):
     df_day.loc[(last_time, code), 'high'] = data['high']
     df_day.loc[(last_time, code), 'low'] = data['low']
     df_day.loc[(last_time, code), 'close'] = now_price
-    df_day.loc[(last_time, code), 'vol'] = data['volume']
+    df_day.loc[(last_time, code), 'volume'] = data['volume']
     df_day.loc[(last_time, code), 'amount'] = data['amount']
     return df_day
 
@@ -163,3 +163,32 @@ def tdx_hmdr(data):
     金K线 = IFAND3(CROSS(C, 金线王), 条件, 有肉肉, True, False)
     # return 金K线, False
     return 大肉, False
+
+def tdx_tpcqpz(data, N = 89, M = 34):
+    C = data.close
+    CLOSE = data.close
+    H = data.high
+    HIGH = data.high
+    # L = data.low
+    HCV = (HHV(C, N) - LLV(C, N)) / LLV(C, N) * 100
+    TJN = REF(H, 1) < REF(HHV(H, N), 1)
+    XG = IFAND3(REF(HCV, 1) <= M, CLOSE > REF(HHV(HIGH, N), 1), TJN, True, False)
+    return XG, False
+
+def tdx_A01(data):
+    C = data.close
+    L = data.low
+    H = data.high
+    O = data.open
+    V = data.volume
+    X01 = MA(C, 10) / C > 1.055
+    X02 = MA(C, 10) / C < 1.1
+    X03 = MA(C, 60) / C > 1.28
+    X04 = C / REF(C, 1) > 1.028
+    X05 = IFAND(H > L * 1.05 , COUNT(H > L * 1.05, 5) > 3, True, False)
+    X06 = O / HHV(C, 30) < 0.78
+    X07 = IFAND(V < MA(V, 5) , MA(V, 5) < MA(V, 55), True, False)
+    X08 = IF(O == LLV(O, 30), True, False)
+    XG1 = IFAND5(X01 , X02 , X03 , X04 , X05 , X06, True, False)
+    率土之滨XG = IFAND3(XG1, X07, X08, True, False)
+    return 率土之滨XG, False

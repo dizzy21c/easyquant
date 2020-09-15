@@ -29,48 +29,208 @@ class MongoIo(object):
         #     self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'])
         # else:
         #     self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'], password = self.config['passwd'])
-    
+
+    def dateStr2stamp(self, date):
+        datestr = str(date)[0:10]
+        date = time.mktime(time.strptime(datestr, '%Y-%m-%d'))
+        return date
+
+    def _get_data_day(self, code, table, st_start, st_end):
+        cursor = self.db[table].find(
+            {
+                'code': {
+                    '$in': code
+                },
+                "date_stamp":
+                    {
+                        "$lte": self.dateStr2stamp(st_end),
+                        "$gte": self.dateStr2stamp(st_start)
+                    }
+            },
+            {"_id": 0},
+            batch_size=10000
+        )
+        res = pd.DataFrame([item for item in cursor])
+        try:
+            res = res.assign(
+                volume=res.vol,
+                date=pd.to_datetime(res.date)
+            ).drop_duplicates((['date',
+                                'code'])).query('volume>1').set_index(
+                'date',
+                drop=False
+            )
+            res = res.loc[:,
+                  [
+                      'code',
+                      'open',
+                      'high',
+                      'low',
+                      'close',
+                      'volume',
+                      'amount',
+                      'date'
+                  ]]
+        except:
+            res = None
+        # if format in ['P', 'p', 'pandas', 'pd']:
+        return res
+        # elif format in ['json', 'dict']:
+        #     return QA_util_to_json_from_pandas(res)
+        # # 多种数据格式
+        # elif format in ['n', 'N', 'numpy']:
+        #     return numpy.asarray(res)
+        # elif format in ['list', 'l', 'L']:
+        #     return numpy.asarray(res).tolist()
+        # else:
+        #     print(
+        #         "QA Error QA_fetch_stock_day format parameter %s is none of  \"P, p, pandas, pd , json, dict , n, N, numpy, list, l, L, !\" "
+        #         % format
+        #     )
+        #     return None
+
+
+    def _get_data_min(self, code, table, st_start, st_end, type):
+        cursor = self.db[table].find(
+            {
+                'code': {
+                    '$in': code
+                }
+                , "time_stamp":
+                    {
+                        "$lte": self.dateStr2stamp(st_end),
+                        "$gte": self.dateStr2stamp(st_start)
+                    }
+                , 'type': type
+            },
+            {"_id": 0},
+            batch_size=10000
+        )
+        res = pd.DataFrame([item for item in cursor])
+        try:
+            res = res.assign(
+                volume=res.vol,
+                date=pd.to_datetime(res.date)
+            ).drop_duplicates((['datetime',
+                                'code'])).query('volume>1').set_index(
+                'datetime',
+                drop=False
+            )
+            res = res.loc[:,
+                  [
+                      'code',
+                      'open',
+                      'high',
+                      'low',
+                      'close',
+                      'volume',
+                      'amount',
+                      'datetime'
+                  ]]
+        except:
+            res = None
+        # if format in ['P', 'p', 'pandas', 'pd']:
+        return res
+        # elif format in ['json', 'dict']:
+        #     return QA_util_to_json_from_pandas(res)
+        # # 多种数据格式
+        # elif format in ['n', 'N', 'numpy']:
+        #     return numpy.asarray(res)
+        # elif format in ['list', 'l', 'L']:
+        #     return numpy.asarray(res).tolist()
+        # else:
+        #     print(
+        #         "QA Error QA_fetch_stock_day format parameter %s is none of  \"P, p, pandas, pd , json, dict , n, N, numpy, list, l, L, !\" "
+        #         % format
+        #     )
+        #     return None
+
+    def _get_data2(self, code, table, st_start, st_end, type='D'):
+        if st_end is None:
+            # st_end = "2030-12-31"
+            st_end = "2030-12-31 23:59:59"
+        # st_start = self.dateStr2stamp(st_start)
+        if type == 'D':
+            if isinstance(code, list):
+                dtd = self.db[table].find({
+                    'code':
+                        {'$in': code}
+                    , 'date_stamp':
+                        {'$gte': self.dateStr2stamp(st_start), "$lte": self.dateStr2stamp(st_end)}
+                }
+                    , {"_id": 0})
+            else:
+                dtd = self.db[table].find({'code': code,
+                                           'date_stamp':
+                                               {'$gte': self.dateStr2stamp(st_start),
+                                                "$lte": self.dateStr2stamp(st_end)}
+                                           }
+                                          , {"_id": 0})
+        else:
+            if isinstance(code, list):
+                dtd = self.db[table].find({'code': {'$in': code}, 'date': {'$gte': self.dateStr2stamp(st_start),
+                                                                           "$lte": self.dateStr2stamp(st_end)},
+                                           'type': type}, {"_id": 0})
+            else:
+                dtd = self.db[table].find(
+                    {'code': code, 'date': {'$gte': self.dateStr2stamp(st_start), "$lte": self.dateStr2stamp(st_end)},
+                     'type': type}, {"_id": 0})
+        ptd = pd.DataFrame(list(dtd))
+        if len(ptd) > 0:
+            # del ptd['_id']
+            del ptd['date_stamp']
+            if type == 'D':
+                ptd.date = pd.to_datetime(ptd.date)
+                ptd = ptd.set_index(["date", "code"])
+            else:
+                ptd.date = pd.to_datetime(ptd.date)
+                ptd.datetime = pd.to_datetime(ptd.datetime)
+                ptd = ptd.set_index(["datetime", "code"])
+        # ptd.rename(columns={"vol":"volume"}, inplace=True)
+        return ptd
+
     def _get_data(self, code, table, st_start, st_end, type='D'):
         if st_end is None:
             # st_end = "2030-12-31"
             st_end = "2030-12-31 23:59:59"
+        # st_start = self.dateStr2stamp(st_start)
         if type == 'D':
-            if isinstance(code, list):
-                dtd=self.db[table].find({
-                    'code':{'$in' : code}
-                    ,'date':{'$gte':st_start, "$lte":st_end}}
-                    ,{"_id": 0}
-                    , batch_size=10000)
-            else:
-                dtd=self.db[table].find({'code':code,'date':{'$gte':st_start, "$lte":st_end}})
+            data = self._get_data_day(code, table, st_start, st_end)
         else:
-            if isinstance(code, list):
-                dtd=self.db[table].find({'code':{'$in':code},'date':{'$gte':st_start, "$lte":st_end}, 'type':type})
-            else:
-                dtd=self.db[table].find({'code':code,'date':{'$gte':st_start, "$lte":st_end}, 'type':type})
-        ptd=pd.DataFrame(list(dtd))
-        if len(ptd) > 0:
-            del ptd['_id']
-            del ptd['date_stamp']
+            data = self._get_data_min(code, table, st_start, st_end, type)
+            # if isinstance(code, list):
+            #     dtd=self.db[table].find({'code':{'$in':code},'date':{'$gte':self.dateStr2stamp(st_start), "$lte":self.dateStr2stamp(st_end)}, 'type':type},{"_id": 0})
+            # else:
+            #     dtd=self.db[table].find({'code':code,'date':{'$gte':self.dateStr2stamp(st_start), "$lte":self.dateStr2stamp(st_end)}, 'type':type},{"_id": 0})
+        # ptd=pd.DataFrame(list(dtd))
+        if data is None:
+            return pd.DataFrame()
+
+        if len(data) > 0:
+            # del ptd['_id']
+            # del ptd['date_stamp']
             if type == 'D':
-                ptd.date = pd.to_datetime(ptd.date)
-                ptd = ptd.set_index(["date","code"])
+                data.date = pd.to_datetime(data.date)
+                data = data.set_index(["date","code"])
             else:
-                ptd.date = pd.to_datetime(ptd.date)
-                ptd.datetime= pd.to_datetime(ptd.datetime)
-                ptd = ptd.set_index(["datetime","code"])
+                # data.date = pd.to_datetime(data.date)
+                data.datetime= pd.to_datetime(data.datetime)
+                data = data.set_index(["datetime","code"])
         # ptd.rename(columns={"vol":"volume"}, inplace=True)
-        return ptd
+        return data
     
     def get_stock_day(self, code, st_start=None, st_end=None):
         if st_start is None:
             st_start = self.st_start
+        if isinstance(code, str):
+            code = [code]
         return self._get_data(code, 'stock_day', st_start, st_end)
   
     def get_stock_min(self, code, st_start=None, st_end=None, freq=5):
         if st_start is None:
             st_start = self.st_start_15min
-            
+        if isinstance(code, str):
+            code = [code]
         return self._get_data(code, 'stock_min', st_start, st_end, "%dmin"%freq)
 
     def get_stock_min_realtime(self, code, st_start=None, st_end=None, freq=5):
