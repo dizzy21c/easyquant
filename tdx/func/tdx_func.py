@@ -192,3 +192,29 @@ def tdx_A01(data):
     XG1 = IFAND5(X01 , X02 , X03 , X04 , X05 , X06, True, False)
     率土之滨XG = IFAND3(XG1, X07, X08, True, False)
     return 率土之滨XG, False
+
+def tdx_jmmm(data):
+    # 今买明卖
+    C = data.close
+    CLOSE = data.close
+    LOW = data.low
+    HIGH = data.high
+    VOL = data.volume
+    AMOUNT = data.amount
+    ZXNH = True
+    M2 = EMA(C,2)
+    M18=EMA(C,18)
+    # 买点=IF(CROSS(M18,M2),5,0* 10000)
+    买点=IF(CROSS(M18,M2),5,0)
+    RSVV=(CLOSE-LLV(LOW,10))/(HHV(HIGH,10)-LLV(LOW,10))*100
+    VARB2=(RSVV/2+22)
+    Q=EMA(VOL,13)
+    Y=EMA(AMOUNT,13)
+    S=((Y /Q) / 100)
+    X=(((CLOSE -S) / S) * 100)
+    # F= IFAND(X < (0) , ZXNH, True, False)
+    F = X < (0)
+    XQ=IFAND(F , RSVV<VARB2-2, True, False)
+    XG =IFAND(买点 , XQ, True, False)
+    return XG, False
+    

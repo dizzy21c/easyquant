@@ -12,6 +12,8 @@ from multiprocessing import Process, Pool, cpu_count, Manager
 import click
 from threading import Thread, current_thread, Lock
 import time
+from tdx.func.tdx_func import tdx_hm, tdx_dhmcl, tdx_tpcqpz, tdx_sxp, tdx_jmmm
+
 from concurrent.futures import (
     ThreadPoolExecutor, as_completed, ProcessPoolExecutor
 )
@@ -204,8 +206,23 @@ class TopTopCalcThread(Thread):
         else:
             return []
 
-
 def do_calc_2top(code, last_day):
+    # print("calc_toptop_codes-cod=%s" % code )
+    mongo = MongoIo()
+    st_start="2020-03-01"
+    data = mongo.get_stock_day(code, st_start=st_start, st_end=last_day)
+    if len(data) < 30:
+        return
+    t_result, _ = tdx_jmmm(data)
+
+    if t_result.iloc[-1]:
+        top_codes.append(code)
+        return code
+    else:
+        return None
+
+
+def do_calc_2top2(code, last_day):
     # print("calc_toptop_codes-cod=%s" % code )
     mongo = MongoIo()
     st_start="2020-03-01"
