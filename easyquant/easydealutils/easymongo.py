@@ -258,12 +258,15 @@ class MongoIo(object):
     def get_index_day(self, code, st_start=None, st_end=None):
         if st_start is None:
             st_start = self.st_start
-            
+        if isinstance(code, str):
+            code = [code]
         return self._get_data(code, 'index_day', st_start, st_end)
 
     def get_index_min(self, code, st_start=None, st_end=None, freq=5):
         if st_start is None:
             st_start = self.st_start_15min
+        if isinstance(code, str):
+            code = [code]
             
         return self._get_data(code, 'index_min', st_start, st_end, "%dmin"%freq)
 
