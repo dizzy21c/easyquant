@@ -77,9 +77,9 @@ def tdx_base_func(data, code_list = None):
     """
     try:
         # tdx_func_result, next_buy = tdx_dhmcl(data)
-        tdx_func_result, next_buy = tdx_hm(data)
+        # tdx_func_result, next_buy = tdx_hm(data)
         # tdx_func_result, next_buy = tdx_sxp(data)
-        # tdx_func_result, next_buy = tdx_hmdr(data)
+        tdx_func_result, next_buy = tdx_sxp(data)
     # 斜率
     except:
         tdx_func_result, next_buy = False, False
@@ -123,8 +123,8 @@ def tdx_base_func(data, code_list = None):
     # data['beta_right'] = data.RSRS_R2 * data.beta
     # if code == '000732':
     #     print(data.tail(22))
-    # return do_buy_sell_fun(data, next_buy = next_buy)
-    return data
+    return do_buy_sell_fun(data, next_buy = next_buy)
+    # return data
 
 def tdx_func(datam, code_list = None):
     """
@@ -194,12 +194,12 @@ def buy_action(data, next_buy, col_pos_tup, i):
     (flag_col, position_col, hold_price_col, close_col) = col_pos_tup
     if next_buy:
         data.iat[i + 1, flag_col] = 1
-        print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1+1], data.iloc[i+1].close))
+        # print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1+1], data.iloc[i+1].close))
     else:
         data.iat[i, flag_col] = 1
         data.iat[i, position_col] = 1
         data.iat[i, hold_price_col] = data.iat[i, close_col]
-        print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i].name[1], data.iloc[i].close))
+        # print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i].name[1], data.iloc[i].close))
 
     data.iat[i + 1, position_col] = 1
     data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
@@ -215,7 +215,7 @@ def sell_action(data, col_pos_tup, i, sell_pct):
     data.iat[i + 1, hold_price_col] = 0
     # print("sell 60 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
     # logout_out(data, 1, i, sell_pct)
-    print("pct=", sell_pct, ", sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+    # print("pct=", sell_pct, ", sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
     # 持仓标记
     position = 0
     # 盈亏标记
@@ -347,7 +347,7 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
     return data
 
 def do_buy_sell_fun_by_row(data, key, next_buy):
-    hold_info =
+    # hold_info =
     cur_date = data.name[0]
     cur_code = data.name[1]
     """
@@ -487,7 +487,7 @@ def backtest(indices_DataFrame):
         for x in df_prices.index:
             print(df_prices.loc[x].name[0])
             row_data = df_prices.loc[x]
-            task_list.append(executor.submit(do_buy_sell_fun_by_row, row_data, x))
+            task_list.append(executor.submit(do_buy_sell_fun, row_data, x))
         # data = price.copy()
         # data = price.copy()
         # codes =
@@ -531,10 +531,10 @@ def summary(datam, S1=1.0, S2=0.8):
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
 
     num = dataR.flag.abs().sum() / 2
-    # nav = dataR.nav[resultT.shape[0] - 1]
+    nav = dataR.nav[dataR.shape[0] - 1]
     # print(resultT.tail(300))
     # resultT.to_csv("resultT.csv")
-    # mnav = min(resultT.nav)
+    # mnav = min(dataR.nav)
     max_dropback = round(float(max([(dataR.nav.iloc[idx] - dataR.nav.iloc[idx::].min()) / dataR.nav.iloc[idx] for idx in range(len(dataR.nav))])),2)
     # max_dropback = 0
     print('RSRS1_T 交易次数 = ',num)
@@ -672,8 +672,8 @@ def get_data(st_start):
             #     continue
             codelist.append(d)
             limit_len = limit_len + 1
-            if limit_len > 20:
-                break
+            # if limit_len > 20:
+            #     break
     subcode_len = int(len(codelist) / pool_size)
     code_dict = {}
     pool = Pool(cpu_count())
@@ -740,7 +740,7 @@ if __name__ == '__main__':
     indices_rsrsT = tdx_func_mp()
 
     # 3, 回测（按照日期循环）
-    result_Back = backtest(indices_rsrsT)
+    # result_Back = backtest(indices_rsrsT)
 
     resultT = summary(indices_rsrsT)
 
