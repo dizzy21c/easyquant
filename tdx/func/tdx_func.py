@@ -190,7 +190,7 @@ def tdx_A01(data):
     X07 = IFAND(V < MA(V, 5) , MA(V, 5) < MA(V, 55), True, False)
     X08 = IF(O == LLV(O, 30), True, False)
     XG1 = IFAND5(X01 , X02 , X03 , X04 , X05 , X06, True, False)
-    率土之滨XG = IFAND3(XG1, X07, X08, True, False)
+    率土之滨XG = IFAND3(XG1, X07, X08, 1, 0)
     return 率土之滨XG, False
 
 def tdx_jmmm(data):
@@ -215,6 +215,6 @@ def tdx_jmmm(data):
     # F= IFAND(X < (0) , ZXNH, True, False)
     F = X < (0)
     XQ=IFAND(F , RSVV<VARB2-2, True, False)
-    XG =IFAND(买点 , XQ, True, False)
+    XG =IFAND(买点 , XQ, 1, 0)
     return XG, False
     

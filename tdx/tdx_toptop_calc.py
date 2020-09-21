@@ -8,12 +8,13 @@ import matplotlib.pyplot as plt
 import scipy.stats as scs
 import matplotlib.mlab as mlab
 from easyquant.indicator.base import *
-
+import traceback
 import json
 from easyquant import MongoIo
 import statsmodels.api as sm
 from multiprocessing import Process, Pool, cpu_count, Manager
 from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
+from func.tdx_func import tdx_dhmcl, tdx_hm, tdx_sxp, tdx_hmdr, tdx_A01
 
 executor = ThreadPoolExecutor(max_workers=cpu_count() * 2)
 
@@ -31,20 +32,21 @@ def tdx_base_func(data, code_list = None):
     # start_t = datetime.datetime.now()
     # print("begin-tdx_base_func:", start_t)
 
-    CLOSE=data.close
-    C=data.close
-    前炮 = CLOSE > REF(CLOSE, 1) * 1.099
-    小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
-    小阴小阳1 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
-    时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
-    后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
+    # CLOSE=data.close
+    # C=data.close
+    # 前炮 = CLOSE > REF(CLOSE, 1) * 1.099
+    # 小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 9
+    # 小阴小阳1 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
+    # 时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
+    # 后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
     # return pd.DataFrame({'FLG': 后炮}).iloc[-1]['FLG']
     # return 后炮.iloc[-1]
-
+    # bsFlg, nb = tdx_A01(data)
+    bsFlg, nb = tdx_hmdr(data)
     # 斜率
     data = data.copy()
     # data['bflg'] = IF(REF(后炮,1) > 0, 1, 0)
-    data['bflg'] = 后炮
+    data['bflg'] = bsFlg
     # print("code=%s, bflg=%s" % (code, data['bflg'].iloc[-1]))
     # data['beta'] = 0
     # data['R2'] = 0
@@ -85,7 +87,12 @@ def tdx_base_func(data, code_list = None):
     # return data
 
 def do_tdx_func(key):
-    databuf_tdxfunc[key] = tdx_func(databuf_mongo[key])
+    # calc_data = tdx_func(databuf_mongo[key])
+    try:
+        databuf_tdxfunc[key] = tdx_func(databuf_mongo[key])
+    except:
+        traceback.print_exc()
+        databuf_tdxfunc[key] = pd.DataFrame()
 
 def tdx_func(datam, code_list = None):
     """

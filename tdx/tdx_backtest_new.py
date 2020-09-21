@@ -312,30 +312,30 @@ if __name__ == '__main__':
     codes_df = QA.QA_fetch_stock_list_adv()
     code_list = list(codes_df['code'])
 
-    get_data(code_list, start='2019-01-01', end='2020-12-31')
-    #
-    # # print(code_list)
-    # # code = QA.QA_fetch_stock_block_adv().code
-    # # print(code)
-    # s = SimpleBacktest01(
-    #             # code=['000001', '000002','600822','000859']
-    #             # code=code_list
-    #             code=code_list
-    #             # code=QA.QA_fetch_stock_block_adv().code
-    #             # , init_cash = 1000000000000
-    #             , frequence='day'
-    #             , start='2019-01-01', end='2020-12-31'
-    #             , portfolio='newback'
-    #             , strategy_id='sxp2')
-    # # s.debug()
-    # s.run_backtest()
-    # # msg = s.acc.message
-    # # print("alpha=%6.2f, " % (msg['']))
-    # # s.update_account()
-    # end_t = datetime.datetime.now()
-    # print(end_t, 'spent:{}'.format((end_t - start_t)))
-    #
-    # risk = QA.QA_Risk(s.acc)
-    # # risk.plot_assets_curve().show()
-    # print(risk.annualize_return)
-    # print(risk.profit_construct)
+    # get_data(code_list, start='2019-01-01', end='2020-12-31')
+
+    # print(code_list)
+    # code = QA.QA_fetch_stock_block_adv().code
+    # print(code)
+    s = SimpleBacktest01(
+                # code=['000001', '000002','600822','000859']
+                # code=code_list
+                code=code_list
+                # code=QA.QA_fetch_stock_block_adv().code
+                # , init_cash = 1000000000000
+                , frequence='day'
+                , start='2019-12-01', end='2020-12-31'
+                , portfolio='newback'
+                , strategy_id='sxp2')
+    # s.debug()
+    s.run_backtest()
+    # msg = s.acc.message
+    # print("alpha=%6.2f, " % (msg['']))
+    # s.update_account()
+    end_t = datetime.datetime.now()
+    print(end_t, 'spent:{}'.format((end_t - start_t)))
+
+    risk = QA.QA_Risk(s.acc)
+    # risk.plot_assets_curve().show()
+    print(risk.annualize_return)
+    print(risk.profit_construct)
