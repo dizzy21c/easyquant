@@ -250,4 +250,42 @@ def tdx_nmddl(data):
     # STICKLINE(Q,诺曼底防线,Q,0.1,0),COLOR00FFFF;
     # DRAWTEXT(Q,诺曼底防线,'建'),COLOR0000FF;
     return 建仓, False
-    
+
+def tdx_swl(data):
+    # {A42.耍无赖}
+    H = data.high
+    L = data.low
+    C = data.close
+    BIAS0 = (C - MA(C, 3)) / MA(C, 3) * 100
+    # HXL = V / CAPITAL * 100
+    # D1 = INDEXC
+    D1 = C
+    D2 = MA(D1, 13)
+    DR2 = D2 > 1.050 * D1
+    E1 = (C - HHV(C, 13)) / HHV(C, 13) * 10
+    E2 = (C - REF(C, 21)) / REF(C, 21) * 10
+    E3 = MA(C, 3)
+    SJ1 = DR2
+    SJ2 = E2 < -2.30
+    SJ3 = BIAS0 < -2.7
+    SJ5 = IFAND3(SJ1, SJ2, SJ3, True, False)
+    SJ6 = CROSS(0.5, SJ5)
+    JS1 = CROSS(SJ6, 0.5)
+    JS2 = BARSLAST(JS1==1)
+    JS3 = IFAND(JS2 <= 5, C < REF(C, JS2), True, False)
+    TJ = IFOR(SJ6, JS3, True, False)
+    耍无赖XG: IFAND(TJ == 0,   REF(TJ==1, 1), 1, 0)
+    return 耍无赖XG, False
+
+def tdx_fscd(data):
+    # {A28.福树抄底}
+    C = data.close
+    CLOSE = data.close
+    DIF = EMA(CLOSE, 12) - EMA(CLOSE, 26)
+    DEA = EMA(DIF, 9)
+    MACD = (DIF - DEA) * 2
+    MACD_TJ = IFAND(MACD > 0, COUNT(CROSS(DIF, DEA), 5) > 0 , True, False)
+    A1 = C * 1.2 < MA(C, 60)
+    A2 = C / REF(C, 1) > 1.03
+    福树抄底XG = IFAND3(A1, A2, MACD_TJ, 1, 0)
+    return 福树抄底XG, False

@@ -45,12 +45,12 @@ def tdx_base_func(data, code_list = None):
     准备数据
     """
     try:
-        tdx_func_result, next_buy = tdx_dhmcl(data)
+        # tdx_func_result, next_buy = tdx_dhmcl(data)
         # tdx_func_result, next_buy = tdx_hm(data)
-        # tdx_func_result, next_buy = tdx_sxp(data)
-        # tdx_func_result, next_buy = tdx_sxp(data)
+        tdx_func_result, next_buy = tdx_sxp(data)
         # tdx_func_result, next_buy = tdx_A01(data)
-
+        # tdx_func_result, next_buy = tdx_nmddl(data)
+        # tdx_func_result, next_buy = tdx_fscd(data)
     # 斜率
     except:
         tdx_func_result, next_buy = False, False
@@ -598,7 +598,7 @@ if __name__ == '__main__':
 
     # 1, 读取数据（多进程，读入缓冲）
     # 开始日期
-    st_start="2020-01-01"
+    st_start="2010-01-01"
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
@@ -615,25 +615,25 @@ if __name__ == '__main__':
     end_t = datetime.datetime.now()
     print(end_t, 'spent:{}'.format((end_t - start_t)))
 
-    # benchcode = "000300"
-    # result = mongo.get_index_day(benchcode, st_start=st_start)
-    # # indices_rsrs = data_day.add_func(pre_rsrs_data_func)
-    # # result = indices_rsrs
-    # # print(indices_rsrs)
-    #
-    # #xtick = np.arange(0,result.shape[0],int(result.shape[0] / 7))
-    # #xticklabel = pd.Series(result.index.date[xtick])
-    # xticklabel = result.index.get_level_values(level=0).to_series().apply(lambda x: x.strftime("%Y-%m-%d")[2:16])
-    #
-    # # TODO
-    # plt.figure(figsize=(15,3))
-    # fig = plt.axes()
-    # plt.plot(np.arange(resultT.shape[0]), resultT.nav,label = 'MyCodes',linewidth = 2)
-    # plt.plot(np.arange(result.shape[0]), result.close / result.close[0], label = benchcode, linewidth = 2)
-    #
-    # fig.set_xticks(range(0, len(xticklabel),
-    #                      round(len(xticklabel) / 12)))
-    # fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
-    #                     rotation = 45)
-    # plt.legend()
-    # plt.show()
+    benchcode = "000300"
+    result = mongo.get_index_day(benchcode, st_start=st_start)
+    # indices_rsrs = data_day.add_func(pre_rsrs_data_func)
+    # result = indices_rsrs
+    # print(indices_rsrs)
+
+    #xtick = np.arange(0,result.shape[0],int(result.shape[0] / 7))
+    #xticklabel = pd.Series(result.index.date[xtick])
+    xticklabel = result.index.get_level_values(level=0).to_series().apply(lambda x: x.strftime("%Y-%m-%d")[2:16])
+
+    # TODO
+    plt.figure(figsize=(15,3))
+    fig = plt.axes()
+    plt.plot(np.arange(resultT.shape[0]), resultT.nav,label = 'MyCodes',linewidth = 2)
+    plt.plot(np.arange(result.shape[0]), result.close / result.close[0], label = benchcode, linewidth = 2)
+
+    fig.set_xticks(range(0, len(xticklabel),
+                         round(len(xticklabel) / 12)))
+    fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
+                        rotation = 45)
+    plt.legend()
+    plt.show()
