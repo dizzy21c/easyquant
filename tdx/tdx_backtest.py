@@ -167,6 +167,10 @@ def buy_action(data, next_buy, col_pos_tup, i):
     if next_buy:
         if i == len(data) - 1:
             return 0, 0
+        # 去除开盘涨停跌停
+        if data.iloc[i+1].open / data.iloc[i].close > 1.095 \
+                or data.iloc[i+1].open / data.iloc[i].close < 0.88:
+            return 0, 0
         data.iat[i + 1, flag_col] = 1
         data.iat[i + 1, position_col] = 1
         data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
@@ -175,6 +179,10 @@ def buy_action(data, next_buy, col_pos_tup, i):
             data.iat[i + 2, position_col] = 1
             data.iat[i + 2, hold_price_col] = data.iat[i + 1, hold_price_col]
     else:
+        # 去除涨停/跌停
+        if data.iloc[i].close / data.iloc[i - 1].close > 1.095 \
+                or data.iloc[i].close / data.iloc[i - 1].close < 0.88:
+            return 0, 0
         data.iat[i, flag_col] = 1
         data.iat[i, position_col] = 1
         data.iat[i, hold_price_col] = data.iat[i, close_col]
@@ -254,8 +262,8 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
             # if data.iat[i, high_col] > data.iat[i, low_col] \
             #         and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
             # 去除涨停
-            if data.iat[i, close_col] / data.iat[i - 1, close_col] < 1.095:
-                position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col, open_col), i)
+            # if data.iat[i, close_col] / data.iat[i - 1, close_col] < 1.095:
+            position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col, open_col), i)
             # else:
             #     # data.iat[i, position_col] = 0
             #     data.iat[i + 1, position_col] = data.iat[i, position_col]
