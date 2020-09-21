@@ -17,7 +17,7 @@ from multiprocessing import Process, Pool, cpu_count, Manager
 from multiprocessing import Process, Pool, cpu_count, Manager
 from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 
-from func.tdx_func import tdx_dhmcl, tdx_hm, tdx_sxp, tdx_hmdr, tdx_A01
+from func.tdx_func import *
 executor = ThreadPoolExecutor(max_workers=cpu_count() * 2)
 executor_func = ProcessPoolExecutor(max_workers=cpu_count() * 2)
 executorN = ProcessPoolExecutor(max_workers=cpu_count())
@@ -39,50 +39,17 @@ pool_size = cpu_count()
 #     else:
 #         pass
 
-def buy_ctl_check(dateStr, buy_ctl_dict, share_lock, addFlg=0):
-    return True
-
-def buy_ctl_check3(dateStr, buy_ctl_dict, share_lock, addFlg=0):
-    # 获取锁
-    # print("enter lock %s" % dateStr)
-    resultT = False
-    # print("enter lock1 %s" % dateStr)
-    share_lock.acquire()
-    # print("enter lock2 %s" % dateStr)
-    # print("enter lock3 %s" % dateStr)
-    if dateStr in buy_ctl_dict:
-        buyed_num = buy_ctl_dict[dateStr]
-        # print("enter lock5 %s" % dateStr)
-        if buyed_num < max_buy_nums and addFlg == 0:
-            buy_ctl_dict[dateStr] = buyed_num + 1
-            resultT = True
-        if addFlg == 1:
-            buy_ctl_dict[dateStr] = buyed_num + 1
-        if addFlg == 2:
-            buy_ctl_dict[dateStr] = buyed_num - 1
-    else:
-        # print("enter lock4 %s" % dateStr)
-        buy_ctl_dict[dateStr] = 1
-        resultT = True
-        if addFlg == 2:
-            buy_ctl_dict[dateStr] = 0
-    # 释放锁
-    # print("enter lock6 %s" % dateStr)
-    share_lock.release()
-    # print("out lock %s" % dateStr)
-    return resultT
-
 # print("pool size=%d" % pool_size)
 def tdx_base_func(data, code_list = None):
     """
     准备数据
     """
     try:
-        # tdx_func_result, next_buy = tdx_dhmcl(data)
+        tdx_func_result, next_buy = tdx_dhmcl(data)
         # tdx_func_result, next_buy = tdx_hm(data)
         # tdx_func_result, next_buy = tdx_sxp(data)
         # tdx_func_result, next_buy = tdx_sxp(data)
-        tdx_func_result, next_buy = tdx_A01(data)
+        # tdx_func_result, next_buy = tdx_A01(data)
 
     # 斜率
     except:
@@ -196,13 +163,13 @@ def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
     return do_buy_sell_fun(data)
 
 def buy_action(data, next_buy, col_pos_tup, i):
-    (flag_col, position_col, hold_price_col, close_col) = col_pos_tup
+    (flag_col, position_col, hold_price_col, close_col, open_col) = col_pos_tup
     if next_buy:
         if i == len(data) - 1:
             return 0, 0
         data.iat[i + 1, flag_col] = 1
         data.iat[i + 1, position_col] = 1
-        data.iat[i + 1, hold_price_col] = data.iat[i+1, close_col]
+        data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
         print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
         if i < len(data) - 2:
             data.iat[i + 2, position_col] = 1
@@ -224,13 +191,15 @@ def sell_action(data, col_pos_tup, i, sell_pct):
     (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col) = col_pos_tup
     data.iat[i, flag_col] = -1
     data.iat[i, sell_flg_col] = 1
-    if data.iloc[i].close > data.iat[i, hold_price_col] * 1.01:
+    close_price = data.iloc[i].close
+    hold_price = data.iat[i, hold_price_col]
+    if close_price > hold_price * 1.01:
         data.iat[i, win_flg_col] = 1
     data.iat[i + 1, position_col] = 0
     data.iat[i + 1, hold_price_col] = 0
-    # print("sell 60 : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+    # print("sell 60 : date=%s code=%s  price=%.2f, hold-price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
     # logout_out(data, 1, i, sell_pct)
-    print("pct=", sell_pct, ", sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+    print("pct=", sell_pct, ", sell : date=%s code=%s  price=%.2f hold-price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
     # 持仓标记
     position = 0
     # 盈亏标记
@@ -246,7 +215,7 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
     # data = price.copy()
     data['flag'] = 0 # 买卖标记
     data['position'] = 0 # 持仓标记
-    data['hold_price'] = 0  # 持仓价格
+    data['hold_price'] = 0.0  # 持仓价格
     data['sell_close'] = data['close']  # 卖出价格
     data['win_flg'] = 0  # 盈利标记
     data['sell_flg'] = 0  # 盈利标记
@@ -285,10 +254,8 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
             # if data.iat[i, high_col] > data.iat[i, low_col] \
             #         and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
             # 去除涨停
-            # if data.iat[i, close_col] / data.iat[i - 1, close_col] < 1.095 \
-            #         and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
-            #     position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col), i)
-            position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col), i)
+            if data.iat[i, close_col] / data.iat[i - 1, close_col] < 1.095:
+                position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col, open_col), i)
             # else:
             #     # data.iat[i, position_col] = 0
             #     data.iat[i + 1, position_col] = data.iat[i, position_col]
@@ -297,7 +264,6 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
         # 平仓
         # elif data.iat[i, bflag] == S2 and position == 1:
         elif data.iat[i, position_col] > 0 and position == 1:
-            buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock)
             cprice = data.iat[i, close_col]
             hold_price = data.iat[i, hold_price_col]
             if cprice < hold_price * 0.95:# or oprice < hold_price * 0.95:
@@ -356,135 +322,6 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
-            if position == 0:
-                buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock, False)
-        # 保持
-        else:
-            data.iat[i + 1, position_col] = data.iat[i, position_col]
-            data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
-
-    data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod() - 1
-    return data
-
-def do_buy_sell_fun_by_row(data, key, next_buy):
-    # hold_info =
-    cur_date = data.name[0]
-    cur_code = data.name[1]
-    """
-    斜率指标交易策略标准分策略
-    """
-    # price = datam.query("code=='%s'" % code)
-    # # data = price.copy()
-    # data = price.copy()
-    data['flag'] = 0 # 买卖标记
-    data['position'] = 0 # 持仓标记
-    data['hold_price'] = 0  # 持仓价格
-    data['sell_close'] = data['close']  # 卖出价格
-    bflag = data.columns.get_loc('bflg')
-    # beta = data.columns.get_loc('beta')
-    flag_col = data.columns.get_loc('flag')
-    position_col = data.columns.get_loc('position')
-    close_col = data.columns.get_loc('close')
-    sell_close_col = data.columns.get_loc('sell_close')
-    high_col = data.columns.get_loc('high')
-    low_col = data.columns.get_loc('low')
-    open_col = data.columns.get_loc('open')
-    hold_price_col = data.columns.get_loc('hold_price')
-    position = 0 # 是否持仓，持仓：1，不持仓：0
-    sflg = 0
-    hdays = 0
-    for i in range(1,data.shape[0] - 1):
-        # 开仓
-        if position > 0:
-            hdays = hdays + 1
-        else:
-            hdays = 0
-        if data.iat[i, bflag] > 0 and position == 0:
-            sflg = 0
-            # 涨停不能买入
-            # if data.iat[i+1,open_col] < data.iat[i,close_col] * 1.092\
-            #         and data.iat[i+1,open_col] > data.iat[i,close_col] * 1.02\
-            #     and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
-            # if data.iat[i+1,open_col] > data.iat[i,close_col] * 1.07:
-
-            # # 去除一字板
-            # if data.iat[i, high_col] > data.iat[i, low_col] \
-            #         and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
-            # 去除涨停
-            if data.iat[i, close_col] / data.iat[i - 1, close_col] < 1.095 \
-                    and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
-                position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col), i)
-            # else:
-            #     # data.iat[i, position_col] = 0
-            #     data.iat[i + 1, position_col] = data.iat[i, position_col]
-            #     data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
-                # pass
-        # 平仓
-        # elif data.iat[i, bflag] == S2 and position == 1:
-        elif data.iat[i, position_col] > 0 and position == 1:
-            buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock)
-            cprice = data.iat[i, close_col]
-            # cprice = data.iat[i, open_col]
-            # oprice = data.iat[i, open_col]
-            hold_price = data.iat[i, hold_price_col]
-            if cprice < hold_price * 0.95:# or oprice < hold_price * 0.95:
-                sflg = -1
-            elif cprice > hold_price * 1.1 and sflg <= 0:
-                sflg = 1
-                high_price = data.iat[i, high_col]
-            elif cprice > hold_price * 1.2 and sflg < 2:
-                sflg = 2
-                high_price = data.iat[i, high_col]
-            elif cprice > hold_price * 1.3 and sflg < 3:
-                sflg = 3
-                high_price = data.iat[i, high_col]
-            elif cprice > hold_price * 1.4 and sflg < 4:
-                sflg = 4
-                high_price = data.iat[i, high_col]
-            elif cprice > hold_price * 1.5 and sflg < 5:
-                sflg = 5
-                high_price = data.iat[i, high_col]
-            elif cprice > hold_price * 1.6 and sflg < 6:
-                sflg = 6
-                high_price = data.iat[i, high_col]
-            elif cprice > hold_price * 1.7 and sflg < 7:
-                sflg = 7
-                high_price = data.iat[i, high_col]
-            elif cprice > hold_price * 1.8 and sflg < 8:
-                sflg = 8
-                high_price = data.iat[i, high_col]
-            elif cprice > hold_price * 1.9 and sflg < 9:
-                sflg = 9
-                high_price = data.iat[i, high_col]
-
-            if sflg < 0:# or cprice > hprice * 1.2:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, -5)
-            elif sflg == 9 and high_price / cprice > 1.15:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 90)
-            elif sflg == 8 and high_price / cprice > 1.12:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 80)
-            elif sflg == 7 and high_price / cprice > 1.1:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 70)
-            elif sflg == 6 and high_price / cprice > 1.1:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 60)
-            elif sflg == 5 and high_price / cprice > 1.09:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 50)
-            elif sflg == 4 and high_price / cprice > 1.08:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 40)
-            elif sflg == 3 and high_price / cprice > 1.06:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 30)
-            elif sflg == 2 and high_price / cprice > 1.05:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 20)
-            elif sflg == 1 and high_price / cprice > 1.04:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 10)
-            elif sflg == 0 and hdays > max_hold_days:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col), i, 0)
-            else:
-                data.iat[i + 1, position_col] = data.iat[i, position_col]
-                data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
-
-            if position == 0:
-                buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock, False)
         # 保持
         else:
             data.iat[i + 1, position_col] = data.iat[i, position_col]
@@ -560,8 +397,8 @@ def summary(datam, S1=1.0, S2=0.8):
     # mnav = min(dataR.nav)
     max_dropback = round(float(max([(dataR.nav.iloc[idx] - dataR.nav.iloc[idx::].min()) / dataR.nav.iloc[idx] for idx in range(len(dataR.nav))])),2)
     # max_dropback = 0
-    print('RSRS1_T 交易次数 = %d, 胜率=%.3f' %(num,  0 ))
-    print('RSRS1_T2 交易次数 = %d, 胜率=%d , 胜率=%.3f' % (sell_num, win_num, win_num / sell_num * 100))
+    print('交易次数 = %d' %(num))
+    print('完成交易次数 = %d, 胜数=%d , 胜率=%.3f' % (sell_num, win_num, win_num / sell_num * 100))
     print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, max_dropback * 100))
     return dataR
 
@@ -750,12 +587,10 @@ if __name__ == '__main__':
 
     start_t = datetime.datetime.now()
     print("begin-time:", start_t)
-    buy_ctl_dict = Manager().dict()
-    share_lock = Manager().Lock()
 
     # 1, 读取数据（多进程，读入缓冲）
     # 开始日期
-    st_start="2015-01-11"
+    st_start="2020-01-01"
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
