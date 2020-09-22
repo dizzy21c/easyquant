@@ -258,13 +258,13 @@ def tdx_swl(data):
     C = data.close
     BIAS0 = (C - MA(C, 3)) / MA(C, 3) * 100
     # HXL = V / CAPITAL * 100
-    # D1 = INDEXC
-    D1 = C
+    D1 = INDEXC(data)
+    # D1 = C
     D2 = MA(D1, 13)
     DR2 = D2 > 1.050 * D1
-    E1 = (C - HHV(C, 13)) / HHV(C, 13) * 10
+    # E1 = (C - HHV(C, 13)) / HHV(C, 13) * 10
     E2 = (C - REF(C, 21)) / REF(C, 21) * 10
-    E3 = MA(C, 3)
+    # E3 = MA(C, 3)
     SJ1 = DR2
     SJ2 = E2 < -2.30
     SJ3 = BIAS0 < -2.7
