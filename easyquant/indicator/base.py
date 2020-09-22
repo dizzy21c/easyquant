@@ -29,6 +29,8 @@ import numpy as np
 import pandas as pd
 from ctypes import *
 from .talib_series import LINEARREG_SLOPE
+from easyquant.easydealutils.easymongo import MongoIo
+
 import os
 # lib  = cdll.LoadLibrary("%s/%s" % (os.path.abspath("."), "talib_ext.so"))
 lib  = cdll.LoadLibrary("/usr/share/talib/%s" % ("talib_ext.so"))
@@ -472,3 +474,22 @@ def SLOPE(Series, timeperiod=14):
     Series = Series.fillna(0)
     return LINEARREG_SLOPE(Series, timeperiod)
     # return pd.Series(res, index=SerLINEARREG_SLOPEies.index)
+
+def INDEX(data, code='000001', type='D'):
+    beg_date = data.iloc[0].name[0].strftime("%Y-%m-%d")
+    end_date = data.iloc[-1].name[0].strftime("%Y-%m-%d")
+    mongo = MongoIo()
+    if type == 'D':
+        df = mongo.get_index_day(code, beg_date, end_date)
+    else:
+        df = mongo.get_index_min(code, beg_date, end_date)
+    df = df.reset_index()
+    df.code = data.iloc[0].name[1]
+    df = df.set_index(['date', 'code'])
+    return df
+
+def INDEXC(data, code='000001', type='D'):
+    return INDEX(data, code, type).close
+
+def POW(Series, M):
+    return Series.pow(M)

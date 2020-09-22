@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as scs
 import matplotlib.mlab as mlab
 from easyquant.indicator.base import *
-
+import sys, getopt
 import json
 from easyquant import MongoIo
 import statsmodels.api as sm
@@ -28,7 +28,7 @@ databuf_mongo = Manager().dict()
 databuf_tdxfunc = Manager().dict()
 databuf_hold = Manager().dict()
 max_buy_nums = 5
-max_hold_days = 5
+max_hold_days = 20
 pool_size = cpu_count()
 #
 # def logout_out(data, bs_flg, i, pct = 0):
@@ -40,17 +40,20 @@ pool_size = cpu_count()
 #         pass
 
 # print("pool size=%d" % pool_size)
-def tdx_base_func(data, code_list = None):
+def tdx_base_func(data, func_name, code_list = None):
     """
     准备数据
     """
     try:
         # tdx_func_result, next_buy = tdx_dhmcl(data)
         # tdx_func_result, next_buy = tdx_hm(data)
-        tdx_func_result, next_buy = tdx_sxp(data)
+        # tdx_func_result, next_buy = tdx_sxp(data)
         # tdx_func_result, next_buy = tdx_A01(data)
         # tdx_func_result, next_buy = tdx_nmddl(data)
+        # print(func_name)
         # tdx_func_result, next_buy = tdx_fscd(data)
+        # tdx_func_result, next_buy = tdx_swl(data)
+        tdx_func_result, next_buy = func_name(data)
     # 斜率
     except:
         tdx_func_result, next_buy = False, False
@@ -98,7 +101,7 @@ def tdx_base_func(data, code_list = None):
     return do_buy_sell_fun(data, next_buy = next_buy)
     # return data
 
-def tdx_func(datam, code_list = None):
+def tdx_func(datam, func_name, code_list = None):
     """
     准备数据
     """
@@ -110,7 +113,7 @@ def tdx_func(datam, code_list = None):
         code_list = datam.index.levels[1]
     for code in code_list:
         data=datam.query("code=='%s'" % code)
-        data = tdx_base_func(data)
+        data = tdx_base_func(data, func_name)
         if len(dataR) == 0:
             dataR = data
         else:
@@ -120,14 +123,14 @@ def tdx_func(datam, code_list = None):
     print("tdx-fun-result-len", len(dataR))
     return dataR.sort_index()
 
-def tdx_func_mp():
+def tdx_func_mp(func_name):
     start_t = datetime.datetime.now()
     print("begin-tdx_func_mp :", start_t)
     task_list = []
     # pool = Pool(cpu_count())
     for key in range(pool_size):
         # tdx_func(databuf_mongo[key])
-        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key]))
+        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key], func_name))
     # pool.close()
     # pool.join()
 
@@ -274,7 +277,7 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
         elif data.iat[i, position_col] > 0 and position == 1:
             cprice = data.iat[i, close_col]
             hold_price = data.iat[i, hold_price_col]
-            if cprice < hold_price * 0.95:# or oprice < hold_price * 0.95:
+            if cprice < hold_price * 0.93:# or oprice < hold_price * 0.95:
                 sflg = -1
             elif cprice > hold_price * 1.1 and sflg <= 0:
                 sflg = 1
@@ -584,28 +587,49 @@ def get_data(st_start):
 
     # return data_day
 
+def main_param(argv):
+    st_begin = ''
+    st_end = ''
+    func = ''
+    try:
+        opts, args = getopt.getopt(argv[1:], "hb:e:f:", ["st-begin=", "st-end=", "func="])
+    except getopt.GetoptError:
+        print(argv[0], ' -b <st-begin> [-e <st-end>] [-f <func-name:dhm>]')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print(argv[0], ' -b2 <st-begin> [-e st-end] [-f func-name:dhm]')
+            sys.exit()
+        elif opt in ("-b", "--st-begin"):
+            st_begin = arg
+        elif opt in ("-e", "--st-end"):
+            st_end = arg
+        elif opt in ("-f", "--func"):
+            func = 'tdx_%s' % arg
+    return st_begin, st_end, func
 
 if __name__ == '__main__':
-    # # 计算数据步骤
-    # # 1, 读取数据（多进程，读入缓冲）
-    # # 2, 计算公式（多进程，读取缓冲）
-    # # 3, 回测（按照日期循环）
-    # # 3.1, 按照code循环计算（多进程／多线程）
-    # # 4, 结果统计／输出图形
+    st_start, st_end, func = main_param(sys.argv)
+    print("input", st_start, st_end, func)
+    # 计算数据步骤
+    # 1, 读取数据（多进程，读入缓冲）
+    # 2, 计算公式（多进程，读取缓冲）
+    # 3, 回测（按照日期循环）
+    # 3.1, 按照code循环计算（多进程／多线程）
+    # 4, 结果统计／输出图形
 
     start_t = datetime.datetime.now()
     print("begin-time:", start_t)
 
     # 1, 读取数据（多进程，读入缓冲）
     # 开始日期
-    st_start="2010-01-01"
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
     get_data(st_start)
 
     # 2, 计算公式（多进程，读取缓冲）
-    indices_rsrsT = tdx_func_mp()
+    indices_rsrsT = tdx_func_mp(func)
 
     # 3, 回测（按照日期循环）
     # result_Back = backtest(indices_rsrsT)
@@ -635,5 +659,5 @@ if __name__ == '__main__':
                          round(len(xticklabel) / 12)))
     fig.set_xticklabels(xticklabel[::round(len(xticklabel) / 12)],
                         rotation = 45)
-    plt.legend()
-    plt.show()
+    #plt.legend()
+    #plt.show()
