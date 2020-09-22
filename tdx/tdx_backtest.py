@@ -53,7 +53,7 @@ def tdx_base_func(data, func_name, code_list = None):
         # print(func_name)
         # tdx_func_result, next_buy = tdx_fscd(data)
         # tdx_func_result, next_buy = tdx_swl(data)
-        tdx_func_result, next_buy = func_name(data)
+        tdx_func_result, next_buy = eval(func_name)(data)
     # 斜率
     except:
         tdx_func_result, next_buy = False, False
