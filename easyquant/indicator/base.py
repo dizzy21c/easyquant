@@ -469,5 +469,6 @@ def WINNER(Series,N=60):
     return (Series / x - 1)
 
 def SLOPE(Series, timeperiod=14):
+    Series = Series.fillna(0)
     return LINEARREG_SLOPE(Series, timeperiod)
     # return pd.Series(res, index=SerLINEARREG_SLOPEies.index)
