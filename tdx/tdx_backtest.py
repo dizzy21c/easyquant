@@ -375,7 +375,7 @@ def backtest(indices_DataFrame):
     end_t = datetime.datetime.now()
     print(end_t, 'backtest spent:{}'.format((end_t - start_t)))
 
-def summary(datam, S1=1.0, S2=0.8):
+def summary(func_name, datam, S1=1.0, S2=0.8):
     start_t = datetime.datetime.now()
     print("begin-buy_sell_fun_mp-01:", start_t)
     # datam.to_csv("datam.csv")
@@ -408,6 +408,7 @@ def summary(datam, S1=1.0, S2=0.8):
     # mnav = min(dataR.nav)
     max_dropback = round(float(max([(dataR.nav.iloc[idx] - dataR.nav.iloc[idx::].min()) / dataR.nav.iloc[idx] for idx in range(len(dataR.nav))])),2)
     # max_dropback = 0
+    print('策略名称 = %s' % (func_name))
     print('交易次数 = %d' %(num))
     print('完成交易次数 = %d, 胜数=%d , 胜率=%.3f' % (sell_num, win_num, win_num / sell_num * 100))
     print('策略净值为= %.2f 最大回撤 %.2f ' % (nav, max_dropback * 100))
@@ -634,7 +635,7 @@ if __name__ == '__main__':
     # 3, 回测（按照日期循环）
     # result_Back = backtest(indices_rsrsT)
 
-    resultT = summary(indices_rsrsT)
+    resultT = summary(func, indices_rsrsT)
 
     end_t = datetime.datetime.now()
     print(end_t, 'spent:{}'.format((end_t - start_t)))

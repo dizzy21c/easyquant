@@ -17,6 +17,27 @@ def new_df(df_day, data, now_price):
     df_day.loc[(last_time, code), 'amount'] = data['amount']
     return df_day
 
+# 彩钻花神
+def tdx_czhs(data):
+    if len(data) < 10:
+        data = data.copy()
+        data['bflg'] = 0
+        data['sflg'] = 0
+        return data
+
+    CLOSE=data.close
+    C=data.close
+    # df_macd = MACD(C,12,26,9)
+    # mtj1 = IFAND(df_macd.DIFF < 0, df_macd.DEA < 0, 1, 0)
+    # mtj2 = IFAND(mtj1, df_macd.MACD < 0, 1, 0)
+    花 = SLOPE(EMA(C, 3), 3)
+    神 = SLOPE(EMA(C, 7), 7)
+    买 = IFAND(COUNT(花 < 神, 5)==4 , 花 >= 神,1,0)
+    卖 = IFAND(COUNT(花 >= 神, 5)==4, 花 < 神,1,0)
+    钻石 = IFAND(CROSS(花, 神), CLOSE / REF(CLOSE, 1) > 1.03, 1, 0)
+    买股 = IFAND(买, 钻石,1,0)
+    return 买股, False
+
 def tdx_hm(data):
     # A1 := ABS(((3.48 * CLOSE + HIGH + LOW) / 4 - EMA(CLOSE, 23)) / EMA(CLOSE, 23));
     # A2 := DMA(((2.15 * CLOSE + LOW + HIGH) / 4), A1);
@@ -98,7 +119,7 @@ def tdx_dhmcl(data):
     HMTJ1 = IFAND5(C > O, B1, B6, B7, B8, True, False)
     HMTJ2 = IFAND3(HMTJ1, REF(IF(B5, 1, 0), 1) > 0, B9, True, False)
     # 大黑马出笼= C > O and B1 and B6 and B7 and B8 and REF(B5, 1) and B9 OR ZZ
-    大黑马出笼 = IFOR(HMTJ2, ZZ, True, False)
+    大黑马出笼 = IFOR(HMTJ2, ZZ, 1, 0)
     return 大黑马出笼, False
 
 def tdx_sxp(data):
@@ -160,7 +181,7 @@ def tdx_hmdr(data):
     A2 = DMA(((2.15 * CLOSE + LOW + HIGH) / 4), A1)
     金线王 = EMA(A2, 200) * 1.118
     条件 = (C - REF(C, 1)) / REF(C, 1) * 100 > 8
-    金K线 = IFAND3(CROSS(C, 金线王), 条件, 有肉肉, True, False)
+    金K线 = IFAND3(CROSS(C, 金线王), 条件, 有肉肉, 1, 0)
     # return 金K线, False
     return 大肉, False
 
@@ -172,7 +193,7 @@ def tdx_tpcqpz(data, N = 89, M = 34):
     # L = data.low
     HCV = (HHV(C, N) - LLV(C, N)) / LLV(C, N) * 100
     TJN = REF(H, 1) < REF(HHV(H, N), 1)
-    XG = IFAND3(REF(HCV, 1) <= M, CLOSE > REF(HHV(HIGH, N), 1), TJN, True, False)
+    XG = IFAND3(REF(HCV, 1) <= M, CLOSE > REF(HHV(HIGH, N), 1), TJN, 1, 0)
     return XG, False
 
 def tdx_A01(data):
@@ -289,3 +310,85 @@ def tdx_fscd(data):
     A2 = C / REF(C, 1) > 1.03
     福树抄底XG = IFAND3(A1, A2, MACD_TJ, 1, 0)
     return 福树抄底XG, False
+
+def tdx_func1(data):
+    C = data.close
+    CLOSE = data.close
+    HIGH = data.high
+    LOW = data.low
+    AA = MA(C, 20)
+    BB = MA(C, 60)
+    CC = MA(C, 30)
+    DIF = EMA(CLOSE, 6) - EMA(CLOSE, 13)
+    DEA = EMA(DIF, 5)
+    VAR1 = (2 * CLOSE + HIGH + LOW) / 4
+    VAR2 = LLV(LOW, 5)
+    VAR3 = HHV(HIGH, 5)
+    VAR4 = EMA((VAR1 - VAR2) / (VAR3 - VAR2) * 100, 5)
+    MA1 = MA(VAR4, 2)
+    XG1 = IFOR(CROSS(22.50, MA1), CROSS(24.5, MA1), True, False)
+    XG2 = IFAND5(XG1, COUNT(CROSS(0, DEA), 6) == 1 , AA > BB ,  BB > REF(BB, 1) , C / REF(C, 1) < 1.016, True, False)
+    XG = IFAND3(XG2, C / REF(C, 1) > 0.993, AA > CC, 1, 0)
+    return XG, False
+
+def tdx_yaogu(data):
+    ##妖股公式
+    C = data.close
+    OPEN = data.open
+    # CLOSE = data.close
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    VAR0 = (3 * (SMA(((C - LLV(LOW,21)) / (HHV(HIGH,34) - LLV(LOW,21))) * 100,5,1))) - (2 * (SMA(SMA(((C - LLV(LOW,21)) / (HHV(HIGH,13) - LLV(LOW,8))) * 100,5,1),3,1)))
+    VAR1 = 10
+    VAR2 = MA(C,5)
+    VAR3 = MA(C,10)
+    VAR4 = VAR2 > VAR3
+    VAR5 = ((OPEN + HIGH) + LOW) / 3
+    VAR6 = EMA(VAR5,4)
+    VAR7 = C * VOL
+    VAR8 = EMA(((((EMA(VAR7,3) / EMA(VOL,3)) + (EMA(VAR7,6) / EMA(VOL,6))) + (EMA(VAR7,12) / EMA(VOL,12))) + (EMA(VAR7,24) / EMA(VOL,24))) / 4,13)
+    VAR9 = VAR6 > VAR8
+    # FLCS = CROSS(VAR0,VAR1) AND VAR4,COLORMAGENTA
+    XG1 = IFAND(CROSS(VAR0, VAR1), VAR4, True, False)
+    # result=pd.DataFrame({"cross":CROSS(VAR0, VAR1), "var4":VAR4, "var9": VAR9})
+    # FLCS = CROSS(VAR0,VAR1) AND VAR4,COLORMAGENTA
+    # result['FLCS'] = result.apply(lambda x : x['cross'] > 0 and x['var4'], axis=1)
+    # FLTP = (CROSS(VAR0,VAR1) AND VAR4) AND VAR9,COLORRED,LINETHICK2
+    # result['FLTP'] = result.apply(lambda x : x['cross'] > 0 and x['var4'] and x['var9'], axis=1)
+    XG2 = IFAND3(CROSS(VAR0, VAR1), VAR4, VAR9, True, False)
+    return IFOR(XG1, XG2, 1, 0), False
+
+def tdx_niugu(data, n1 = 36, n2 = 30, n3 = 25):
+    C = data.close
+    H = data.high
+    L = data.low
+    VOL = data.volume
+    AMOUNT = data.amount
+    # C, H, L, VOL, AMOUNT
+    # if len(C) > n1:
+    #     return False
+
+    # L = data_df.low
+    # H = data_df.high
+    # C=data_df.close
+    # VOL=data_df.volume
+    VARR24=LLV(L,n1)
+    VARR25=HHV(H,n2)
+    VARR26=EMA((C-VARR24)/(VARR25-VARR24)*4,4)*n3
+    VARB27=(((C-LLV(L,9))/(HHV(H,9)-LLV(L,9))*100)/2+22)*1
+    VARB28=(((C -(((EMA(AMOUNT*100,13) /EMA(VOL,13)) / 100))) / (((EMA(AMOUNT*100,13) /EMA(VOL,13)) / 100))) * 100)
+    # JD=((VARB28 < (0)) AND ((C-LLV(L,9))/(HHV(H,9)-LLV(L,9))*100)<VARB27-2 AND VARR26<10
+    # JD1 = (VARB28 < (0))
+    # JD2 = ((C-LLV(L,9))/(HHV(H,9)-LLV(L,9))*100)<VARB27-2
+    # JD3 = VARR26<10
+    # JD4=IFAND(JD1,JD2,JD1,False)
+    JD=IFAND3((VARB28 < (0)),((C-LLV(L,9))/(HHV(H,9)-LLV(L,9))*100)<VARB27-2,VARR26<10,True, False)
+    CD=IF(JD,20,0)
+    AAA=REF(CD,1)>0
+    # BBB=CD=0
+    # DR=AAA AND BBB
+    # return JD OR DR
+    RTN=IFOR(JD, AAA, 1, 0)
+    # lrtn = len(RTN)
+    return RTN, False
