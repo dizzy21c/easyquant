@@ -30,14 +30,6 @@ databuf_hold = Manager().dict()
 max_buy_nums = 5
 max_hold_days = 20
 pool_size = cpu_count()
-#
-# def logout_out(data, bs_flg, i, pct = 0):
-#     if bs_flg == 1:
-#         print("pct=", pct, ", sell : date=%s code=%s  price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-#     elif bs_flg == 0:
-#         print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
-#     else:
-#         pass
 
 # print("pool size=%d" % pool_size)
 def tdx_base_func(data, func_name, code_list = None):
@@ -171,25 +163,27 @@ def buy_action(data, next_buy, col_pos_tup, i):
         if i == len(data) - 1:
             return 0, 0
         # 去除开盘涨停跌停
-        if data.iloc[i+1].open / data.iloc[i].close > 1.095 \
-                or data.iloc[i+1].open / data.iloc[i].close < 0.88:
+        if data.iat[i+1, open_col] / data.iat[i, close_col] > 1.095 \
+                or data.iat[i+1, open_col] / data.iat[i, close_col] < 0.88:
             return 0, 0
         data.iat[i + 1, flag_col] = 1
         data.iat[i + 1, position_col] = 1
         data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
-        print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iloc[i+1].close))
+        print("buy  : date=%s code=%s price=%.2f" %
+              (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iat[i+1, close_col]))
         if i < len(data) - 2:
             data.iat[i + 2, position_col] = 1
             data.iat[i + 2, hold_price_col] = data.iat[i + 1, hold_price_col]
     else:
         # 去除涨停/跌停
-        if data.iloc[i].close / data.iloc[i - 1].close > 1.095 \
-                or data.iloc[i].close / data.iloc[i - 1].close < 0.88:
+        if data.iat[i, close_col] / data.iat[i - 1, close_col] > 1.095 \
+                or data.iat[i, close_col] / data.iat[i - 1, close_col] < 0.88:
             return 0, 0
         data.iat[i, flag_col] = 1
         data.iat[i, position_col] = 1
         data.iat[i, hold_price_col] = data.iat[i, close_col]
-        print("buy  : date=%s code=%s price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], data.iloc[i].close))
+        print("buy  : date=%s code=%s price=%.2f" %
+              (data.iloc[i].name[0], data.iloc[i].name[1], data.iat[i, close_col]))
         if i < len(data) - 1:
             data.iat[i + 1, position_col] = 1
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
@@ -199,10 +193,10 @@ def buy_action(data, next_buy, col_pos_tup, i):
     return position, hdays
 
 def sell_action(data, col_pos_tup, i, sell_pct):
-    (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col) = col_pos_tup
+    (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col, close_col) = col_pos_tup
     data.iat[i, flag_col] = -1
     data.iat[i, sell_flg_col] = 1
-    close_price = data.iloc[i].close
+    close_price = data.iat[i, close_col]
     hold_price = data.iat[i, hold_price_col]
     if close_price > hold_price * 1.01:
         data.iat[i, win_flg_col] = 1
@@ -210,7 +204,8 @@ def sell_action(data, col_pos_tup, i, sell_pct):
     data.iat[i + 1, hold_price_col] = 0
     # print("sell 60 : date=%s code=%s  price=%.2f, hold-price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
     # logout_out(data, 1, i, sell_pct)
-    print("pct=", sell_pct, ", sell : date=%s code=%s  price=%.2f hold-price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
+    print("pct=", sell_pct, ", sell : date=%s code=%s  price=%.2f hold-price=%.2f" %
+          (data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
     # 持仓标记
     position = 0
     # 盈亏标记
@@ -306,29 +301,29 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
             elif cprice > hold_price * 1.9 and sflg < 9:
                 sflg = 9
                 high_price = data.iat[i, high_col]
-
+            sell_action_param = (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col, close_col)
             if sflg < 0:# or cprice > hprice * 1.2:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, -5)
+                position, sflg = sell_action(data, sell_action_param, i, -5)
             elif sflg == 9 and high_price / cprice > 1.15:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 90)
+                position, sflg = sell_action(data, sell_action_param, i, 90)
             elif sflg == 8 and high_price / cprice > 1.12:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 80)
+                position, sflg = sell_action(data, sell_action_param, i, 80)
             elif sflg == 7 and high_price / cprice > 1.1:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 70)
+                position, sflg = sell_action(data, sell_action_param, i, 70)
             elif sflg == 6 and high_price / cprice > 1.1:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 60)
+                position, sflg = sell_action(data, sell_action_param, i, 60)
             elif sflg == 5 and high_price / cprice > 1.09:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 50)
+                position, sflg = sell_action(data, sell_action_param, i, 50)
             elif sflg == 4 and high_price / cprice > 1.08:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 40)
+                position, sflg = sell_action(data, sell_action_param, i, 40)
             elif sflg == 3 and high_price / cprice > 1.06:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 30)
+                position, sflg = sell_action(data, sell_action_param, i, 30)
             elif sflg == 2 and high_price / cprice > 1.05:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 20)
+                position, sflg = sell_action(data, sell_action_param, i, 20)
             elif sflg == 1 and high_price / cprice > 1.04:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 10)
+                position, sflg = sell_action(data, sell_action_param, i, 10)
             elif sflg == 0 and hdays > max_hold_days:
-                position, sflg = sell_action(data, (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col), i, 0)
+                position, sflg = sell_action(data, sell_action_param, i, 0)
             else:
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]

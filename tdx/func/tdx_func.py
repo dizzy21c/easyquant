@@ -9,12 +9,12 @@ def new_df(df_day, data, now_price):
     # print("code=%s, data=%s" % (self.code, self._data['datetime']))
     # df_day = data_buf_day[code]
     # df_day.loc[last_time]=[0 for x in range(len(df_day.columns))]
-    df_day.loc[(last_time, code), 'open'] = data['open']
-    df_day.loc[(last_time, code), 'high'] = data['high']
-    df_day.loc[(last_time, code), 'low'] = data['low']
-    df_day.loc[(last_time, code), 'close'] = now_price
-    df_day.loc[(last_time, code), 'volume'] = data['volume']
-    df_day.loc[(last_time, code), 'amount'] = data['amount']
+    df_day.at[(last_time, code), 'open'] = data['open']
+    df_day.at[(last_time, code), 'high'] = data['high']
+    df_day.at[(last_time, code), 'low'] = data['low']
+    df_day.at[(last_time, code), 'close'] = now_price
+    df_day.at[(last_time, code), 'volume'] = data['volume']
+    df_day.at[(last_time, code), 'amount'] = data['amount']
     return df_day
 
 # 彩钻花神
@@ -298,19 +298,6 @@ def tdx_swl(data):
     耍无赖XG: IFAND(TJ == 0,   REF(TJ==1, 1), 1, 0)
     return 耍无赖XG, False
 
-def tdx_fscd(data):
-    # {A28.福树抄底}
-    C = data.close
-    CLOSE = data.close
-    DIF = EMA(CLOSE, 12) - EMA(CLOSE, 26)
-    DEA = EMA(DIF, 9)
-    MACD = (DIF - DEA) * 2
-    MACD_TJ = IFAND(MACD > 0, COUNT(CROSS(DIF, DEA), 5) > 0 , True, False)
-    A1 = C * 1.2 < MA(C, 60)
-    A2 = C / REF(C, 1) > 1.03
-    福树抄底XG = IFAND3(A1, A2, MACD_TJ, 1, 0)
-    return 福树抄底XG, False
-
 def tdx_func1(data):
     C = data.close
     CLOSE = data.close
@@ -392,3 +379,170 @@ def tdx_niugu(data, n1 = 36, n2 = 30, n3 = 25):
     RTN=IFOR(JD, AAA, 1, 0)
     # lrtn = len(RTN)
     return RTN, False
+
+# 不二法门
+def tdx_buerfameng(data):
+    C = data.close
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount
+    X_1=VOL/((HIGH-LOW)*2-ABS(CLOSE-OPEN))*(CLOSE-OPEN)
+    X_2=X_1/20/1.15
+    X_3=X_2*0.55+REF(X_2,1)*0.33+REF(X_2,2)*0.22
+    X_4=EMA(X_3,3)
+    X_5=X_4*1/10000
+    X_6=EMA(X_5,5)
+    X_7=CROSS(X_5,X_6)
+    X_8=FILTER(X_7,5)
+    #STICKLINE(CLOSE>0,REF(HIGH,BARSLAST(X_8==1)),REF(LOW,BARSLAST(X_8==1)),4,N),COLORGRAY
+    # DRAWKLINE(HIGH,OPEN,LOW,CLOSE)
+    罪恶滔天=MA((LOW+HIGH+CLOSE)/3,4) #,COLORRED,DOTLINE
+    # DRAWICON(CROSS(C,罪恶滔天) ,L*0.988,1)
+    # XG = CROSS(C,罪恶滔天)
+    XG = IFAND(CROSS(C, 罪恶滔天), (X_6 + 1) > 0.9, 1, 0)
+    return XG, False
+
+def tdx_a06_zsd(data):
+    # {A06.钻石底}
+    C = data.close
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount
+
+    VBR = C < REF(C, 4)
+    # NT0 = BARSLASTCOUNT(VBR)
+    NT0 = BARSLAST(VBR)
+    TJ21 = NT0 == 6
+    底6 = COUNT(NT0==6, 5) == 1
+    VBR1 = DMA(CLOSE, VOL / SUM(VOL, 34))
+    VBR2 = DMA(CLOSE, VOL / SUM(VOL, 13))
+    VBR3 = (CLOSE - VBR1) / VBR1 * 100
+    VBR4 = (CLOSE - VBR2) / VBR2 * 100
+    Y1 = IFAND(VBR4 <= -17, VBR3 <= -25, True, False)
+    # 去除ST = IF(NAMELIKE('ST') or NAMELIKE('*ST'), 0, 1)
+    # 去除停牌 = DYNAINFO(4) > 0
+    # 去除 = 去除ST and 去除停牌
+    # Q10 = 底6 and Y1 and 去除
+    Q1 = IFAND(底6, Y1, True, False)
+    超卖区 = MA((CLOSE - MA(CLOSE, 40)) / MA(CLOSE, 40) * 100, 2)
+    Q2 = 超卖区 < -20
+    钻石底XG = IFAND4(Q1, Q2, C > REF(C, 1) * 0.91, C < REF(C, 1), True, False)
+    XG = IFAND(钻石底XG, INDEXC(data) < REF(INDEXC(data), 1) ,  REF(C > REF(C, 1), 1), 1, 0)
+    return XG, False
+
+def tdx_a12_zsd(data):
+    # {A12.短线黑马}
+    C = data.close
+    O = data.open
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount
+    VAR1C=DMA(C,VOL/MA(VOL,4)/4)
+    VAR2C=DMA(C,VOL/MA(VOL,33)/33)
+    VAR3C=(C-VAR1C)/VAR1C*100<-11
+    VAR4C=(VAR1C-VAR2C)/VAR2C*100<-22.3
+    VAR5C=IFAND3(VAR3C, VAR4C, COUNT(C != O,7), True, False)
+    VAR6C=DMA(C,VOL/MA(VOL,3)/3)
+    VAR7C=DMA(C,VOL/MA(VOL,33)/33)
+    VAR8C=(C-VAR6C)/VAR6C*100<-5
+    VAR9C=(VAR6C-VAR7C)/VAR7C*100<-18
+    VARDC=IFAND3(VAR8C , VAR9C , (O-REF(C,1))/REF(C,1)>-0.05, True, False)
+    VAREC=IFAND(VARDC , COUNT(VARDC,2)==1, True, False)
+    DXHM=IFOR(VAR5C, VAREC, True, False)
+    趋势=SMA(MAX(C-REF(C,1),0),8,1)/SMA(ABS(C-REF(C,1)),8,1)
+    HMA=CROSS(趋势,0.15)
+    X_21=(C-MA(C,25))/MA(C,45)*123
+    BAME=CROSS(X_21,(-25)) and C>REF(C,1)
+    HJ_1=C/MA(C,40)
+    HJ_2=C/MA(C,60)*100<71
+    MOGU=CROSS(HJ_1,HJ_2)
+    短线黑马XG:(DXHM and HMA) or (BAME and MOGU)
+
+def tdx_a13_zsd(data):
+    # {A12.短线黑马}
+    C = data.close
+    O = data.open
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount
+
+def tdx_a16_zsd(data):
+    # {A12.短线黑马}
+    C = data.close
+    O = data.open
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount
+
+def tdx_a20_zsd(data):
+    # {A12.短线黑马}
+    C = data.close
+    O = data.open
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount
+
+def tdx_a28_fscd(data):
+    # {A28.福树抄底}
+    C = data.close
+    CLOSE = data.close
+    DIF = EMA(CLOSE, 12) - EMA(CLOSE, 26)
+    DEA = EMA(DIF, 9)
+    MACD = (DIF - DEA) * 2
+    MACD_TJ = IFAND(MACD > 0, COUNT(CROSS(DIF, DEA), 5) > 0 , True, False)
+    A1 = C * 1.2 < MA(C, 60)
+    A2 = C / REF(C, 1) > 1.03
+    福树抄底XG = IFAND3(A1, A2, MACD_TJ, 1, 0)
+    return 福树抄底XG, False
+
+def tdx_a29_zsd(data):
+    # {A12.短线黑马}
+    C = data.close
+    O = data.open
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount
+
+def tdx_a34_zsd(data):
+    # {A12.短线黑马}
+    C = data.close
+    O = data.open
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount
+
+
+def tdx_a38_zsd(data):
+    # {A12.短线黑马}
+    C = data.close
+    O = data.open
+    CLOSE = data.close
+    OPEN = data.open
+    HIGH = data.high
+    LOW = data.low
+    VOL = data.volume
+    # AMOUNT = data.amount

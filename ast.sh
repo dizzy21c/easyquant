@@ -19,5 +19,5 @@ echo "start calc-monitoring"
 ##/home/zhangjx/anaconda3/envs/qawork/bin/python mycalc.py --calc-name calc-day-index &
 #/home/zhangjx/anaconda3/bin/python mydata2.py  &
 
-/home/zhangjx/anaconda3/envs/qawork/bin/python simple-strategies/positions_01.py &
-/home/zhangjx/anaconda3/envs/qawork/bin/python simple-strategies/positions_etf.py &
+/home/zhangjx/anaconda3/envs/qawork/bin/python tdx/positions_01.py &
+/home/zhangjx/anaconda3/envs/qawork/bin/python tdx/positions_etf.py &

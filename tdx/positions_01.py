@@ -13,7 +13,7 @@ import pandas as pd
 import pika
 # from QUANTAXIS.QAFetch import QATdx as tdx
 from easyquant import DefaultLogHandler
-from util import new_df
+# from util import new_df
 
 from easyquant import EasyMq
 from easyquant import MongoIo
@@ -23,6 +23,7 @@ from easyquant.indicator.base import *
 from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_completed
 #from pyalgotrade.strategy import position
 
+from func.tdx_func import *
 
 # calc_thread_dict = Manager().dict()
 data_buf_day = Manager().dict()
@@ -52,49 +53,55 @@ def do_main_work(code, data, log, positions):
     high_price = data['high']
     ##TODO 绝对条件１
     ## 止损卖出
-    if now_price < hold_price / 1.05:
-        log.info("code=%s now=%6.2f solding..." % (code, now_price))
-    ## 止赢回落 %5，卖出
-    if now_price > hold_price * 1.02 and now_price < high_price / 1.03:
-        log.info("code=%s now=%6.2f solding..." % (code, now_price))
+    # if now_price < hold_price / 1.05:
+    #     log.info("code=%s now=%6.2f solding..." % (code, now_price))
+    # ## 止赢回落 %5，卖出
+    # if now_price > hold_price * 1.02 and now_price < high_price / 1.03:
+    #     log.info("code=%s now=%6.2f solding..." % (code, now_price))
         # 卖出
-
     now_vol = data['volume']
     # last_time = pd.to_datetime(data['datetime'][0:10])
     # print("code=%s, data=%s" % (self.code, self._data['datetime']))
     df_day = data_buf_day[code]
     df_day = new_df(df_day, data, now_price)
-    # df_day.loc[last_time]=[0 for x in range(len(df_day.columns))]
-    # df_day.loc[(last_time,code),'open'] = data['open']
-    # df_day.loc[(last_time,code),'high']= data['high']
-    # df_day.loc[(last_time,code),'low'] = data['low']
-    # df_day.loc[(last_time,code),'close'] = now_price
-    # df_day.loc[(last_time,code),'vol'] = data['volume']
-    # df_day.loc[(last_time,code),'amount'] = data['amount']
-    # df=pd.concat([MA(df_day.close, x) for x in (5,10,20,30,60,90,120,250,500,750,1000,1500,2000,2500,) ], axis = 1)[-1:]
-    # df.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm500', u'm750', u'm1000', u'm1500', u'm2000', u'm2500']
-    df=pd.concat([MA(df_day.close, x) for x in (5,10,20,30,60,90,120,250,13, 34, 55,) ], axis = 1)
-    df.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm13', u'm34', u'm55']
 
-    df_v=pd.concat([MA(df_day.vol, x) for x in (5,10,20,30,60,90,120,250,13, 34, 55,) ], axis = 1)
-    df_v.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm13', u'm34', u'm55']
-
-    df_a=pd.concat([MA(df_day.amount, x) for x in (5,10,20,30,60,90,120,250,13, 34, 55,) ], axis = 1)
-    df_a.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm13', u'm34', u'm55']
-
-    # self.log.info("data=%s, m5=%6.2f" % (self.code, df.m5.iloc[-1]))
-    # self.upd_min(5)
-    # self.log.info()
-    # if now_vol > df_v.m5.iloc[-1]:
-    # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
-    # if toptop_calc(df_day):
-    # if now_price < df.m5.iloc[-1]:
+    ## add begin
+    m5 = MA(df_day.close, 5)
+    xg, nbFlg = tdx_buerfameng(df_day)
     chag_pct = (data['now'] - data['close']) / data['close'] * 100
-    log.info("toptop code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (code, now_price, chag_pct, df.m5.iloc[-1], data['high'], data['low']))
-    ## 低于５日线，卖出
-    if now_price < df.m5.iloc[-1]:
-        log.info("code=%s now=%6.2f solding..." % (code, now_price))
-        # 卖出
+    log.info("code=%s bf=%d now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (code, xg.iloc[-1], now_price, chag_pct, m5.iloc[-1], data['high'], data['low']))
+    #
+    # # df_day.loc[last_time]=[0 for x in range(len(df_day.columns))]
+    # # df_day.loc[(last_time,code),'open'] = data['open']
+    # # df_day.loc[(last_time,code),'high']= data['high']
+    # # df_day.loc[(last_time,code),'low'] = data['low']
+    # # df_day.loc[(last_time,code),'close'] = now_price
+    # # df_day.loc[(last_time,code),'vol'] = data['volume']
+    # # df_day.loc[(last_time,code),'amount'] = data['amount']
+    # # df=pd.concat([MA(df_day.close, x) for x in (5,10,20,30,60,90,120,250,500,750,1000,1500,2000,2500,) ], axis = 1)[-1:]
+    # # df.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm500', u'm750', u'm1000', u'm1500', u'm2000', u'm2500']
+    # df=pd.concat([MA(df_day.close, x) for x in (5,10,20,30,60,90,120,250,13, 34, 55,) ], axis = 1)
+    # df.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm13', u'm34', u'm55']
+    #
+    # df_v=pd.concat([MA(df_day.vol, x) for x in (5,10,20,30,60,90,120,250,13, 34, 55,) ], axis = 1)
+    # df_v.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm13', u'm34', u'm55']
+    #
+    # df_a=pd.concat([MA(df_day.amount, x) for x in (5,10,20,30,60,90,120,250,13, 34, 55,) ], axis = 1)
+    # df_a.columns = [u'm5',u'm10',u'm20',u'm30',u'm60',u'm90',u'm120', u'm250', u'm13', u'm34', u'm55']
+    #
+    # # self.log.info("data=%s, m5=%6.2f" % (self.code, df.m5.iloc[-1]))
+    # # self.upd_min(5)
+    # # self.log.info()
+    # # if now_vol > df_v.m5.iloc[-1]:
+    # # self.log.info("code=%s now=%6.2f pct=%6.2f m5=%6.2f, now_vol=%10f, m5v=%10f" % (self.code, now_price, self._data['chg_pct'], df.m5.iloc[-1], now_vol, df_v.m5.iloc[-1]))
+    # # if toptop_calc(df_day):
+    # # if now_price < df.m5.iloc[-1]:
+    # chag_pct = (data['now'] - data['close']) / data['close'] * 100
+    # log.info("toptop code=%s now=%6.2f pct=%6.2f m5=%6.2f, high=%6.2f, low=%6.2f" % (code, now_price, chag_pct, df.m5.iloc[-1], data['high'], data['low']))
+    # ## 低于５日线，卖出
+    # # if now_price < df.m5.iloc[-1]:
+    # #     log.info("code=%s now=%6.2f solding..." % (code, now_price))
+    #     # 卖出
 
 class Strategy:
     name = 'calc-stock'  ### day
