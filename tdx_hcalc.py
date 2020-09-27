@@ -76,6 +76,7 @@ def do_init_data_buf(code):
 def do_main_work(code, data):
     # hold_price = positions['price']
     now_price = data['now']
+    df_day = [1]
     try:
         df_day = data_buf_day[code]
         df_day = new_df(df_day, data, now_price)

@@ -1464,7 +1464,9 @@ XA_2:=3*SMA((CLOSE-LLV(LOW,27))/(HHV(HIGH,27)-LLV(LOW,27))*100,5,1)-2*SMA(SMA((C
 
 
 
-{A06.钻石底}{A12.短线黑马}{A13.市场赢家}{A16.开心逃顶买}{A20.买就赢利}{A28.福树抄底}{A29.波段潜伏}{A34.黄金大底}{A38.超级选股}
+{A06.钻石底}{A12.短线黑马}{A13.市场赢家}{A16.开心逃顶买}
+{A20.买就赢利}
+{A28.福树抄底}{A29.波段潜伏}{A34.黄金大底}{A38.超级选股}
 
 
 
@@ -1625,6 +1627,41 @@ S1:=IF(CODELIKE('300'),0,1);S2:=IF(NAMELIKE('S'),0,1);S3:=IF(NAMELIKE('*'),0,1);
 剔除ST停:= S2 AND S3 AND S4;
 
 XG:A1 AND A2 AND A3 AND FINANCE(7)<10000000000 AND C<50 AND 剔除ST停;
+
+
+=======
+{妖股启动}
+
+VAR1:=(C-REF(C,1))/REF(C,1);
+VAR2:=(INDEXC-REF(INDEXC,1))/REF(INDEXC,1);
+个股:=EMA(SUM(VAR1,20),5);
+大盘:=EMA(SUM(VAR2,20),5);
+领涨:=(个股-大盘)>=0;
+VAR3:=(C-LLV(L,125))/(HHV(H,125)-LLV(L,125))*100;
+VAR4:=SMA(VAR3,72,1);
+VAR5:=SMA(VAR4,34,1);
+中线趋势:=3*VAR4-2*VAR5;
+中线趋势升:=(中线趋势-REF(中线趋势,1))>=0;
+均五升:=(MA(C,5)-REF(MA(C,5),1))>=0;
+均十升:=(MA(C,10)-REF(MA(C,10),1))>=0;
+强势:=IF(均五升 AND 均十升 AND 中线趋势升 AND 领涨,10,0),COLORRED;
+VAR6:=(2*C+H+L)/4;
+VAR7:=LLV(L,27);
+VAR8:=HHV(H,27);
+操作:=EMA((VAR6-VAR7)/(VAR8-VAR7)*100,13)-50,LINETHICK1,COLORYELLOW;
+趋势:=EMA(0.618*REF(操作,1)+0.382*操作,3),COLORGREEN,LINETHICK1;
+运动:=IF(操作>=趋势 AND 均五升 AND 均十升 AND 中线趋势升 AND 趋势<0,1,0);
+买进:=IF(运动=1 AND COUNT(运动=1,5)=1,8,0),COLORGREEN,LINETHICK1;
+BIAS1:=(C-MA(C,6))/MA(C,6)*100;
+BIAS2:=(C-MA(C,12))/MA(C,12)*100;
+BIAS3:=(C-MA(C,24))/MA(C,24)*100;
+BIAS:=(BIAS1+2*BIAS2+3*BIAS3)/6;
+乖离:=MA(BIAS,3);
+妖股启动:=IF(买进=8 AND COUNT(乖离<-12,10)>=1,10,0),LINETHICK0,COLORRED;
+XG:妖股启动=10, NODRAW;
+STICKLINE(妖股启动=10,10,0,6,1),COLORRED;
+DRAWTEXT(妖股启动=10,3,'妖股启动'),COLORYELLOW;
+
 
 
 

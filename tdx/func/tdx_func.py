@@ -185,7 +185,7 @@ def tdx_hmdr(data):
     # return 金K线, False
     return 大肉, False
 
-def tdx_tpcqpz(data, N = 89, M = 34):
+def tdx_tpcqpz(data, N = 55, M = 34):
     C = data.close
     CLOSE = data.close
     H = data.high
@@ -397,6 +397,8 @@ def tdx_buerfameng(data):
     X_6=EMA(X_5,5)
     X_7=CROSS(X_5,X_6)
     X_8=FILTER(X_7,5)
+    X_9 = REF(HIGH,BARSLAST(X_8==1))
+    X_10 = REF(LOW,BARSLAST(X_8==1))
     #STICKLINE(CLOSE>0,REF(HIGH,BARSLAST(X_8==1)),REF(LOW,BARSLAST(X_8==1)),4,N),COLORGRAY
     # DRAWKLINE(HIGH,OPEN,LOW,CLOSE)
     罪恶滔天=MA((LOW+HIGH+CLOSE)/3,4) #,COLORRED,DOTLINE

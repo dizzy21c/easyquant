@@ -435,10 +435,10 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
             data = new_df(data.copy(), newdata, now_price)
             # chk_flg, _ = tdx_dhmcl(df_day)
             # tdx_base_func(data, "tdx_dhmcl", code)
-            tdx_base_func(data, "tdx_dhmcl", code)
+            # tdx_base_func(data.copy(), "tdx_dhmcl", code)
             # tdx_base_func(data, "tdx_sxp", code)
-            tdx_base_func(data, "tdx_hmdr", code)
-            tdx_base_func(data, "tdx_tpcqpz", code)
+            # tdx_base_func(data.copy(), "tdx_hmdr", code)
+            tdx_base_func(data.copy(), "tdx_tpcqpz", code)
         except:
             print("error code=" % code)
             # return
