@@ -548,3 +548,37 @@ def tdx_a38_zsd(data):
     LOW = data.low
     VOL = data.volume
     # AMOUNT = data.amount
+
+def tdx_yaoguqidong(data):
+    # {妖股启动}
+    C = data.close
+    H = data.high
+    L = data.low
+
+    VAR1 = (C - REF(C, 1)) / REF(C, 1)
+    VAR2 = (INDEXC(data) - REF(INDEXC(data), 1)) / REF(INDEXC(data), 1)
+    个股 = EMA(SUM(VAR1, 20), 5)
+    大盘 = EMA(SUM(VAR2, 20), 5)
+    领涨 = (个股 - 大盘) >= 0
+    VAR3 = (C - LLV(L, 125)) / (HHV(H, 125) - LLV(L, 125)) * 100
+    VAR4 = SMA(VAR3, 72, 1)
+    VAR5 = SMA(VAR4, 34, 1)
+    中线趋势 = 3 * VAR4 - 2 * VAR5
+    中线趋势升 = (中线趋势 - REF(中线趋势, 1)) >= 0
+    均五升 = (MA(C, 5) - REF(MA(C, 5), 1)) >= 0
+    均十升 = (MA(C, 10) - REF(MA(C, 10), 1)) >= 0
+    强势 = IFAND4(均五升 , 均十升 , 中线趋势升 , 领涨, 10, 0)
+    VAR6 = (2 * C + H + L) / 4
+    VAR7 = LLV(L, 27)
+    VAR8 = HHV(H, 27)
+    操作 = EMA((VAR6 - VAR7) / (VAR8 - VAR7) * 100, 13) - 50
+    趋势 = EMA(0.618 * REF(操作, 1) + 0.382 * 操作, 3)
+    运动 = IFAND5(操作 >= 趋势 , 均五升 , 均十升 , 中线趋势升 , 趋势 < 0, 1, 0)
+    买进 = IFAND(运动==1 , COUNT(运动==1, 5) == 1, 8, 0)
+    BIAS1 = (C - MA(C, 6)) / MA(C, 6) * 100
+    BIAS2 = (C - MA(C, 12)) / MA(C, 12) * 100
+    BIAS3 = (C - MA(C, 24)) / MA(C, 24) * 100
+    BIAS = (BIAS1 + 2 * BIAS2 + 3 * BIAS3) / 6
+    乖离 = MA(BIAS, 3)
+    妖股启动 = IFAND(买进==8 , COUNT(乖离 < -12, 10) >= 1, 1, 0)
+    return 妖股启动, False
