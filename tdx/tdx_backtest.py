@@ -487,15 +487,15 @@ def buy_sell_fun_mp_org(datam, S1=1.0, S2=0.8):
     # result['nav'] = result['nav']  - len(datam.index.levels[1]) + 1
     return dataR2
 
-def do_get_data_mp(key, codelist, st_start):
+def do_get_data_mp(key, codelist, st_start, st_end):
     mongo_mp = MongoIo()
     # start_t = datetime.datetime.now()
     # print("begin-get_data do_get_data_mp: key=%s, time=%s" %( key,  start_t))
-    databuf_mongo[key] = mongo_mp.get_stock_day(codelist, st_start=st_start)
+    databuf_mongo[key] = mongo_mp.get_stock_day(codelist, st_start=st_start, st_end = st_end)
     # end_t = datetime.datetime.now()
     # print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
 
-def get_data(st_start):
+def get_data(st_start, st_end):
     start_t = datetime.datetime.now()
     print("begin-get_data:", start_t)
     # ETF/股票代码，如果选股以后：我们假设有这些代码
@@ -551,7 +551,7 @@ def get_data(st_start):
         else:
             code_dict[str(i)] = codelist[i * subcode_len:]
 
-        pool.apply_async(do_get_data_mp, args=(i, code_dict[str(i)], st_start))
+        pool.apply_async(do_get_data_mp, args=(i, code_dict[str(i)], st_start, st_end))
 
     pool.close()
     pool.join()
@@ -605,7 +605,11 @@ def main_param(argv):
     return st_begin, st_end, func
 
 if __name__ == '__main__':
+    start_t = datetime.datetime.now()
+    print("begin-time:", start_t)
     st_start, st_end, func = main_param(sys.argv)
+    if st_end == "":
+        st_end = start_t.strftime("%Y-%m-%d")
     print("input", st_start, st_end, func)
     # 计算数据步骤
     # 1, 读取数据（多进程，读入缓冲）
@@ -614,15 +618,13 @@ if __name__ == '__main__':
     # 3.1, 按照code循环计算（多进程／多线程）
     # 4, 结果统计／输出图形
 
-    start_t = datetime.datetime.now()
-    print("begin-time:", start_t)
 
     # 1, 读取数据（多进程，读入缓冲）
     # 开始日期
     # data_day = get_data(st_start)
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
-    get_data(st_start)
+    get_data(st_start, st_end)
 
     # 2, 计算公式（多进程，读取缓冲）
     indices_rsrsT = tdx_func_mp(func)

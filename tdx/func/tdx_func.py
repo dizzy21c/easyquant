@@ -582,3 +582,24 @@ def tdx_yaoguqidong(data):
     乖离 = MA(BIAS, 3)
     妖股启动 = IFAND(买进==8 , COUNT(乖离 < -12, 10) >= 1, 1, 0)
     return 妖股启动, False
+
+def tdx_zyyj_5min(data):
+    # {自用的5分钟预警}
+    C = data.close
+    H = data.high
+    L = data.low
+    O = data.open
+    VOL = data.volume
+
+    DP = INDEX(data).volume
+    LB1 = VOL / REF(SUM(VOL, 5), 1)
+    LB2 = DP / REF(SUM(DP, 5), 1)
+    ST = EXIST(C / REF(C, 1) > 1.06, 60)
+    LT = (CAPITAL / 100) / 10000 <= 10
+    AA = O / DYNAINFO(3)
+    A1 = LB1 / LB2
+    JD1 = ATAN((MA(C, 5) / REF(MA(C, 5), 1) - 1) * 100) * 57.3
+    JD2 = ATAN((MA(C, 15) / REF(MA(C, 15), 1) - 1) * 100) * 57.3
+    PX = JD1 > 45, JD2 > 17
+    Z2 = AA > 1, AA < 1.05
+    XG: ST = 0, LT, Z2, PX, A1 > 3.5
