@@ -595,11 +595,140 @@ def tdx_zyyj_5min(data):
     LB1 = VOL / REF(SUM(VOL, 5), 1)
     LB2 = DP / REF(SUM(DP, 5), 1)
     ST = EXIST(C / REF(C, 1) > 1.06, 60)
-    LT = (CAPITAL / 100) / 10000 <= 10
-    AA = O / DYNAINFO(3)
+    # LT = (CAPITAL / 100) / 10000 <= 10
+    LT = True
+    # AA = O / DYNAINFO(3)
+    AA = O / C
     A1 = LB1 / LB2
     JD1 = ATAN((MA(C, 5) / REF(MA(C, 5), 1) - 1) * 100) * 57.3
     JD2 = ATAN((MA(C, 15) / REF(MA(C, 15), 1) - 1) * 100) * 57.3
     PX = JD1 > 45, JD2 > 17
     Z2 = AA > 1, AA < 1.05
-    XG: ST = 0, LT, Z2, PX, A1 > 3.5
+    # XG: ST = 0, LT, Z2, PX, A1 > 3.5
+
+def tdx_ygqd_test(data):
+    # {妖股启动}
+    C = data.close
+    CLOSE = data.close
+    HIGH = data.high
+    H = data.high
+    L = data.low
+    LOW = data.low
+    OPEN = data.open
+    O = data.open
+    VOL = data.volume
+
+    # VAR1 = EMA(SMA((CLOSE - LLV(LOW, 19)) / (HHV(HIGH, 19) - LLV(LOW, 19)) * 100, 8, 1), 3)
+    # STICKLINE(VAR1 > 20, VAR1 < 80, VAR1, VAR1, 10, 1), COLORRED
+    # STICKLINE(VAR1 < REF(VAR1, 1), VAR1, VAR1, 10, 1), COLORFFCC66
+    # STICKLINE(VAR1 > 80, VAR1, VAR1, 8, 1)
+    # STICKLINE(VAR1 < 20, VAR1, VAR1, 8, 1), COLORYELLOW
+    ABV = MA(SUM(IF(CLOSE > REF(CLOSE, 1), VOL, IF(CLOSE < REF(CLOSE, 1), -VOL, 0)), 0) / 25000, 2)
+    # M1 = EMA(ABV, 12)
+    M2 = EMA(ABV, 26)
+    MTM = CLOSE - REF(CLOSE, 1)
+    MMS = ((100) * (EMA(EMA(MTM, 6), 6))) / (EMA(EMA(ABS(MTM), 6), 6))
+    MMM = ((100) * (EMA(EMA(MTM, 12), 12))) / (EMA(EMA(ABS(MTM), 12), 12))
+    MML = ((100) * (EMA(EMA(MTM, 26), 26))) / (EMA(EMA(ABS(MTM), 26), 26))
+    MMA = C - REF(C, 1)
+    MMB = 100 * EMA(EMA(MMA, 9), 9) / EMA(EMA(ABS(MMA), 9), 9)
+    MMC = MA(MMB, 5)
+    # A = ((VOL) / (CAPITAL(data))) * (100)
+    # S = ((MA(A, 30)) / (MA(INDEX(data).amount, 10))) * (MA(INDEX(data).amount, 60))
+    # Y = ((MA(A, 120)) / (MA(INDEX(data).amount, 10))) * (MA(INDEX(data).amount, 60))
+    # X = 1
+    V1 = (HIGH + OPEN + LOW + (2) * (CLOSE)) / (5)
+    V2 = REF(V1, 1)
+    V3 = MAX(V1 - V2, 0)
+    V4 = ABS(V1 - V2)
+    V5 = SMA(V3, 10, 1)
+    V6 = SMA(V4, 10, 1)
+    V8 = COUNT(((V5) / (V6) < 0.2), 5)
+    V9 = COUNT((LLV(V1, 10)==V1), 10)
+    # 主力进出 = IFAND6(MMS > REF(MMS, 1), MMB > REF(MMB, 1), CROSS(ABV, M2), ABV > REF(ABV, 1)
+    #               , M1 > REF(M1, 1), M2 > REF(M2, 1), True, False)
+    # 主进主轨 = IFAND3(ABV > M2, CROSS(ABV, M1), CROSS(MMB, MMC), True, False)
+    精准买卖1 = IFAND5(V8 >= 1, V9 >= 1, CLOSE > OPEN, REF(CLOSE, 1) > REF(OPEN, 1), (VOL > REF(VOL, 1)), True, False)
+    精准买卖 = IFAND3(精准买卖1, MMS > MML, CROSS(ABV, M2), True, False)
+    短线买点1 = IFAND5(V8 >= 1, V9 >= 1, CLOSE > OPEN, REF(CLOSE, 1) > REF(OPEN, 1), (VOL > REF(VOL, 1)), True, False)
+    短线买点 = IFAND3(短线买点1, CROSS(MMS, MML), ABV > REF(ABV,1), True, False)
+    中线买点1 = IFAND6(V8 >= 1, V9 >= 1, CLOSE > OPEN, REF(CLOSE, 1) > REF(OPEN, 1), (VOL > REF(VOL, 1)), ABV > REF(ABV, 1), True, False)
+    中线买点 = IFAND6(中线买点1, MMS > MML, CROSS(MMM, MML), MMS > REF(MMS, 1), MMM > REF(MMM, 1), MML > REF(MML, 1), True, False)
+    主进主买 = IFAND6(ABV > M2, MMB > MMC, CROSS(MMS, MML), MMS > REF(MMS, 1), MMM > REF(MMM, 1), MML > REF(MML, 1), True, False)
+    短中精 = IFOR4(精准买卖, 短线买点, 中线买点, 主进主买, True, False)
+    主力买卖 = IF(短中精, 1, 0)
+    主力轨迹 = IFAND5(ABV > M2, MMS > MML, CROSS(MMB, MMC), MMB > REF(MMB, 1), MMC > REF(MMC, 1), 1, 0)
+    # 拉升在即 = IFAND5(S < X, Y < X, MMS > MML, ABV > M1, CROSS(S, Y), 1, 0)
+    底部构成1 = IFAND5(V8 >= 1, V9 >= 1, CLOSE > OPEN, REF(CLOSE, 1) > REF(OPEN, 1), VOL > REF(VOL, 1), True, False)
+    # 底部构成 = IFAND3(底部构成1, ABV > M2, MMB > MMC, 1, 0)
+    ROC = (CLOSE - REF(CLOSE, 12)) / REF(CLOSE, 12) * 100
+    HSL = 100 * VOL / CAPITAL(data)
+    冲击波 = IFAND(CROSS(ROC, 16), HSL > 3.5, 1, 0)
+    macdV=MACD(data.close)
+    CONF1 = IFOR(CROSS(macdV.DIFF, macdV.DEA), IFAND(macdV.MACD > 0, macdV.MACD < 0.5, True, False), True, False)
+    CONF2 = IF(主力买卖 > 0, True, False)
+    # CONF3 = IF(主力进出 > 0, True, False)
+    CONF4 = IF(主力轨迹 > 0, True, False)
+    CONF5 = IF(冲击波 > 0, True, False)
+    CONF11 = IFAND(EXIST(CONF2, 5), BARSLAST(CONF2) > BARSLAST(CONF5), True, False)
+    # CONF12 = IFAND(EXIST(CONF3, 5), BARSLAST(CONF3) > BARSLAST(CONF5), True, False)
+    CONF13 = IFAND(EXIST(CONF4, 5), BARSLAST(CONF4) > BARSLAST(CONF5), True, False)
+    CONF21 = IFAND(MA(C, 5) > MA(C, 10), MA(C, 5) > MA(C, 60), True, False)
+    CONF22 = FINANCE(data, 40) / 100000000 < 60
+    CONF23 = IFAND3(L > MA(C, 5), ABS((H - MAX(C, O)) / (O - C)) < 0.5, ABS((MIN(O, C) - L) / (C - O)) < 0.5, True, False)
+    BS1 = IFOR(CONF11, CONF13, True, False)
+    BS2 = IFAND3(CONF21, CONF22, CONF23, True, False)
+    XG = IFAND4(EXIST(CONF1, 5), EXIST(CONF5, 3), BS1, BS2, 1, 0)
+    return XG, True
+
+def tdx_blftxg(data):
+    # 暴利副图选股
+    C = data.close
+    CLOSE = data.close
+    HIGH = data.high
+    H = data.high
+    L = data.low
+    LOW = data.low
+    OPEN = data.open
+    VOL = data.volume
+    # X_1 = MA(CLOSE, 5)
+    # X_2 = MA(CLOSE, 10)
+    # X_3 = MA(CLOSE, 20)
+    # X_4 = MA(CLOSE, 30)
+    # X_5 = MA(CLOSE, 60)
+    # X_6 = MA(CLOSE, 120)
+    # X_7 = MA(CLOSE, 240)
+    X_8 = (REF(CLOSE, 3) - CLOSE) / REF(CLOSE, 3) * 100 > 5
+    X_9 = FILTER(X_8, 10)
+    X_10 = BARSLAST(X_9)
+    X_11 = REF(HIGH, X_10 + 2)
+    X_12 = REF(HIGH, X_10 + 1)
+    X_13 = REF(HIGH, X_10)
+    X_14 = MAX(X_11, X_12)
+    X_15 = MAX(X_14, X_13)
+    X_16 = (CLOSE - REF(CLOSE, 1)) / REF(CLOSE, 1) * 100 > 5
+    X_17 = X_10 < 150
+    X_18 = (OPEN - X_15) / X_15 * 100 < 30
+    X_19 = (CLOSE - LLV(LOW, X_10)) / LLV(LOW, X_10) * 100 < 50
+    X_20 = (CLOSE - REF(OPEN, 5)) / REF(OPEN, 5) * 100 < 30
+    X_21 = VOL / MA(VOL, 5) < 3.5
+    X_22 = (CLOSE - REF(CLOSE, 89)) / REF(CLOSE, 89) * 100 < 80
+    # X_23 = (CLOSE - REF(CLOSE, 1)) / REF(CLOSE, 1) * 100 >= 5, (CLOSE - OPEN) / (HIGH - CLOSE) > 3, VOL / MA(VOL, 5) > 1.3
+
+    X_25 = X_16, X_17, X_18, X_19, X_20, X_21, X_22
+    # 暴利 = IFAND(FILTER(X_25, 15), 主力买卖, 1, 0)
+    暴利 = IF(FILTER(X_25, 15), True, False)
+
+    BL = MA(CLOSE, 125)
+    HL = BL + 2 * STD(CLOSE, 170)
+    ZL = BL - 2 * STD(CLOSE, 145)
+    # QL = SAR(125, 1, 7)
+    VAR2 = HHV(HIGH, 70)
+    VAR3 = HHV(HIGH, 20)
+    KL = VAR2 * 0.83
+    LL = VAR3 * 0.91
+    # 见龙 = IFAND(CROSS(LL, HL), 主力买卖, 1, 0)
+    见龙 = IF(CROSS(LL, HL), True, False)
+    return IFOR(暴利, 见龙, 1, 0), False
+
+

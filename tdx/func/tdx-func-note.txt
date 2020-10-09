@@ -1663,5 +1663,28 @@ STICKLINE(妖股启动=10,10,0,6,1),COLORRED;
 DRAWTEXT(妖股启动=10,3,'妖股启动'),COLORYELLOW;
 
 
-
-
+{牛熊三色}
+首先我不知道这个公式理想论坛有还是没有（此公式是一个股友给我用的），其次是我自己用了感觉不错拿出来和理想的同学一起分享下。
+参数：M1 2 100 7
+     M2 2 100 21
+     N  2 100 4
+     S  2 100 2
+     M  2 100 20
+用法注释：判断股票运行趋势强弱的方法，被称为“牛熊三色”，牛熊三色每翻红一色，就可以增加1/3的仓位，三色全翻红的时候基本可以满仓。这三色分别是：MACD指标，DIFF金叉DEA，即MACD出现红柱的时候即为翻红；SAR指标，股价重新回到SRA指标以上，SAR转向到股价之下运行即为翻红；EXPMA指标，7号操盘线（参数7）金叉2号操盘线（参数21）即为翻红。
+源码：
+EXP1:EXPMA(CLOSE,M1);
+EXP2:EXPMA(CLOSE,M2);
+A:IF(CLOSE>SAR(N,S,M),SAR(N,S,M),DRAWNULL),CIRCLEDOT,COLORRED;
+B:IF(CLOSE<SAR(N,S,M),SAR(N,S,M),DRAWNULL),CIRCLEDOT,COLORCYAN;
+高1:=REF(HHV(H,150),3);
+低1:=REF(LLV(L,150),3);
+H3:=高1-(高1-低1)*0.5;
+中轴:REFDATE(H3,DATE),POINTDOT,COLORLIGRAY,LINETHICK3;
+B1:=EMA(C,12);
+B2:=EMA(C,26);
+B3:=(B1-B2)*2;
+WDIF:中轴+B3;
+WDEA:EMA(WDIF,9);
+MACD:=2*(WDIF-WDEA);
+STICKLINE(MACD>0,中轴,中轴+MACD,0,1),COLORYELLOW;
+STICKLINE(MACD<0,中轴,中轴+MACD,0,1),COLORLIBLUE;
