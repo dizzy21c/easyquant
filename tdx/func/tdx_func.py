@@ -731,4 +731,79 @@ def tdx_blftxg(data):
     见龙 = IF(CROSS(LL, HL), True, False)
     return IFOR(暴利, 见龙, 1, 0), False
 
+def tdx_cptlzt(data):
+    # 操盘铁律主图
+    # pass
+    C = data.close
+    CLOSE = data.close
+    HIGH = data.high
+    H = data.high
+    L = data.low
+    LOW = data.low
+    OPEN = data.open
+    O = data.open
+    VOL = data.volume
+    AMOUNT = data.amount
 
+    MID = (3 * CLOSE + LOW + OPEN + HIGH) / 6
+    牛线 = (20 * MID + 19 * REF(MID, 1) + 18 * REF(MID, 2) + 17 * REF(MID, 3) + 16 * REF(MID, 4) + 15 * REF(MID, 5)
+          + 14 * REF(MID, 6) + 13 * REF(MID, 7) + 12 * REF(MID, 8) + 11 * REF(MID, 9) + 10 * REF(MID, 10)
+          + 9 * REF(MID, 11) + 8 * REF(MID, 12) + 7 * REF(MID, 13) + 6 * REF(MID, 14) + 5 * REF(MID, 15)
+          + 4 * REF(MID, 16) + 3 * REF(MID, 17) + 2 * REF(MID, 18) + REF(MID, 20)) / 210
+    马线 = MA(牛线, 6)
+    乖离率 = (C - 牛线) / C * 100
+    涨停=IF((C-REF(C,1))/REF(C,1)>0.097,1,0)
+    跌停 = IF((REF(C, 1) - C) / C > 0.097, 1, 0)
+    KP = SMA(AMOUNT, 10, 1) / 10000
+    VAR11 = REF(KP, 1)
+    VAR21 = REF(KP, 2)
+    VAR31 = REF(KP, 3)
+    涨停复制1= IFAND6(C >= 牛线, 牛线 > 马线, 乖离率 >= 0, 乖离率 <= 4, COUNT(KP > VAR11, 1), VAR11 > VAR21, True, False)
+    涨停复制= IFAND3(涨停复制1, VAR21 > VAR31,  COUNT(((CLOSE - REF(CLOSE, 1)) / REF(CLOSE, 1)) > 0.099, 13) >= 1, True, False)
+    VAR0 = SMA(MAX(CLOSE - REF(C, 1), 0), 12, 1) / SMA(ABS(CLOSE - REF(C, 1)), 15, 1) * 100
+    快卖 = CROSS(82, VAR0)
+    S = C - REF(C,1)
+    DX = 100*EMA(EMA(S,6),6)/EMA(EMA(ABS(S),6),6)
+    买 = IFAND3(LLV(DX,2)==LLV(DX,7) , COUNT(DX<0,2) , CROSS(DX,MA(DX,2)),1,0)
+    拉升 = FILTER(买==1,5)
+    DA=(EMA(C,1)+EMA(C,2)+EMA(C,3)+EMA(C,4))/4
+    DB=(EMA(C,10)+EMA(C,20)+EMA(C,40)+EMA(C,80))/4
+    ICON7 = CROSS(DA-DB,0)
+    JH=SMA(MAX(C-REF(C,1),0),5,1)/SMA(ABS(C-REF(C,1)),5,1)*100
+    ICON7 = CROSS(84,JH)
+    E = (HIGH + LOW + OPEN + 2 * CLOSE) / 5
+    明日阻力 = 2 * E - LOW
+    明日支撑 = 2 * E - HIGH
+    明日突破 = E + (HIGH - LOW)
+    明日反转 = E - (HIGH - LOW)
+    今日阻力 = REF(明日阻力, 1)
+    今日支撑 = REF(明日支撑, 1)
+    A = IFAND(HHV(HIGH, 13) == HIGH, HIGH > REF(HIGH, 1), True, False)
+    A1 = FILTER(A, 12)
+    B = IFAND(LLV(LOW, 13) == LOW, LOW < REF(LOW, 1), True, False)
+    B1 = FILTER(B, 12)
+    TS1 = BARSLAST(A1)
+    箱顶 = REF(HIGH, TS1)
+    TS2 = BARSLAST(B1)
+    箱底 = REF(LOW, TS2)
+    箱高 = 100 * (箱顶 - 箱底) / 箱底
+    均价 = (3 * C + H + L + O) / 6
+    VAR1 = (8 * 均价 + 7 * REF(均价, 1) + 6 * REF(均价, 2) + 5 * REF(均价, 3) +
+            4 * REF(均价, 4) + 3 * REF(均价, 5) + 2 * REF(均价, 6) + REF(均价, 8)) / 36
+    VAR2 = (LLV(VAR1, 2) + LLV(VAR1, 4) + LLV(VAR1, 6)) / 3
+    SZ1 = IFAND3(REF(VAR1, 1) == REF(VAR2, 1), VAR1 > VAR2, CLOSE > VAR1, True, False)
+    SZ2 = IFAND6(VAR1 > VAR2, VAR1 > REF(VAR1, 1), VAR2 > REF(VAR2, 1), H / VAR1 < 1.1, L > VAR2, CLOSE > VAR1, True, False)
+    SZ3 = IFAND4(VAR1 > VAR2, VAR1 > REF(VAR1, 1), VAR2 >= REF(VAR2, 1), H / VAR1 > 1.1, True, False)
+    SZ4 = IFAND5(VAR1 > VAR2, VAR1 > REF(VAR1, 1), VAR2 > REF(VAR2, 1), CLOSE > VAR2, CLOSE < VAR1, True, False)
+    # SZ5 = (VAR1 > VAR2, VAR2 > REF(VAR2, 1), VAR1 <> REF(VAR1, 1), CLOSE < VAR2)
+    # OR(VAR1 > VAR2, VAR1 < REF(VAR1, 1), VAR2 < REF(VAR2, 1), CLOSE < VAR2)
+    SZ6 = IFAND3(REF(VAR1, 1) > REF(VAR2, 1), VAR1 == VAR2, CLOSE < VAR2, True, False)
+    XD11 = IFAND4(VAR1 < REF(VAR1, 1), VAR2 < REF(VAR2, 1), REF(VAR1, 1) == REF(VAR2, 1), CLOSE < VAR2, True, False)
+    XD1 = IFAND(VAR1 == VAR2, IFOR(CLOSE < VAR2, XD11, True, False), True, False)
+    XD2 = IFAND(VAR1 == VAR2, CLOSE > VAR1, True, False)
+    SAT = (AMOUNT / C) / (HHV(AMOUNT, 20) / HHV(C, 20))
+    量能饱和度 = IF(SAT > 1, 1, SAT) * 100
+    # DRAWTEXT_FIX(BARSTATUS=2 AND SZ1,0.8,0.05,0,'调整结束短线介入'),COLORRED;
+    # DRAWTEXT_FIX(BARSTATUS=2 AND SZ2,0.8,0.05,0,'上升通道走势良好'),COLORRED;
+    # DRAWTEXT_FIX(BARSTATUS=2 AND SZ3,0.8,0.05,0,'股价偏离注意调整'),COLORRED;
+    # DRAWTEXT_FIX(BARSTATUS=2 AND SZ4,0.8,0.05,0,'上升通道调整洗盘'),COLORGREEN;
