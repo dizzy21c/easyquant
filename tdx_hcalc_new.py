@@ -101,7 +101,8 @@ def do_main_work(code, data):
     # print(data)
     df_day = new_df(df_day, data, now_price)
     # print(df_day.tail())
-    chk_flg, _ = tdx_a06_zsd(df_day)
+    #chk_flg, _ = tdx_a06_zsd(df_day)
+    chk_flg, _ = tdx_yhzc(df_day)
     # chk_flg2, _ = tdx_hm(df_day)
     # chk_flg3, _ = tdx_tpcqpz(df_day)
     # df_day.loc[last_time]=[0 for x in range(len(df_day.columns))]
@@ -429,16 +430,16 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
         newdata = newdatas[code]
         now_price = newdata['now']
         try:
-            if (code == '003001'):
-                print(data)
-                print(newdata)
+            # if (code == '003001'):
+            #     print(data)
+            #     print(newdata)
             data = new_df(data.copy(), newdata, now_price)
             # chk_flg, _ = tdx_dhmcl(df_day)
             # tdx_base_func(data, "tdx_dhmcl", code)
             # tdx_base_func(data.copy(), "tdx_dhmcl", code)
             # tdx_base_func(data, "tdx_sxp", code)
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
-            tdx_base_func(data.copy(), "tdx_tpcqpz", code)
+            tdx_base_func(data.copy(), func_name , code)
         except:
             print("error code=" % code)
             # return
@@ -463,16 +464,37 @@ def tdx_base_func(data, func_name, code, code_list = None):
     if tdx_func_result[-1] > 0:
         print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
 
+def main_param(argv):
+    st_begin = ''
+    st_end = ''
+    func = ''
+    try:
+        opts, args = getopt.getopt(argv[1:], "hb:e:f:", ["st-begin=", "st-end=", "func="])
+    except getopt.GetoptError:
+        print(argv[0], ' -b <st-begin> [-e <st-end>] [-f <func-name:dhm>]')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print(argv[0], ' -b2 <st-begin> [-e st-end] [-f func-name:dhm]')
+            sys.exit()
+        elif opt in ("-b", "--st-begin"):
+            st_begin = arg
+        elif opt in ("-e", "--st-end"):
+            st_end = arg
+        elif opt in ("-f", "--func"):
+            func = 'tdx_%s' % arg
+    return st_begin, st_end, func
 
 if __name__ == '__main__':
-    # st_start, st_end, func = main_param(sys.argv)
-    # print("input", st_start, st_end, func)
-    st_start = "2019-01-01"
-    func = "test"
-
     start_t = datetime.datetime.now()
     print("begin-time:", start_t)
 
+    # st_start, st_end, func = main_param(sys.argv)
+    # print("input", st_start, st_end, func)
+    st_start, st_end, func = main_param(sys.argv)
+    # st_start = "2019-01-01"
+    # func = "test"
+    print("input", st_start, st_end, func)
     # 1, 读取数据（多进程，读入缓冲）
     # 开始日期
     # data_day = get_data(st_start)
