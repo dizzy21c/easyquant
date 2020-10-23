@@ -134,7 +134,6 @@ def do_main_work(code, data):
     # print(chk_flg[-1])
     if chk_flg[-1]:
         print("calc code=%s now=%6.2f" % (code, now_price))
-        mongo.upd_order(data['datetime'], code, now_price)
     # if chk_flg2[-1]:
     #     print("calc code=%s now=%6.2f HM" % (code, now_price))
     #
@@ -464,7 +463,7 @@ def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list 
 
     if tdx_func_result[-1] > 0:
         print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
-        mongo_np.upd_order(dateObj, code, nowPrice)
+        mongo_np.upd_order(func_name, dateObj, code, nowPrice)
 
 def main_param(argv):
     st_begin = ''
