@@ -5,7 +5,7 @@ import pymongo as mongo
 import json
 import pandas as pd
 import numpy as np
-from datetime import date
+from datetime import date, datetime
 import time
 from QUANTAXIS.QAFetch import QATdx as tdx
 from easyquant.easydealutils.easytime import EasyTime
@@ -30,9 +30,14 @@ class MongoIo(object):
         # else:
         #     self.r = redis.Redis(host=self.config['redisip'], port=self.config['redisport'], db=self.config['db'], password = self.config['passwd'])
 
-    def dateStr2stamp(self, date):
-        datestr = str(date)[0:10]
-        date = time.mktime(time.strptime(datestr, '%Y-%m-%d'))
+    def dateStr2stamp(self, dateObj):
+        dateStr = str(dateObj)[0:10]
+        date = time.mktime(time.strptime(dateStr, '%Y-%m-%d'))
+        return date
+
+    def datetimeStr2stamp(self, dateObj):
+        dataTimeStr = str(dateObj)[0:19]
+        date = time.mktime(time.strptime(dataTimeStr, '%Y-%m-%d %H:%M:%S'))
         return date
 
     def _get_data_day(self, code, table, st_start, st_end):
@@ -382,6 +387,38 @@ class MongoIo(object):
                 recal_price = ( old_trade_amount * old_trade_price + amount * price ) / (old_trade_amount + amount)
                 data['trade_price'] = recal_price
             self.db[table].replace_one({'_id':data['_id']}, data, True)
+
+    def upd_order(self, dateObj, code, price, bs_flg = 'buy'):
+        table = 'st_orders'
+        # self.db[table].insert_many(
+        #     [data]
+        # )
+        # data = self.db[table].
+        # data = list()
+        # self.db[table].replace_one({'_id':code}, {'$set':{'trade_amount':amount,'trade_price':price}}, True)
+        # data=list(self.db[table].find({'_id':code}))[0]
+        dataId = "%s-%s" %(str(dateObj)[0:10], code)
+        data = self.db[table].find_one({'_id': dataId})
+        if data is not None:
+            if bs_flg == 'buy':
+                data['upd-date'] = datetime.now()
+                data['cur-price'] = price
+            else:
+                data['upd-date'] = datetime.now()
+                data['sell-price'] = price
+                data['sell-date'] = dateObj
+            self.db[table].replace_one({'_id': data['_id']}, data, True)
+        else:
+            if bs_flg == 'buy':
+                data = {}
+                data['_id'] = dataId
+                data['code'] = code
+                data['ins-date'] = datetime.now()
+                data['buy-date'] = dateObj
+                data['buy-price'] = price
+                data['cur-price'] = price
+                data['sell-price'] = 0.0
+                self.db[table].insert(data)
 
 def main():
     md = MongoIo()

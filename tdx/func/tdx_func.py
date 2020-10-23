@@ -830,7 +830,7 @@ def tdx_yhzc(data):
     # 去除大盘股 := CAPITAL / 1000000 < 20;
     # 去高价 := C <= 60;
     # 去掉 := D0 and D2 and D3 and D4 and 去除大盘股 and 去高价 and NOT(C >= REF(C, 1) * 1.097 and C = O and H = L);
-    TJ_V = VOL > 2 * MA(VOL,72)
+    TJ_V = VOL > 3 * MA(VOL,89)
     DIF1 = (EMA(CLOSE, 12) - EMA(CLOSE, 26)) / EMA(CLOSE, 26) * 100
     DEA1 = EMA(DIF1, 9)
     AAA1 = (DIF1 - DEA1) * 100

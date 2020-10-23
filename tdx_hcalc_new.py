@@ -35,7 +35,7 @@ data_buf_day = Manager().dict()
 databuf_mongo = Manager().dict()
 # data_buf_5min = Manager().dict()
 # data_buf_5min_0 = Manager().dict()
-# mongo = MongoIo()
+
 easytime=EasyTime()
 pool_size = cpu_count()
 executor = ThreadPoolExecutor(max_workers=pool_size)
@@ -133,8 +133,8 @@ def do_main_work(code, data):
     ## 低于５日线，卖出
     # print(chk_flg[-1])
     if chk_flg[-1]:
-        print("calc code=%s now=%6.2f DHM" % (code, now_price))
-
+        print("calc code=%s now=%6.2f" % (code, now_price))
+        mongo.upd_order(data['datetime'], code, now_price)
     # if chk_flg2[-1]:
     #     print("calc code=%s now=%6.2f HM" % (code, now_price))
     #
@@ -420,6 +420,7 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
     准备数据
     """
     # highs = data.high
+    mongo_np = MongoIo()
     start_t = datetime.datetime.now()
     print("begin-tdx_func:", start_t)
     dataR = pd.DataFrame()
@@ -439,7 +440,7 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
             # tdx_base_func(data.copy(), "tdx_dhmcl", code)
             # tdx_base_func(data, "tdx_sxp", code)
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
-            tdx_base_func(data.copy(), func_name , code)
+            tdx_base_func(data.copy(), func_name , code, newdata['datetime'], now_price, mongo_np)
         except:
             print("error code=" % code)
             # return
@@ -450,7 +451,7 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
 
 
 # print("pool size=%d" % pool_size)
-def tdx_base_func(data, func_name, code, code_list = None):
+def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list = None):
     """
     准备数据
     """
@@ -463,13 +464,15 @@ def tdx_base_func(data, func_name, code, code_list = None):
 
     if tdx_func_result[-1] > 0:
         print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
+        mongo_np.upd_order(dateObj, code, nowPrice)
 
 def main_param(argv):
     st_begin = ''
     st_end = ''
     func = ''
+    type = ''
     try:
-        opts, args = getopt.getopt(argv[1:], "hb:e:f:", ["st-begin=", "st-end=", "func="])
+        opts, args = getopt.getopt(argv[1:], "hb:e:f:t:", ["st-begin=", "st-end=", "func=", "type="])
     except getopt.GetoptError:
         print(argv[0], ' -b <st-begin> [-e <st-end>] [-f <func-name:dhm>]')
         sys.exit(2)
@@ -483,7 +486,9 @@ def main_param(argv):
             st_end = arg
         elif opt in ("-f", "--func"):
             func = 'tdx_%s' % arg
-    return st_begin, st_end, func
+        elif opt in ("-t", "--type"):
+            type = arg
+    return st_begin, st_end, func, type
 
 if __name__ == '__main__':
     start_t = datetime.datetime.now()
@@ -491,7 +496,7 @@ if __name__ == '__main__':
 
     # st_start, st_end, func = main_param(sys.argv)
     # print("input", st_start, st_end, func)
-    st_start, st_end, func = main_param(sys.argv)
+    st_start, st_end, func, type = main_param(sys.argv)
     # st_start = "2019-01-01"
     # func = "test"
     print("input", st_start, st_end, func)
@@ -504,5 +509,8 @@ if __name__ == '__main__':
 
     # 2, 计算公式（多进程，读取缓冲）
     while True:
+        if type == 'T':
+            if datetime.datetime.now().time() > datetime.time(15,1,1):
+                break
         print("*** loop calc begin ***")
         tdx_func_mp(func)
