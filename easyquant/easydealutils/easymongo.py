@@ -389,7 +389,7 @@ class MongoIo(object):
             self.db[table].replace_one({'_id':data['_id']}, data, True)
 
     def upd_order(self, func_name, dateObj, code, price, bs_flg = 'buy'):
-        table = 'st_orders-%' % func_name
+        table = 'st_orders-%s' % func_name
         # self.db[table].insert_many(
         #     [data]
         # )

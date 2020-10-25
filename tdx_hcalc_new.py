@@ -441,7 +441,7 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
             tdx_base_func(data.copy(), func_name , code, newdata['datetime'], now_price, mongo_np)
         except:
-            print("error code=" % code)
+            print("error code=%s" % code)
             # return
     end_t = datetime.datetime.now()
     print(end_t, 'tdx_func spent:{}'.format((end_t - start_t)))
