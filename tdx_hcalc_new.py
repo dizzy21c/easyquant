@@ -52,11 +52,14 @@ def fetch_quotation_data(config="stock_list"):
     config_name = './config/%s.json' % config
     with open(config_name, 'r') as f:
         data = json.load(f)
-        out = source.stocks(data['code'])
-        # print (out)
-        while len(out) == 0:
+        try:
             out = source.stocks(data['code'])
-        # print (out)
+            # print (out)
+            while len(out) == 0:
+                out = source.stocks(data['code'])
+            # print (out)
+        except:
+            out = None
         return out
         
 # dataSrc = DataSinaEngine()
@@ -307,6 +310,10 @@ class Strategy:
         print("read web data-begin-time:", start_t)
         
         datas = fetch_quotation_data()
+        if datas is None:
+            print("read web data: datas is None")
+            return
+
         end_t = datetime.datetime.now()
         print(end_t, 'read web data-spent:{}'.format((end_t - start_t)))
         
@@ -459,11 +466,19 @@ def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list 
         # tdx_func_result, next_buy = tdx_a06_zsd(data)
     # 斜率
     except:
-        tdx_func_result, next_buy = False, False
+        tdx_func_result, next_buy = [0], False
 
     if tdx_func_result[-1] > 0:
-        print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
-        mongo_np.upd_order(func_name, dateObj, code, nowPrice)
+        try:
+            if code[0:3] == "300" and data.iloc[-1].close >= data.iloc[-2].close * 1.19:
+                print("calc %s code=%s to 20% " % (func_name, code))
+            elif data.iloc[-1].close >= data.iloc[-2].close * 1.093:
+                print("calc %s code=%s to 10% " % (func_name, code))
+            else:
+                print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
+                mongo_np.upd_order(func_name, dateObj, code, nowPrice)
+        except:
+            pass
 
 def main_param(argv):
     st_begin = ''
@@ -509,7 +524,17 @@ if __name__ == '__main__':
     # 2, 计算公式（多进程，读取缓冲）
     while True:
         if type == 'T':
+            if datetime.datetime.now().time() < datetime.time(9, 24, 50):
+                time.sleep(10)
+                print("log:sleep PM")
+                continue
+            if datetime.time(11, 30, 10) < datetime.datetime.now().time() < datetime.time(12, 59, 50):
+                time.sleep(10)
+                print("log:sleep AM")
+                continue
+
             if datetime.datetime.now().time() > datetime.time(15,1,1):
+                print("end trade time.")
                 break
         print("*** loop calc begin ***")
         tdx_func_mp(func)
