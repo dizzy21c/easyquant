@@ -466,6 +466,7 @@ def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list 
         # tdx_func_result, next_buy = tdx_a06_zsd(data)
     # 斜率
     except:
+        print("calc %s code=%s ERROR-01 " % (func_name, code))
         tdx_func_result, next_buy = [0], False
 
     if tdx_func_result[-1] > 0:
@@ -478,7 +479,7 @@ def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list 
                 print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
                 mongo_np.upd_order(func_name, dateObj, code, nowPrice)
         except:
-            pass
+            print("calc %s code=%s ERROR-02 " % (func_name, code))
 
 def main_param(argv):
     st_begin = ''
