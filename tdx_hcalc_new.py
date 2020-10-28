@@ -434,9 +434,9 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
         code_list = datam.index.levels[1]
     for code in code_list:
         data=datam.query("code=='%s'" % code)
-        newdata = newdatas[code]
-        now_price = newdata['now']
         try:
+            newdata = newdatas[code]
+            now_price = newdata['now']
             # if (code == '003001'):
             #     print(data)
             #     print(newdata)
@@ -466,20 +466,22 @@ def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list 
         # tdx_func_result, next_buy = tdx_a06_zsd(data)
     # 斜率
     except:
-        print("calc %s code=%s ERROR-01 " % (func_name, code))
+        print("calc %s code=%s ERROR:FUNC-CALC-ERROR " % (func_name, code))
         tdx_func_result, next_buy = [0], False
 
     if tdx_func_result[-1] > 0:
         try:
-            if code[0:3] == "300" and data.iloc[-1].close >= data.iloc[-2].close * 1.19:
-                print("calc %s code=%s to pct-20" % (func_name, code))
-            elif data.iloc[-1].close >= data.iloc[-2].close * 1.093:
-                print("calc %s code=%s to pct-10" % (func_name, code))
+            if (code[0:3] == "300" or code[0:3] == 688) \
+                    and data.iloc[-1].close >= data.iloc[-2].close * 1.19:
+                print("calc %s code=%s to PCT-20" % (func_name, code))
+            elif (code[0:3] != "300" and code[0:3] != 688) \
+                    and data.iloc[-1].close >= data.iloc[-2].close * 1.09:
+                print("calc %s code=%s to PCT-10" % (func_name, code))
             else:
                 print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
                 mongo_np.upd_order(func_name, dateObj, code, nowPrice)
         except:
-            print("calc %s code=%s ERROR-02 " % (func_name, code))
+            print("calc %s code=%s ERROR:BS-CALC-ERROR " % (func_name, code))
 
 def main_param(argv):
     st_begin = ''
