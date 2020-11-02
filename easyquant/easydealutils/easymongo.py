@@ -388,8 +388,9 @@ class MongoIo(object):
                 data['trade_price'] = recal_price
             self.db[table].replace_one({'_id':data['_id']}, data, True)
 
-    def upd_order(self, func_name, dateObj, code, price, bs_flg = 'buy'):
+    def upd_order(self, func_name, dateObj, code, price, bs_flg = 'buy', insFlg = True):
         table = 'st_orders-%s' % func_name
+        tax_comm = 1.003
         # self.db[table].insert_many(
         #     [data]
         # )
@@ -403,13 +404,15 @@ class MongoIo(object):
             if bs_flg == 'buy':
                 data['upd-date'] = datetime.now()
                 data['cur-price'] = price
+                data['diff-price'] = (price - data['buy-price'] * tax_comm) / data['buy-price'] * 100
             else:
                 data['upd-date'] = datetime.now()
                 data['sell-price'] = price
                 data['sell-date'] = dateObj
+                data['diff-price'] = (price - data['buy-price'] * tax_comm) / data['buy-price'] * 100
             self.db[table].replace_one({'_id': data['_id']}, data, True)
         else:
-            if bs_flg == 'buy':
+            if insFlg and bs_flg == 'buy':
                 data = {}
                 data['_id'] = dataId
                 data['code'] = code
@@ -418,6 +421,7 @@ class MongoIo(object):
                 data['buy-price'] = price
                 data['cur-price'] = price
                 data['sell-price'] = 0.0
+                data['diff-price'] = (tax_comm - 1) * 100
                 self.db[table].insert(data)
 
 def main():

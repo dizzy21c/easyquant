@@ -499,9 +499,11 @@ def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list 
             if (code[0:3] == "300" or code[0:3] == 688) \
                     and data.iloc[-1].close >= data.iloc[-2].close * 1.19:
                 print("calc %s code=%s to PCT-20" % (func_name, code))
+                mongo_np.upd_order(func_name, dateObj, code, nowPrice, insFlg=False)
             elif (code[0:3] != "300" and code[0:3] != 688) \
                     and data.iloc[-1].close >= data.iloc[-2].close * 1.09:
                 print("calc %s code=%s to PCT-10" % (func_name, code))
+                mongo_np.upd_order(func_name, dateObj, code, nowPrice, insFlg=False)
             else:
                 print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
                 mongo_np.upd_order(func_name, dateObj, code, nowPrice)

@@ -560,3 +560,8 @@ def FINANCE(data, N):
         return 0
 
 
+def ISLASTBAR(data):
+    dl = len(data)
+    at = [False] * dl
+    at[dl - 1] = True
+    return pd.Series(at, index=data.index)
