@@ -28,8 +28,13 @@ import math
 import numpy as np
 import pandas as pd
 from ctypes import *
-from .talib_series import LINEARREG_SLOPE
+# from .talib_series import LINEARREG_SLOPE
 from easyquant.easydealutils.easymongo import MongoIo
+
+try:
+    import talib
+except:
+    print('PLEASE install TALIB to call these methods')
 
 import os
 # lib  = cdll.LoadLibrary("%s/%s" % (os.path.abspath("."), "talib_ext.so"))
@@ -45,7 +50,10 @@ return pd.Series format
 
 
 def EMA(Series, N):
-    return pd.Series.ewm(Series, span=N, min_periods=N - 1, adjust=True).mean()
+    # return pd.Series.ewm(Series, span=N, min_periods=N - 1, adjust=True).mean()
+    Series = Series.fillna(0)
+    res = talib.EMA(Series.values, N)
+    return pd.Series(res, index=Series.index)
 
 
 def MA(Series, N):
@@ -161,7 +169,10 @@ def DMA(Series, Weight):
 
 
 def SUM(Series, N):
-    return pd.Series.rolling(Series, N).sum()
+    if N == 0:
+        return Series.cumsum()
+    else:
+        return pd.Series.rolling(Series, N).sum()
 
 
 def ABS(Series):
@@ -217,7 +228,7 @@ def COUNT(COND, N):
 
 def IF(COND, V1, V2):
     # if isinstance(V1, np.int64) or isinstance(V1, np.int):
-    if isinstance(COND, np.bool): 
+    if isinstance(COND, np.bool_) or isinstance(COND, bool):
         if COND:
             return V1
         else:
@@ -227,22 +238,34 @@ def IF(COND, V1, V2):
     if isinstance(V1, pd.Series):
         return pd.Series(var, index=V1.index)
     else:
-        return pd.Series(var)
+        return pd.Series(var, index=COND.index)
 
 
 def IFAND(COND1, COND2, V1, V2):
-    if len(COND1) < len(COND2):
-        COND2=COND2[COND2.index>=COND1.index[0]]
-    elif len(COND1) > len(COND2):
-        COND1 = COND1[COND1.index >= COND2.index[0]]
+    if isinstance(COND1, np.bool) and isinstance(COND2, np.bool):
+        if COND1 and COND2:
+            return V1
+        else:
+            return V2
+    if isinstance(COND1, np.bool_) or isinstance(COND1, bool):
+        temp = COND1
+        COND1 = COND2
+        COND2 = temp
+    elif isinstance(COND2, np.bool_) or isinstance(COND2, bool):
+        pass
+    else:
+        if len(COND1) < len(COND2):
+            COND2=COND2[COND2.index>=COND1.index[0]]
+        elif len(COND1) > len(COND2):
+            COND1 = COND1[COND1.index >= COND2.index[0]]
     var = np.where(np.logical_and(COND1,COND2), V1, V2)
     return pd.Series(var, index=COND1.index)
 
 def IFAND3(COND1, COND2, COND3, V1, V2):
-    if len(COND1) < len(COND2):
-        COND2=COND2[COND2.index>=COND1.index[0]]
-    elif len(COND1) > len(COND2):
-        COND1 = COND1[COND1.index >= COND2.index[0]]
+    # if len(COND1) < len(COND2):
+    #     COND2=COND2[COND2.index>=COND1.index[0]]
+    # elif len(COND1) > len(COND2):
+    #     COND1 = COND1[COND1.index >= COND2.index[0]]
     var1 = np.where(np.logical_and(COND1,COND2), True, False)
     var = np.where(np.logical_and(var1, COND3), V1, V2)
     return pd.Series(var, index=COND1.index)
@@ -252,10 +275,10 @@ def IFAND3(COND1, COND2, COND3, V1, V2):
     #     return pd.Series(var, index=COND1.index)
 
 def IFAND4(COND1, COND2, COND3, COND4, V1, V2):
-    if len(COND1) < len(COND2):
-        COND2=COND2[COND2.index>=COND1.index[0]]
-    elif len(COND1) > len(COND2):
-        COND1 = COND1[COND1.index >= COND2.index[0]]
+    # if len(COND1) < len(COND2):
+    #     COND2=COND2[COND2.index>=COND1.index[0]]
+    # elif len(COND1) > len(COND2):
+    #     COND1 = COND1[COND1.index >= COND2.index[0]]
     var1 = np.where(np.logical_and(COND1,COND2), True, False)
     var2 = np.where(np.logical_and(var1, COND3), True, False)
     var = np.where(np.logical_and(var2, COND4), V1, V2)
@@ -266,10 +289,10 @@ def IFAND4(COND1, COND2, COND3, COND4, V1, V2):
     #     return pd.Series(var, index=COND1.index)
 
 def IFAND5(COND1, COND2, COND3, COND4, COND5, V1, V2):
-    if len(COND1) < len(COND2):
-        COND2=COND2[COND2.index>=COND1.index[0]]
-    elif len(COND1) > len(COND2):
-        COND1 = COND1[COND1.index >= COND2.index[0]]
+    # if len(COND1) < len(COND2):
+    #     COND2=COND2[COND2.index>=COND1.index[0]]
+    # elif len(COND1) > len(COND2):
+    #     COND1 = COND1[COND1.index >= COND2.index[0]]
     var1 = np.where(np.logical_and(COND1,COND2), True, False)
     var2 = np.where(np.logical_and(var1, COND3), True, False)
     var3 = np.where(np.logical_and(var2, COND4), True, False)
@@ -282,10 +305,10 @@ def IFAND5(COND1, COND2, COND3, COND4, COND5, V1, V2):
 
 
 def IFAND6(COND1, COND2, COND3, COND4, COND5, COND6, V1, V2):
-    if len(COND1) < len(COND2):
-        COND2=COND2[COND2.index>=COND1.index[0]]
-    elif len(COND1) > len(COND2):
-        COND1 = COND1[COND1.index >= COND2.index[0]]
+    # if len(COND1) < len(COND2):
+    #     COND2=COND2[COND2.index>=COND1.index[0]]
+    # elif len(COND1) > len(COND2):
+    #     COND1 = COND1[COND1.index >= COND2.index[0]]
     var1 = np.where(np.logical_and(COND1,COND2), True, False)
     var2 = np.where(np.logical_and(var1, COND3), True, False)
     var3 = np.where(np.logical_and(var2, COND4), True, False)
@@ -308,6 +331,15 @@ def IFOR(COND1, COND2, V1, V2):
     #     return pd.Series(var, index=V1.index)
     # else:
     #     return pd.Series(var, index=COND1.index)
+
+def IFOR3(COND1, COND2, COND3, V1, V2):
+    COND_N = IFOR(COND1, COND2, True, False)
+    return IFOR(COND_N, COND3, V1, V2)
+
+def IFOR4(COND1, COND2, COND3, COND4, V1, V2):
+    COND_N1 = IFOR(COND1, COND2, True, False)
+    COND_N2 = IFOR(COND1, COND2, True, False)
+    return IFOR(COND_N1, COND_N2, V1, V2)
 
 ##TODO 通达信测试结果的出的
 def FILTER(COND,N):
@@ -472,7 +504,8 @@ def WINNER(Series,N=60):
 
 def SLOPE(Series, timeperiod=14):
     Series = Series.fillna(0)
-    return LINEARREG_SLOPE(Series, timeperiod)
+    res = talib.LINEARREG_SLOPE(Series.values, timeperiod)
+    return pd.Series(res, index=Series.index)
     # return pd.Series(res, index=SerLINEARREG_SLOPEies.index)
 
 def INDEX(data, code='000001', type='D'):
@@ -493,3 +526,37 @@ def INDEXC(data, code='000001', type='D'):
 
 def POW(Series, M):
     return Series.pow(M)
+
+def ATAN(Series):
+    Series = Series.fillna(0)
+    res = talib.ATAN(Series.values)
+    return pd.Series(res, index=Series.index)
+
+def EXIST(Series, N):
+    return COUNT(Series, N) > 0
+    # return res > 0
+
+def CAPITAL(data):
+    code = data.index.levels[1][0]
+    mongo = MongoIo()
+    data = mongo.get_stock_info(code)
+    if len(data) > 0:
+        return data.liutongguben[0] / 100.0
+    else:
+        return 0
+
+def FINANCE(data, N):
+    close = data.close[-1]
+    code = data.index.levels[1][0]
+    mongo = MongoIo()
+    dataInfo = mongo.get_stock_info(code)
+    if len(data) > 0:
+        if N == 40:
+            return dataInfo.liutongguben[0] * close
+        elif N == 30:
+            return dataInfo.liutongguben[0] / 100.0
+        # return data.liutongguben[0]
+    else:
+        return 0
+
+
