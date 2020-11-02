@@ -206,7 +206,7 @@ class TopTopCalcThread(Thread):
         else:
             return []
 
-def do_calc_2top(code, last_day):
+def do_calc_2top2(code, last_day):
     # print("calc_toptop_codes-cod=%s" % code )
     mongo = MongoIo()
     st_start="2020-03-01"
@@ -222,7 +222,7 @@ def do_calc_2top(code, last_day):
         return None
 
 
-def do_calc_2top2(code, last_day):
+def do_calc_2top(code, last_day):
     # print("calc_toptop_codes-cod=%s" % code )
     mongo = MongoIo()
     st_start="2020-03-01"

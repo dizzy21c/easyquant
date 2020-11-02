@@ -809,18 +809,18 @@ def tdx_cptlzt(data):
     # DRAWTEXT_FIX(BARSTATUS=2 AND SZ4,0.8,0.05,0,'上升通道调整洗盘'),COLORGREEN;
 
 def tdx_yhzc(data):
-    # 操盘铁律主图
+    # 用户注册
     # pass
-    C = data.close
+    # C = data.close
     CLOSE = data.close
-    HIGH = data.high
-    H = data.high
-    L = data.low
-    LOW = data.low
-    OPEN = data.open
-    O = data.open
+    # HIGH = data.high
+    # H = data.high
+    # L = data.low
+    # LOW = data.low
+    # OPEN = data.open
+    # O = data.open
     VOL = data.volume
-    AMOUNT = data.amount
+    # AMOUNT = data.amount
 
     # 除业绩后退股 := FINANCE(30) >= REF(FINANCE(30), 130);
     # D0 := 除业绩后退股;
@@ -834,6 +834,11 @@ def tdx_yhzc(data):
     DIF1 = (EMA(CLOSE, 12) - EMA(CLOSE, 26)) / EMA(CLOSE, 26) * 100
     DEA1 = EMA(DIF1, 9)
     AAA1 = (DIF1 - DEA1) * 100
+    # MA120 = REF(MA(C,120),1)
+    # MA5 = REF(MA(C, 120),1)
+    # MA10 = REF(MA(C, 120),1)
+    # PTGD = REF(HHV(C,120),1)
+    # XIN_GAO = IFAND(C > PTGD, C > MA120, True, False)
     用 = 45
     户 = AAA1 - REF(AAA1, 1)
     注册 = CROSS(户, 用)
@@ -841,5 +846,6 @@ def tdx_yhzc(data):
     DEA = EMA(DIF, 17)
     AAA = (DIF - DEA) * 100
     用户 = CROSS(AAA - REF(AAA, 1), 45)
+    # 用户注册 = IFAND4(注册 , 用户, TJ_V, XIN_GAO, 1, 0) #and 去掉;
     用户注册 = IFAND3(注册 , 用户, TJ_V, 1, 0) #and 去掉;
     return 用户注册, True

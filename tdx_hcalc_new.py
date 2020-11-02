@@ -33,6 +33,11 @@ import easyquotation
 # calc_thread_dict = Manager().dict()
 data_buf_day = Manager().dict()
 databuf_mongo = Manager().dict()
+databuf_mongo_1 = Manager().dict()
+databuf_mongo_5 = Manager().dict()
+databuf_mongo_15 = Manager().dict()
+databuf_mongo_30 = Manager().dict()
+databuf_mongo_60 = Manager().dict()
 # data_buf_5min = Manager().dict()
 # data_buf_5min_0 = Manager().dict()
 
@@ -150,6 +155,26 @@ def do_get_data_mp(key, codelist, st_start):
     # print("begin-get_data do_get_data_mp: key=%s, time=%s" %( key,  start_t))
     databuf_mongo[key] = mongo_mp.get_stock_day(codelist, st_start=st_start)
     # end_t = datetime.datetime.now()
+    # print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
+
+def do_get_data_mp_min(key, codelist, st_start, freq):
+    mongo_mp = MongoIo()
+    # start_t = datetime.datetime.now()
+    # print("begin-get_data do_get_data_mp: key=%s, time=%s" %( key,  start_t))
+
+    get_data_list = mongo_mp.get_stock_min(codelist, st_start=st_start, freq=freq)
+    if freq == 1:
+        databuf_mongo_1[key] = get_data_list
+    elif freq == 5:
+        databuf_mongo_1[key] = get_data_list
+    elif freq == 15:
+        databuf_mongo_1[key] = get_data_list
+    elif freq == 30:
+        databuf_mongo_1[key] = get_data_list
+    elif freq == 60:
+        databuf_mongo_1[key] = get_data_list
+
+        # end_t = datetime.datetime.now()
     # print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
 
 def get_data(st_start):
@@ -538,6 +563,7 @@ if __name__ == '__main__':
 
             if datetime.datetime.now().time() > datetime.time(15,1,1):
                 print("end trade time.")
-                break
+                time.sleep(3600)
+                # break
         print("*** loop calc begin ***")
         tdx_func_mp(func)

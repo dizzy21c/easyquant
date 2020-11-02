@@ -1,3 +1,101 @@
+===============================
+DYNAINFO(n) 函数大全
+STAR:CLOSE>OPEN&&HHV(CLOSE,50)=CLOSE&&DYNAINFO(37)>0.1&&DYNAINFO(13)<0.14;
+输出STAR:收阳线并且50日内收盘价的最高值=收盘价并且换手率>0.1并且振幅度<0.14
+DYNAINFO(n) 大全
+DYNAINFO(3)取得最新动态行情: 昨收
+DYNAINFO(4)取得最新动态行情: 今开
+DYNAINFO(5)取得最新动态行情: 最高
+DYNAINFO(6)取得最新动态行情: 最低
+DYNAINFO(7)取得最新动态行情: 最新
+DYNAINFO(8)取得最新动态行情: 总手
+DYNAINFO(9)取得最新动态行情: 现手
+DYNAINFO(10)取得最新动态行情: 总额
+DYNAINFO(11)取得最新动态行情: 均价
+DYNAINFO(12)取得最新动态行情: 涨跌
+DYNAINFO(13)取得最新动态行情: 振幅
+DYNAINFO(14)取得最新动态行情: 涨幅
+DYNAINFO(15)取得最新动态行情: 委比
+DYNAINFO(16)取得最新动态行情: 委差
+DYNAINFO(26)取得最新动态行情: 买二量
+DYNAINFO(27)取得最新动态行情: 买三量
+DYNAINFO(28)取得最新动态行情: 买一价
+DYNAINFO(29)取得最新动态行情: 买二价
+DYNAINFO(30)取得最新动态行情: 买三价
+DYNAINFO(31)取得最新动态行情: 卖一量
+DYNAINFO(32)取得最新动态行情: 卖二量
+DYNAINFO(33)取得最新动态行情: 卖三量
+DYNAINFO(34)取得最新动态行情: 卖一价
+DYNAINFO(35)取得最新动态行情: 卖二价
+DYNAINFO(36)取得最新动态行情: 卖三价
+DYNAINFO(37)取得最新动态行情: 换手率
+DYNAINFO(38)取得最新动态行情: 5日均量
+DYNAINFO(39)取得最新动态行情: 市盈率
+DYNAINFO(40)取得最新动态行情: 成交方向
+DYNAINFO(41)取得最新动态行情: 买四量
+DYNAINFO(42)取得最新动态行情: 买四价
+DYNAINFO(43)取得最新动态行情: 卖四量
+DYNAINFO(44)取得最新动态行情: 卖四价
+DYNAINFO(45)取得最新动态行情: 持仓量
+DYNAINFO(46)取得最新动态行情: 应得利息
+DYNAINFO(47)取得最新动态行情: 国债全价
+DYNAINFO(48)取得最新动态行情: 买五量
+DYNAINFO(49)取得最新动态行情: 买五价
+DYNAINFO(50)取得最新动态行情: 卖五量
+DYNAINFO(51)取得最新动态行情: 卖五价
+DYNAINFO(52)取得最新动态行情: 成交笔数
+DYNAINFO(53)取得最新动态行情: 每笔手数
+DYNAINFO(54)取得最新动态行情: 涨停
+DYNAINFO(55)取得最新动态行情: 跌停
+DYNAINFO(56)取得最新动态行情: 总市值
+DYNAINFO(57)取得最新动态行情: 流通市值
+DYNAINFO(58)取得最新动态行情: 市净率
+DYNAINFO(59)取得最新动态行情: 到期收益
+DYNAINFO(60)取得最新动态行情: 昨持仓量
+DYNAINFO(61)取得最新动态行情: 结算价
+DYNAINFO(62)取得最新动态行情: 昨结算价
+DYNAINFO(63)取得最新动态行情: 增仓
+DYNAINFO(64)取得最新动态行情: 日增仓
+DYNAINFO(65)取得最新动态行情: 开平
+DYNAINFO(66)取得最新动态行情: 上涨家数
+DYNAINFO(67)取得最新动态行情: 下跌家数
+DYNAINFO(68)取得最新动态行情: 平盘家数
+DYNAINFO(69)取得最新动态行情: A股上涨数
+DYNAINFO(70)取得最新动态行情: A股下跌数
+DYNAINFO(71)取得最新动态行情: A股平盘数
+DYNAINFO(72)取得最新动态行情: A股成交额
+DYNAINFO(73)取得最新动态行情: B股上涨数
+DYNAINFO(74)取得最新动态行情: B股下跌数
+DYNAINFO(75)取得最新动态行情: B股平盘数
+DYNAINFO(76)取得最新动态行情: B股成交额
+DYNAINFO(77)取得最新动态行情: 基金上涨数
+DYNAINFO(78)取得最新动态行情: 基金下跌数
+DYNAINFO(79)取得最新动态行情: 基金平盘数
+DYNAINFO(80)取得最新动态行情: 基金成交额
+DYNAINFO(81)取得最新动态行情: 其他上涨数
+DYNAINFO(82)取得最新动态行情: 其他下跌数
+DYNAINFO(83)取得最新动态行情: 其他平盘数
+DYNAINFO(84)取得最新动态行情: 其他成交额
+DYNAINFO(85)取得最新动态行情: 市场名称
+DYNAINFO(86)取得最新动态行情: 市场简称
+DYNAINFO(87)取得最新动态行情: 委买均价
+DYNAINFO(88)取得最新动态行情: 委卖均价
+DYNAINFO(89)取得最新动态行情: 委买总量
+DYNAINFO(90)取得最新动态行情: 委卖总量
+DYNAINFO(91)取得最新动态行情: 买入单数
+DYNAINFO(92)取得最新动态行情: 卖出单数
+DYNAINFO(93)取得最新动态行情: 中单买入
+DYNAINFO(94)取得最新动态行情: 大单买入
+DYNAINFO(95)取得最新动态行情: 特大买入
+DYNAINFO(96)取得最新动态行情: 中单卖出
+DYNAINFO(97)取得最新动态行情: 大单卖出
+DYNAINFO(98)取得最新动态行情: 特大卖出
+
+
+
+
+
+
 一,
 M1:5, M2:35, M3:135
 VOLUME: VOL,VOLSTICK;
@@ -1615,7 +1713,7 @@ AAA:=(DIF-DEA)*100;
 
 
 =========================
-大企鹅靠天吃饭池_org
+大企鹅靠天吃饭池
 池：创业板
 A1:
 {ZT:=IF((C-REF(C,1))*100/REF(C,1)>=(10-0.01*100/REF(C,1)) AND C=H,1,0);
@@ -1636,7 +1734,7 @@ MC:=(0.3609454219*JC
 -0.0000106773454*REF(C,10)
 -0.0000035457562*REF(C,11)
 -0.0000011670713*REF(C,12))/(1-0.7522406533);
-竞价涨幅:=(DYNAINFO(4)/DYNAINFO(3)-9)*100;    
+竞价涨幅:=(DYNAINFO(4)/DYNAINFO(3)-1)*100;
 ST:=STRFIND(stkname,'ST',1)>0;  
 S:=STRFIND(stkname,'S',1)>0;
 停牌:=(DYNAINFO(4)=0);
