@@ -493,3 +493,9 @@ def INDEXC(data, code='000001', type='D'):
 
 def POW(Series, M):
     return Series.pow(M)
+
+def ISLASTBAR(data):
+    dl = len(data)
+    at = [False] * dl
+    at[dl - 1] = True
+    return pd.Series(at, index=data.index)

@@ -849,3 +849,45 @@ def tdx_yhzc(data):
     # 用户注册 = IFAND4(注册 , 用户, TJ_V, XIN_GAO, 1, 0) #and 去掉;
     用户注册 = IFAND3(注册 , 用户, TJ_V, 1, 0) #and 去掉;
     return 用户注册, True
+
+def tdx_dqe_a01(data):
+    C = data.close
+    O = data.open
+    JC =IF(ISLASTBAR(C), O, C)
+    MC = (0.3609454219 * JC - 0.03309329629 * REF(C, 1) - 0.04241822779 * REF(C, 2) - 0.026737249 * REF(C, 3) \
+           - 0.007010041271 * REF(C, 4) - 0.002652859952 * REF(C, 5) - 0.0008415042966 * REF(C, 6) \
+           - 0.0002891931964 * REF(C, 7) - 0.0000956265934 * REF(C, 8) - 0.0000321286052 * REF(C, 9) \
+           - 0.0000106773454 * REF(C, 10) - 0.0000035457562 * REF(C, 11) -- 0.0000011670713 * REF(C, 12)) / (1 - 0.7522406533)
+    # 竞价涨幅 := (DYNAINFO(4) / DYNAINFO(3) - 1) * 100;
+    竞价涨幅 = (C / REF(C, 1) - 1) * 100
+    # ST := STRFIND(stkname, 'ST', 1) > 0;
+    # S := STRFIND(stkname, 'S', 1) > 0;
+    # 停牌 := (DYNAINFO(4)=0);
+    #
+    # 附加条件 := (not (ST) and not (S) and NOT(停牌)) * (竞价涨幅 < 9.85) * (竞价涨幅 > (0));
+    附加条件 = IFAND(竞价涨幅 < 9.85, 竞价涨幅 > 0, 1, 0)
+    刀 = (MC - JC) / JC * 1000 * 附加条件
+
+    return 刀
+
+def tdx_dqe_a02(data):
+    # 去ST := STRFIND(STKNAME, 'S', 1) = 0
+    # 去停牌 := DYNAINFO(4) > 0;
+    # 大小 := IF(BARSCOUNT(C) < 90, CAPITAL / 1000000 < 0.5, CAPITAL / 1000000 < 8.8) and C < 88;
+    # 上市天数 := BARSCOUNT(C) > 8;
+    # 涨幅 := (DYNAINFO(4) - DYNAINFO(3)) / DYNAINFO(3) * 100 < 6 and (DYNAINFO(4) - DYNAINFO(3)) / DYNAINFO(3) * 100 > -3;
+    # 跳空 := COUNT(O > REF(H, 1) and L > REF(H, 1), 10) > 0;
+    # 去连板 := NOT((REF(O, 1) < REF(C, 1) OR REF(L, 1) / REF(O, 1) > 0.95) and REF(C, 1) / REF(C, 2) >= 1.097 and (
+    #             REF(C, 2) / REF(C, 3) >= 1.097));
+    # 限量 := COUNT(REF(v, 1) / REF(v, 2) > 6, 10) = 0;
+    # 多头 := O > REF(MA(C, 5), 1) and O > REF(MA(C, 10), 1);
+    # 去ST and 去停牌 and 大小 and 上市天数 and 涨幅 and 跳空 and 去连板 and 限量 and 多头;
+    pass
+
+def tdx_dqe_a03(data):
+    # {竞价委托    逸飞    分笔周期}
+    # T := TIME >= 92500   AND    TIME < 93000;
+    # 竞价量 := ref(SUM(VOL, 0), BARSLAST(T));
+    # 竞价换手: 竞价量 / CAPITAL * 100;
+    pass
+
