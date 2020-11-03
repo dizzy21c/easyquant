@@ -850,7 +850,8 @@ def tdx_yhzc(data):
     用户注册 = IFAND3(注册 , 用户, TJ_V, 1, 0) #and 去掉;
     return 用户注册, True
 
-def tdx_dqe_a01(data):
+def tdx_dqe_cfc_A1(data, sort=False):
+    # 选择／排序
     C = data.close
     O = data.open
     JC =IF(ISLASTBAR(C), O, C)
@@ -866,28 +867,54 @@ def tdx_dqe_a01(data):
     #
     # 附加条件 := (not (ST) and not (S) and NOT(停牌)) * (竞价涨幅 < 9.85) * (竞价涨幅 > (0));
     附加条件 = IFAND(竞价涨幅 < 9.85, 竞价涨幅 > 0, 1, 0)
-    刀 = (MC - JC) / JC * 1000 * 附加条件
+    if sort:
+        刀 = (MC - JC) / JC * 1000
+    else:
+        刀 = (MC - JC) / JC * 1000 * 附加条件
 
     return 刀
 
-def tdx_dqe_a02(data):
+def tdx_dqe_cfc_A2(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
+    C = data.close
+    O = data.open
+    V = data.volume
+    H = data.high
+    L = data.low
     # 去ST := STRFIND(STKNAME, 'S', 1) = 0
     # 去停牌 := DYNAINFO(4) > 0;
     # 大小 := IF(BARSCOUNT(C) < 90, CAPITAL / 1000000 < 0.5, CAPITAL / 1000000 < 8.8) and C < 88;
     # 上市天数 := BARSCOUNT(C) > 8;
     # 涨幅 := (DYNAINFO(4) - DYNAINFO(3)) / DYNAINFO(3) * 100 < 6 and (DYNAINFO(4) - DYNAINFO(3)) / DYNAINFO(3) * 100 > -3;
-    # 跳空 := COUNT(O > REF(H, 1) and L > REF(H, 1), 10) > 0;
+    涨幅T = (C - REF(C,1)) / REF(C,1)
+    涨幅T2 = REF(C, 1) / REF(C, 2)
+    涨幅 = IFAND(涨幅T * 100 < zf1, 涨幅T * 100 > zf2, True, False)
+    跳空 = COUNT(IFAND(O > REF(H, 1), L > REF(H, 1), 1, 0), 10) > 0
     # 去连板 := NOT((REF(O, 1) < REF(C, 1) OR REF(L, 1) / REF(O, 1) > 0.95) and REF(C, 1) / REF(C, 2) >= 1.097 and (
     #             REF(C, 2) / REF(C, 3) >= 1.097));
-    # 限量 := COUNT(REF(v, 1) / REF(v, 2) > 6, 10) = 0;
-    # 多头 := O > REF(MA(C, 5), 1) and O > REF(MA(C, 10), 1);
+    去连板 = IFAND3(IFOR(REF(O, 1) < REF(C, 1) , REF(L, 1) / REF(O, 1) > lbzf1, True, False),  涨幅T2 >= lbzf2, \
+            REF(涨幅T2,1) >= lbzf2, False, True)
+    限量 = COUNT(REF(V, 1) / REF(V, 2) > 6, 10) == 0
+    多头 = IFAND(O > REF(MA(C, 5), 1),  O > REF(MA(C, 10), 1), True, False)
     # 去ST and 去停牌 and 大小 and 上市天数 and 涨幅 and 跳空 and 去连板 and 限量 and 多头;
-    pass
+    # pass
+    return IFAND4(涨幅, 跳空, 限量, 多头, 1, 0)
 
-def tdx_dqe_a03(data):
+def tdx_dqe_cfc_A3(data):
     # {竞价委托    逸飞    分笔周期}
     # T := TIME >= 92500   AND    TIME < 93000;
-    # 竞价量 := ref(SUM(VOL, 0), BARSLAST(T));
-    # 竞价换手: 竞价量 / CAPITAL * 100;
+    VOL = data.volume
+    # 竞价量 = REF(SUM(VOL, 0), BARSLAST(T))
+    竞价量 = VOL[-1]
+    竞价换手 = 竞价量 / CAPITAL(data) * 100
+    # pass
+
+
+def tdx_dqe_cfc_B1(data, sort=False):
+    # 停牌 := (DYNAINFO(4)=0);
+    # not (停牌);
     pass
 
+def tdx_dqe_cfc_B2(data, sort=False):
+    # 停牌 := (DYNAINFO(4)=0);
+    # not (停牌);
+    return tdx_dqe_cfc_A2(data, zf2=-3.5, lbzf1=0.9, lbzf2=1.09)
