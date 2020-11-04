@@ -400,16 +400,19 @@ class MongoIo(object):
         # data=list(self.db[table].find({'_id':code}))[0]
         dataId = "%s-%s" %(str(dateObj)[0:10], code)
         data = self.db[table].find_one({'_id': dataId})
+        profi = 0.0
         if data is not None:
             if bs_flg == 'buy':
                 data['upd-date'] = datetime.now()
                 data['cur-price'] = price
                 data['diff-price'] = (price - data['buy-price'] * tax_comm) / data['buy-price'] * 100
+                profi = data['diff-price']
             else:
                 data['upd-date'] = datetime.now()
                 data['sell-price'] = price
                 data['sell-date'] = dateObj
                 data['diff-price'] = (price - data['buy-price'] * tax_comm) / data['buy-price'] * 100
+                profi = data['diff-price']
             self.db[table].replace_one({'_id': data['_id']}, data, True)
         else:
             if insFlg and bs_flg == 'buy':
@@ -422,7 +425,10 @@ class MongoIo(object):
                 data['cur-price'] = price
                 data['sell-price'] = 0.0
                 data['diff-price'] = (tax_comm - 1) * 100
+                profi = data['diff-price']
                 self.db[table].insert(data)
+
+        return profi
 
 def main():
     md = MongoIo()

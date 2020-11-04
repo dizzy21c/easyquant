@@ -31,6 +31,7 @@ from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor,as_complet
 import easyquotation
 
 # calc_thread_dict = Manager().dict()
+data_codes = Manager().dict()
 data_buf_day = Manager().dict()
 databuf_mongo = Manager().dict()
 databuf_mongo_1 = Manager().dict()
@@ -46,26 +47,34 @@ pool_size = cpu_count()
 executor = ThreadPoolExecutor(max_workers=pool_size)
 executor2 = ThreadPoolExecutor(max_workers=pool_size * 4)
 executor_func = ProcessPoolExecutor(max_workers=cpu_count() * 2)
-
+codeDatas = []
 # class DataSinaEngine(SinaEngine):
 #     EventType = 'data-sina'
 #     PushInterval = 10
 #     config = "stock_list"
 
-def fetch_quotation_data(config="stock_list"):
-    source = easyquotation.use("sina")
+def get_stock_codes(config="stock_list"):
+    if 1 in data_codes:
+        return data_codes[1]
+
     config_name = './config/%s.json' % config
     with open(config_name, 'r') as f:
-        data = json.load(f)
-        try:
+        data_codes[1] = json.load(f)
+        return data_codes[1]
+
+def fetch_quotation_data(config="stock_list", source="sina"):
+    # tencent,qq, sina
+    source = easyquotation.use(source)
+    data = get_stock_codes(config)
+    try:
+        out = source.stocks(data['code'])
+        # print (out)
+        while len(out) == 0:
             out = source.stocks(data['code'])
-            # print (out)
-            while len(out) == 0:
-                out = source.stocks(data['code'])
-            # print (out)
-        except:
-            out = None
-        return out
+        # print (out)
+    except:
+        out = None
+    return out
         
 # dataSrc = DataSinaEngine()
 
@@ -398,9 +407,13 @@ def main_param(argv):
 
 def tdx_func_mp(func_name):
     start_t = datetime.datetime.now()
-    print("read web data-begin-time:", start_t)
+    if start_t.time() < datetime.time(9, 30, 00):
+        print("read web data from tencent begin-time:", start_t)
+        newdatas = fetch_quotation_data(source="tencent")
+    else:
+        print("read web data-begin-time:", start_t)
+        newdatas = fetch_quotation_data(source="sina")
 
-    newdatas = fetch_quotation_data()
     end_t = datetime.datetime.now()
     print(end_t, 'read web data-spent:{}'.format((end_t - start_t)))
 
@@ -471,7 +484,7 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
             # tdx_base_func(data.copy(), "tdx_dhmcl", code)
             # tdx_base_func(data, "tdx_sxp", code)
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
-            tdx_base_func(data.copy(), func_name , code, newdata['datetime'], now_price, mongo_np)
+            tdx_base_func(data.copy(), func_name , code, newdata, now_price, mongo_np)
         except:
             print("error code=%s" % code)
             # return
@@ -482,10 +495,29 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
 
 
 # print("pool size=%d" % pool_size)
-def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list = None):
+def tdx_base_func(data, func_name, code, newData, nowPrice, mongo_np, code_list = None):
     """
     准备数据
     """
+    dateObj = newData['datetime']
+    timeStr = newData['time']
+    insFlg = True
+    PCT = newData['now'] / newData['close']
+    ##
+    if (code[0:3] == "300" or code[0:3] == 688) and (PCT > 1.14 ):# or PCT < 0.92):
+        if timeStr <= "09:31:00":
+            return
+        else:
+            insFlg = False
+    elif (code[0:3] != "300" and code[0:3] != 688) and (PCT > 1.06 ):# or PCT < 0.96):
+        if timeStr <= "09:31:00":
+            return
+        else:
+            insFlg = False
+
+    if timeStr > "10:00:00":
+        insFlg = False
+
     try:
         tdx_func_result, next_buy = eval(func_name)(data)
         # tdx_func_result, next_buy = tdx_a06_zsd(data)
@@ -495,18 +527,20 @@ def tdx_base_func(data, func_name, code, dateObj, nowPrice, mongo_np, code_list 
         tdx_func_result, next_buy = [0], False
 
     if tdx_func_result[-1] > 0:
+        if timeStr > "10:00:00":
+            insFlg = False
         try:
             if (code[0:3] == "300" or code[0:3] == 688) \
                     and data.iloc[-1].close >= data.iloc[-2].close * 1.19:
-                print("calc %s code=%s to PCT-20" % (func_name, code))
-                mongo_np.upd_order(func_name, dateObj, code, nowPrice, insFlg=False)
+                profi = mongo_np.upd_order(func_name, dateObj, code, nowPrice, insFlg=False)
+                print("calc %s code=%s to PCT-20 profi=%5.3f " % (func_name, code, profi))
             elif (code[0:3] != "300" and code[0:3] != 688) \
                     and data.iloc[-1].close >= data.iloc[-2].close * 1.09:
-                print("calc %s code=%s to PCT-10" % (func_name, code))
-                mongo_np.upd_order(func_name, dateObj, code, nowPrice, insFlg=False)
+                profi = mongo_np.upd_order(func_name, dateObj, code, nowPrice, insFlg=False)
+                print("calc %s code=%s to PCT-10 profi=%5.3f " % (func_name, code, profi))
             else:
-                print("calc %s code=%s now=%6.2f " % (func_name, code, data.iloc[-1].close))
-                mongo_np.upd_order(func_name, dateObj, code, nowPrice)
+                profi = mongo_np.upd_order(func_name, dateObj, code, nowPrice, insFlg=insFlg)
+                print("calc %s code=%s now=%6.2f  profi=%5.3f " % (func_name, code, data.iloc[-1].close, profi))
         except:
             print("calc %s code=%s ERROR:BS-CALC-ERROR " % (func_name, code))
 
@@ -554,16 +588,17 @@ if __name__ == '__main__':
     # 2, 计算公式（多进程，读取缓冲）
     while True:
         if type == 'T':
-            if datetime.datetime.now().time() < datetime.time(9, 24, 50):
+            nowtime = datetime.datetime.now().time()
+            if nowtime < datetime.time(9, 24, 50):
                 time.sleep(10)
                 print("log:sleep PM")
                 continue
-            if datetime.time(11, 30, 10) < datetime.datetime.now().time() < datetime.time(12, 59, 50):
+            if datetime.time(11, 30, 10) < nowtime < datetime.time(12, 59, 50):
                 time.sleep(10)
                 print("log:sleep AM")
                 continue
 
-            if datetime.datetime.now().time() > datetime.time(15,1,1):
+            if nowtime > datetime.time(15,0,30):
                 print("end trade time.")
                 time.sleep(3600)
                 # break
