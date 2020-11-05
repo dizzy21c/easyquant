@@ -505,17 +505,17 @@ def tdx_base_func(data, func_name, code, newData, nowPrice, mongo_np, code_list 
     PCT = newData['now'] / newData['close']
     ##
     if (code[0:3] == "300" or code[0:3] == 688) and (PCT > 1.14 ):# or PCT < 0.92):
-        if timeStr <= "09:31:00":
+        if timeStr <= "09:30:00":
             return
         else:
             insFlg = False
     elif (code[0:3] != "300" and code[0:3] != 688) and (PCT > 1.06 ):# or PCT < 0.96):
-        if timeStr <= "09:31:00":
+        if timeStr <= "09:30:00":
             return
         else:
             insFlg = False
 
-    if timeStr > "10:00:00":
+    if timeStr > "09:36:00":
         insFlg = False
 
     try:
@@ -527,8 +527,6 @@ def tdx_base_func(data, func_name, code, newData, nowPrice, mongo_np, code_list 
         tdx_func_result, next_buy = [0], False
 
     if tdx_func_result[-1] > 0:
-        if timeStr > "10:00:00":
-            insFlg = False
         try:
             if (code[0:3] == "300" or code[0:3] == 688) \
                     and data.iloc[-1].close >= data.iloc[-2].close * 1.19:

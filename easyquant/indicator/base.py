@@ -553,6 +553,8 @@ def FINANCE(data, N):
     if len(data) > 0:
         if N == 40:
             return dataInfo.liutongguben[0] * close
+        elif N == 7:
+            return dataInfo.liutongguben[0]
         elif N == 30:
             return dataInfo.liutongguben[0] / 100.0
         # return data.liutongguben[0]

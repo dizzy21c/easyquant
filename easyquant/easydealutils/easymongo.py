@@ -365,7 +365,11 @@ class MongoIo(object):
             ptd = ptd.set_index(["code"])
         return ptd
 
-    
+    def get_stock_info(self, code):
+        table = 'stock_info'
+        dtd = self.db[table].find({'code': code})
+        return pd.DataFrame(list(dtd))
+
     def upd_positions(self, code, amount, price):
         table = 'positions'
         # self.db[table].insert_many(

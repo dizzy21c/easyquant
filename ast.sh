@@ -7,6 +7,7 @@ cd /home/zhangjx/backup/bk/easyquant
 dt=`date +%H%M`
 if [ $dt -lt "0930" ]; then
   rm -rf logs/*
+  /home/zhangjx/anaconda3/envs/qawork/bin/python tdx_hcalc_new.py -f yhzc -b 2020-01-01 -t T &
 fi
 # echo "calc top-codes..."
 # /home/zhangjx/anaconda3/bin/python codelist_utils.py --code_type=top-codes
