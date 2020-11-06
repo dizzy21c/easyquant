@@ -434,6 +434,18 @@ class MongoIo(object):
 
         return profi
 
+    def upd_order_hist(self, func_name, code, price, openPrice, upd_date):
+        table = 'st_orders-%s' % func_name
+        tax_comm = 1.003
+        datas = self.db[table].find({'code': code})
+        for data in datas:
+            data['upd-date'] = upd_date
+            data['buy-time'] = data['buy-date'][11:]
+            data['cur-price'] = price
+            data['diff-price'] = (price - data['buy-price'] * tax_comm) / data['buy-price'] * 100
+            data['diff-oprice'] = (openPrice - data['buy-price'] * tax_comm) / data['buy-price'] * 100
+            self.db[table].replace_one({'_id': data['_id']}, data, True)
+
 def main():
     md = MongoIo()
     md.get_stock_day('000001')
