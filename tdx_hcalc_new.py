@@ -64,7 +64,8 @@ def get_stock_codes(config="stock_list"):
 
 def fetch_quotation_data(config="stock_list", source="sina"):
     # tencent,qq, sina
-    source = easyquotation.use(source)
+    # source = easyquotation.use(source)
+    source = easyquotation.use("sina")
     data = get_stock_codes(config)
     try:
         out = source.stocks(data['code'])
@@ -502,7 +503,9 @@ def tdx_base_func(data, func_name, code, newData, nowPrice, mongo_np, code_list 
     dateObj = newData['datetime']
     timeStr = newData['time']
     insFlg = True
-    PCT = newData['now'] / newData['close']
+    PCT1 = newData['now'] / newData['close']
+    PCT2 = newData['open'] / newData['close']
+    PCT = max(PCT1, PCT2)
     ##
     if (code[0:3] == "300" or code[0:3] == 688) and (PCT > 1.14 ):# or PCT < 0.92):
         if timeStr <= "09:30:00":
