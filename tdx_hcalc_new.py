@@ -33,6 +33,7 @@ import easyquotation
 # calc_thread_dict = Manager().dict()
 data_codes = Manager().dict()
 data_buf_day = Manager().dict()
+data_buf_stockinfo = Manager().dict()
 databuf_mongo = Manager().dict()
 databuf_mongo_1 = Manager().dict()
 databuf_mongo_5 = Manager().dict()
@@ -92,6 +93,7 @@ def do_init_data_buf(code):
     #     data_day = mongo.get_index_day(code=code)
         # data_min = mc.get_index_min_realtime(code=code)
     data_buf_day[code] = data_day
+    data_buf_stockinfo[code] = mongo.get_stock_info(code)
     # data_buf_5min[code] = data_min
     # print("do-init data end, code=%s, data-buf size=%d " % (code, len(data_day)))
     
@@ -166,6 +168,15 @@ def do_get_data_mp(key, codelist, st_start):
     databuf_mongo[key] = mongo_mp.get_stock_day(codelist, st_start=st_start)
     # end_t = datetime.datetime.now()
     # print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
+    for code in codelist:
+        data_buf_stockinfo[code] = mongo_mp.get_stock_info(code)
+
+def pba_calc(code):
+    try:
+        stockinfo = data_buf_stockinfo[code]
+        return stockinfo.jinglirun[0] > 0
+    except:
+        return False
 
 def do_get_data_mp_min(key, codelist, st_start, freq):
     mongo_mp = MongoIo()
@@ -408,13 +419,12 @@ def main_param(argv):
 
 def tdx_func_mp(func_name):
     start_t = datetime.datetime.now()
-    if start_t.time() < datetime.time(9, 30, 00):
-        print("read web data from tencent begin-time:", start_t)
-        newdatas = fetch_quotation_data(source="tencent")
-    else:
-        print("read web data-begin-time:", start_t)
-        newdatas = fetch_quotation_data(source="sina")
-
+    # if start_t.time() < datetime.time(9, 30, 00):
+    #     print("read web data from tencent begin-time:", start_t)
+    #     newdatas = fetch_quotation_data(source="tencent")
+    # else:
+    print("read web data-begin-time:", start_t)
+    newdatas = fetch_quotation_data(source="sina")
     end_t = datetime.datetime.now()
     print(end_t, 'read web data-spent:{}'.format((end_t - start_t)))
 
@@ -507,20 +517,24 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
     if code_list is None:
         code_list = datam.index.levels[1]
     for code in code_list:
-        # data=datam.query("code=='%s'" % code)
+        data=datam.query("code=='%s'" % code)
+        pb_value = pba_calc(code)
+        if not pb_value:
+            # print("pb < 0 code=%s" % code)
+            continue
         try:
             newdata = newdatas[code]
             now_price = newdata['now']
             # if (code == '003001'):
             #     print(data)
             #     print(newdata)
-            # data = new_df(data.copy(), newdata, now_price)
+            data = new_df(data.copy(), newdata, now_price)
             # chk_flg, _ = tdx_dhmcl(df_day)
             # tdx_base_func(data, "tdx_dhmcl", code)
             # tdx_base_func(data.copy(), "tdx_dhmcl", code)
             # tdx_base_func(data, "tdx_sxp", code)
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
-            tdx_base_func(data.copy(), func_name , code, newdata, now_price, mongo_np)
+            tdx_base_func(data.copy(), func_name, code, newdata, now_price, mongo_np)
         except:
             print("error code=%s" % code)
             # return
