@@ -848,7 +848,7 @@ def tdx_yhzc(data):
     用户 = CROSS(AAA - REF(AAA, 1), 45)
     # 用户注册 = IFAND4(注册 , 用户, TJ_V, XIN_GAO, 1, 0) #and 去掉;
     用户注册 = IFAND3(注册 , 用户, TJ_V, 1, 0) #and 去掉;
-    return 用户注册, True
+    return 用户注册, False
 
 def tdx_dqe_cfc_A1(data, sort=False):
     # 选择／排序
@@ -918,3 +918,53 @@ def tdx_dqe_cfc_B2(data, sort=False):
     # 停牌 := (DYNAINFO(4)=0);
     # not (停牌);
     return tdx_dqe_cfc_A2(data, zf2=-3.5, lbzf1=0.9, lbzf2=1.09)
+
+def tdx_sxp_yhzc(data):
+    CLOSE=data.close
+    C=data.close
+    前炮 = CLOSE > REF(CLOSE, 1) * 1.095
+    小阴小阳 = HHV(ABS(C - REF(C, 1)) / REF(C, 1) * 100, BARSLAST(前炮)) < 6
+    小阴小阳1 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
+    时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
+    后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
+    return 后炮, True
+    # # 用户注册
+    # # pass
+    # # C = data.close
+    # # CLOSE = data.close
+    # # HIGH = data.high
+    # # H = data.high
+    # # L = data.low
+    # # LOW = data.low
+    # # OPEN = data.open
+    # # O = data.open
+    # VOL = data.volume
+    # # AMOUNT = data.amount
+    #
+    # # 除业绩后退股 := FINANCE(30) >= REF(FINANCE(30), 130);
+    # # D0 := 除业绩后退股;
+    # # D2 := IF(NAMELIKE('S'), 0, 1);
+    # # D3 := IF(NAMELIKE('*'), 0, 1);
+    # # D4 := DYNAINFO(17) > 0;
+    # # 去除大盘股 := CAPITAL / 1000000 < 20;
+    # # 去高价 := C <= 60;
+    # # 去掉 := D0 and D2 and D3 and D4 and 去除大盘股 and 去高价 and NOT(C >= REF(C, 1) * 1.097 and C = O and H = L);
+    # TJ_V = VOL > 3 * MA(VOL,89)
+    # DIF1 = (EMA(CLOSE, 12) - EMA(CLOSE, 26)) / EMA(CLOSE, 26) * 100
+    # DEA1 = EMA(DIF1, 9)
+    # AAA1 = (DIF1 - DEA1) * 100
+    # # MA120 = REF(MA(C,120),1)
+    # # MA5 = REF(MA(C, 120),1)
+    # # MA10 = REF(MA(C, 120),1)
+    # # PTGD = REF(HHV(C,120),1)
+    # # XIN_GAO = IFAND(C > PTGD, C > MA120, True, False)
+    # 用 = 45
+    # 户 = AAA1 - REF(AAA1, 1)
+    # 注册 = CROSS(户, 用)
+    # DIF = (EMA(CLOSE, 10) - EMA(CLOSE, 72)) / EMA(CLOSE, 72) * 100
+    # DEA = EMA(DIF, 17)
+    # AAA = (DIF - DEA) * 100
+    # 用户 = CROSS(AAA - REF(AAA, 1), 45)
+    # # 用户注册 = IFAND4(注册 , 用户, TJ_V, XIN_GAO, 1, 0) #and 去掉;
+    # 用户注册 = IFAND4(注册 , 用户, TJ_V, 后炮, 1, 0) #and 去掉;
+    # return 用户注册, False
