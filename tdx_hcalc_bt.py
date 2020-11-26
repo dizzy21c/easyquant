@@ -410,7 +410,8 @@ def tdx_func_mp(func_name, type='', backTime=''):
     start_t = datetime.datetime.now()
     print("read web data-begin-time:", start_t)
     if type == 'B':
-        pass
+        mongo = MongoIo()
+        newdatas = mongo.get_realtime(backTime)
     else:
         newdatas = fetch_quotation_data(source="sina")
 
@@ -429,7 +430,7 @@ def tdx_func_mp(func_name, type='', backTime=''):
     # pool = Pool(cpu_count())
     for key in range(pool_size):
         # tdx_func(databuf_mongo[key])
-        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key], newdatas, func_name))
+        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key], newdatas, func_name, type=type))
     # pool.close()
     # pool.join()
 
@@ -459,7 +460,7 @@ def tdx_func_mp(func_name, type='', backTime=''):
     return dataR
 
 
-def tdx_func(datam, newdatas, func_name, code_list = None):
+def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
     """
     准备数据
     """
@@ -473,18 +474,25 @@ def tdx_func(datam, newdatas, func_name, code_list = None):
     for code in code_list:
         data=datam.query("code=='%s'" % code)
         try:
-            newdata = newdatas[code]
+            if type == 'B':
+                newdata = newdatas.query("code=='%s'" % code).iloc[-1]
+            else:
+                newdata = newdatas[code]
+            print("1")
             now_price = newdata['now']
+            print("2")
             # if (code == '003001'):
             #     print(data)
             #     print(newdata)
             data = new_df(data.copy(), newdata, now_price)
+            print("3")
             # chk_flg, _ = tdx_dhmcl(df_day)
             # tdx_base_func(data, "tdx_dhmcl", code)
             # tdx_base_func(data.copy(), "tdx_dhmcl", code)
             # tdx_base_func(data, "tdx_sxp", code)
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
             tdx_base_func(data.copy(), func_name , code, newdata, now_price, mongo_np)
+            print("4")
         except:
             print("error code=%s" % code)
             # return
