@@ -478,21 +478,17 @@ def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
                 newdata = newdatas.query("code=='%s'" % code).iloc[-1]
             else:
                 newdata = newdatas[code]
-            print("1")
             now_price = newdata['now']
-            print("2")
             # if (code == '003001'):
             #     print(data)
             #     print(newdata)
             data = new_df(data.copy(), newdata, now_price)
-            print("3")
             # chk_flg, _ = tdx_dhmcl(df_day)
             # tdx_base_func(data, "tdx_dhmcl", code)
             # tdx_base_func(data.copy(), "tdx_dhmcl", code)
             # tdx_base_func(data, "tdx_sxp", code)
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
-            tdx_base_func(data.copy(), func_name , code, newdata, now_price, mongo_np)
-            print("4")
+            tdx_base_func(data.copy(), func_name, code, newdata, now_price, mongo_np)
         except:
             print("error code=%s" % code)
             # return
@@ -527,7 +523,6 @@ def tdx_base_func(data, func_name, code, newData, nowPrice, mongo_np, code_list 
 
     if timeStr > "09:36:00":
         insFlg = False
-
     try:
         tdx_func_result, next_buy = eval(func_name)(data)
         # tdx_func_result, next_buy = tdx_a06_zsd(data)

@@ -370,6 +370,13 @@ class MongoIo(object):
         dtd = self.db[table].find({'code': code})
         return pd.DataFrame(list(dtd))
 
+    def get_realtime(self, date, time='09:30:00'):
+        table = 'realtime_%s' % date
+        dtd = self.db[table].find({'time':{'$lt':time}})
+        df = pd.DataFrame(list(dtd))
+        df = df.set_index(['_id'])
+        return df
+
     def upd_positions(self, code, amount, price):
         table = 'positions'
         # self.db[table].insert_many(
