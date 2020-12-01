@@ -13,8 +13,8 @@ def new_df(df_day, data, now_price):
     df_day.at[(last_time, code), 'high'] = data['high']
     df_day.at[(last_time, code), 'low'] = data['low']
     df_day.at[(last_time, code), 'close'] = now_price
-    df_day.at[(last_time, code), 'volume'] = data['volume']
-    df_day.at[(last_time, code), 'amount'] = data['amount']
+    df_day.at[(last_time, code), 'volume'] = data['amount'] / 100
+    df_day.at[(last_time, code), 'amount'] = data['volume']
     return df_day
 
 # 彩钻花神
@@ -830,7 +830,8 @@ def tdx_yhzc(data):
     # 去除大盘股 := CAPITAL / 1000000 < 20;
     # 去高价 := C <= 60;
     # 去掉 := D0 and D2 and D3 and D4 and 去除大盘股 and 去高价 and NOT(C >= REF(C, 1) * 1.097 and C = O and H = L);
-    TJ_V = VOL > 3 * MA(VOL,89)
+
+    去掉 = True
     DIF1 = (EMA(CLOSE, 12) - EMA(CLOSE, 26)) / EMA(CLOSE, 26) * 100
     DEA1 = EMA(DIF1, 9)
     AAA1 = (DIF1 - DEA1) * 100
@@ -847,7 +848,10 @@ def tdx_yhzc(data):
     AAA = (DIF - DEA) * 100
     用户 = CROSS(AAA - REF(AAA, 1), 45)
     # 用户注册 = IFAND4(注册 , 用户, TJ_V, XIN_GAO, 1, 0) #and 去掉;
-    用户注册 = IFAND3(注册 , 用户, TJ_V, 1, 0) #and 去掉;
+
+    TJ_V = VOL > 3 * MA(VOL,89)
+
+    用户注册 = IFAND3(注册 , 用户, 去掉, 1, 0) #and 去掉;
     return 用户注册, False
 
 def tdx_dqe_cfc_A1(data, sort=False):

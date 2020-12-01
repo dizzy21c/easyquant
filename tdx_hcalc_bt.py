@@ -475,7 +475,12 @@ def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
         data=datam.query("code=='%s'" % code)
         try:
             if type == 'B':
-                newdata = newdatas.query("code=='%s'" % code).iloc[-1]
+                newdata0 = newdatas.query("code=='%s'" % code)
+                if len(newdata0) > 0:
+                    newdata = newdata0.iloc[-1]
+                else:
+                    # print("data-len=0, code=", code)
+                    continue
             else:
                 newdata = newdatas[code]
             now_price = newdata['now']
@@ -523,9 +528,12 @@ def tdx_base_func(data, func_name, code, newData, nowPrice, mongo_np, code_list 
 
     if timeStr > "09:36:00":
         insFlg = False
+
     try:
         tdx_func_result, next_buy = eval(func_name)(data)
         # tdx_func_result, next_buy = tdx_a06_zsd(data)
+        # if code == '300610' or code == '300799' or code =='688037':
+        #     print(tdx_func_result.tail)
     # 斜率
     except:
         print("calc %s code=%s ERROR:FUNC-CALC-ERROR " % (func_name, code))
