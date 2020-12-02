@@ -854,6 +854,66 @@ def tdx_yhzc(data):
     用户注册 = IFAND3(注册 , 用户, 去掉, 1, 0) #and 去掉;
     return 用户注册, False
 
+
+def tdx_yhzc_macd(data):
+    # 用户注册
+    # pass
+    # C = data.close
+    CLOSE = data.close
+    # HIGH = data.high
+    # H = data.high
+    # L = data.low
+    # LOW = data.low
+    # OPEN = data.open
+    # O = data.open
+    VOL = data.volume
+    # AMOUNT = data.amount
+
+    # 除业绩后退股 := FINANCE(30) >= REF(FINANCE(30), 130);
+    # D0 := 除业绩后退股;
+    # D2 := IF(NAMELIKE('S'), 0, 1);
+    # D3 := IF(NAMELIKE('*'), 0, 1);
+    # D4 := DYNAINFO(17) > 0;
+    # 去除大盘股 := CAPITAL / 1000000 < 20;
+    # 去高价 := C <= 60;
+    # 去掉 := D0 and D2 and D3 and D4 and 去除大盘股 and 去高价 and NOT(C >= REF(C, 1) * 1.097 and C = O and H = L);
+
+    去掉 = True
+    # MACD
+    SHORT =12
+    LONG = 26
+    MID = 9
+    EMASHORT = EMA(CLOSE, SHORT)
+    EMALONG = EMA(CLOSE, LONG)
+    DIF = EMASHORT - EMALONG
+    DEA = EMA(DIF, MID)
+    MACD = (DIF-DEA) * 2
+    MACDTJ = IFAND4(MACD>0, DIF > 0, DEA > 0, CROSS(DIF, DEA), True, False)
+
+    # MACD2
+    DIF1 = (EMA(CLOSE, SHORT) - EMA(CLOSE, LONG)) / EMA(CLOSE, LONG) * 100
+    DEA1 = EMA(DIF1, MID)
+    AAA1 = (DIF1 - DEA1) * 100
+    # MA120 = REF(MA(C,120),1)
+    # MA5 = REF(MA(C, 120),1)
+    # MA10 = REF(MA(C, 120),1)
+    # PTGD = REF(HHV(C,120),1)
+    # XIN_GAO = IFAND(C > PTGD, C > MA120, True, False)
+    用 = 45
+    户 = AAA1 - REF(AAA1, 1)
+    注册 = CROSS(户, 用)
+    DIF = (EMA(CLOSE, 10) - EMA(CLOSE, 72)) / EMA(CLOSE, 72) * 100
+    DEA = EMA(DIF, 17)
+    AAA = (DIF - DEA) * 100
+    用户 = CROSS(AAA - REF(AAA, 1), 45)
+    # 用户注册 = IFAND4(注册 , 用户, TJ_V, XIN_GAO, 1, 0) #and 去掉;
+
+    TJ_V = True # VOL > 2 * MA(VOL,89)
+
+    # 用户注册 = IFAND4(注册 , 用户, MACDTJ, TJ_V, 1, 0) #and 去掉;
+    用户注册 = IFAND3(注册, 用户, MACDTJ, 1, 0)
+    return 用户注册, False
+
 def tdx_dqe_cfc_A1(data, sort=False):
     # 选择／排序
     C = data.close
