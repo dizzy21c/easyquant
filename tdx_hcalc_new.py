@@ -556,19 +556,19 @@ def tdx_base_func(data, func_name, code, newData, nowPrice, mongo_np, code_list 
     PCT2 = newData['open'] / newData['close']
     PCT = max(PCT1, PCT2)
     ##
-    if (code[0:3] == "300" or code[0:3] == 688) and (PCT > 1.14 ):# or PCT < 0.92):
+    if (code[0:3] == "300" or code[0:3] == 688) and (PCT > 1.08 ):# or PCT < 0.92):
         if timeStr <= "09:30:00":
             return
         else:
             insFlg = False
-    elif (code[0:3] != "300" and code[0:3] != 688) and (PCT > 1.06 ):# or PCT < 0.96):
+    elif (code[0:3] != "300" and code[0:3] != 688) and (PCT > 1.05 ):# or PCT < 0.96):
         if timeStr <= "09:30:00":
             return
         else:
             insFlg = False
 
-    if timeStr > "09:36:00":
-        insFlg = False
+    #if timeStr > "09:36:00":
+    #    insFlg = False
 
     try:
         tdx_func_result, next_buy = eval(func_name)(data)

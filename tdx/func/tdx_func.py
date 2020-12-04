@@ -914,6 +914,77 @@ def tdx_yhzc_macd(data):
     用户注册 = IFAND3(注册, 用户, MACDTJ, 1, 0)
     return 用户注册, False
 
+def tdx_yhzc_kdj(data):
+    # 用户注册
+    # pass
+    # C = data.close
+    CLOSE = data.close
+    C = data.close
+
+    # HIGH = data.high
+    H = data.high
+    L = data.low
+    # LOW = data.low
+    # OPEN = data.open
+    # O = data.open
+    VOL = data.volume
+    # AMOUNT = data.amount
+
+    # 除业绩后退股 := FINANCE(30) >= REF(FINANCE(30), 130);
+    # D0 := 除业绩后退股;
+    # D2 := IF(NAMELIKE('S'), 0, 1);
+    # D3 := IF(NAMELIKE('*'), 0, 1);
+    # D4 := DYNAINFO(17) > 0;
+    # 去除大盘股 := CAPITAL / 1000000 < 20;
+    # 去高价 := C <= 60;
+    # 去掉 := D0 and D2 and D3 and D4 and 去除大盘股 and 去高价 and NOT(C >= REF(C, 1) * 1.097 and C = O and H = L);
+
+    去掉 = True
+    # MACD
+    SHORT =12
+    LONG = 26
+    MID = 9
+    EMASHORT = EMA(CLOSE, SHORT)
+    EMALONG = EMA(CLOSE, LONG)
+    DIF = EMASHORT - EMALONG
+    DEA = EMA(DIF, MID)
+    MACD = (DIF-DEA) * 2
+    MACDTJ = IFAND4(MACD>0, DIF > 0, DEA > 0, CROSS(DIF, DEA), True, False)
+
+    #KDJ
+    N = 19
+    M1 = 3
+    M2 = 3
+    RSV = (CLOSE - LLV(L, N)) / (HHV(H, N) - LLV(L, N)) * 100
+    K = SMA(RSV, M1)
+    D = SMA(K, M2)
+    J = 3 * K - 2 * D
+    KDJTJ = IF(J > 50, True, False)
+    # MACD2
+    DIF1 = (EMA(CLOSE, SHORT) - EMA(CLOSE, LONG)) / EMA(CLOSE, LONG) * 100
+    DEA1 = EMA(DIF1, MID)
+    AAA1 = (DIF1 - DEA1) * 100
+    # MA120 = REF(MA(C,120),1)
+    # MA5 = REF(MA(C, 120),1)
+    # MA10 = REF(MA(C, 120),1)
+    # PTGD = REF(HHV(C,120),1)
+    # XIN_GAO = IFAND(C > PTGD, C > MA120, True, False)
+    用 = 45
+    户 = AAA1 - REF(AAA1, 1)
+    注册 = CROSS(户, 用)
+    DIF = (EMA(CLOSE, 10) - EMA(CLOSE, 72)) / EMA(CLOSE, 72) * 100
+    DEA = EMA(DIF, 17)
+    AAA = (DIF - DEA) * 100
+    用户 = CROSS(AAA - REF(AAA, 1), 45)
+    # 用户注册 = IFAND4(注册 , 用户, TJ_V, XIN_GAO, 1, 0) #and 去掉;
+
+    TJ_V = True # VOL > 2 * MA(VOL,89)
+
+    # 用户注册 = IFAND4(注册 , 用户, MACDTJ, TJ_V, 1, 0) #and 去掉;
+    # 用户注册 = IFAND3(注册, 用户, MACDTJ, 1, 0)
+    用户注册 = IFAND3(注册, 用户, KDJTJ, 1, 0)
+    return 用户注册, False
+
 def tdx_dqe_cfc_A1(data, sort=False):
     # 选择／排序
     C = data.close
@@ -1032,3 +1103,72 @@ def tdx_sxp_yhzc(data):
     # # 用户注册 = IFAND4(注册 , 用户, TJ_V, XIN_GAO, 1, 0) #and 去掉;
     # 用户注册 = IFAND4(注册 , 用户, TJ_V, 后炮, 1, 0) #and 去掉;
     # return 用户注册, False
+#
+# def tdx_mssyjz(data):
+#     CLOSE=data.close
+#     C=data.close
+#     HIGH = data.high
+#     LOW = data.low
+#
+#     XA_1 = (HHV(HIGH, 9) - CLOSE) / (HHV(HIGH, 9) - LLV(LOW, 9)) * 100 - 70
+#     XA_2 = SMA(XA_1, 9, 1) + 100
+#     XA_3 = (CLOSE - LLV(LOW, 9)) / (HHV(HIGH, 9) - LLV(LOW, 9)) * 100
+#     XA_4 = SMA(XA_3, 3, 1)
+#     XA_5 = SMA(XA_4, 3, 1) + 100
+#     XA_6 = XA_5 - XA_2
+#     趋势1 = IF(XA_6 > 45, XA_6 - 45, 0)
+#     XA_7 = REF(LOW, 1)
+#     XA_8 = SMA(ABS(LOW - XA_7), 3, 1) / SMA(MAX(LOW - XA_7, 0), 3, 1) * 100
+#     XA_9 = EMA(IF(CLOSE * 1.3, XA_8 * 10, XA_8 / 10), 3)
+#     XA_10 = LLV(LOW, 30)
+#     VAR1 = C / REF(C, 1) < 0.95
+#     # buy(C / refx(C, 1) < 0.95, LOW)
+#     # sell(REF(VAR1, 1), HIGH)
+#
+#     # DRAWTEXT_FIX(CURRBARSCOUNT=1, 0, 0.18, 0, 2), COLORFF75FF
+#     # DRAWTEXT_FIX(CURRBARSCOUNT=1, 0, 0.28, 0, 27), COLORRED
+#     # DRAWTEXT_FIX(CURRBARSCOUNT=1, 0, 0.08, 0, 26), COLORGREEN
+#     # DRAWTEXT_FIX(CURRBARSCOUNT=1, 0, 0.13, 0, 2), COLORYELLOW
+
+def tdx_bjmm(data):
+    CLOSE = data.close
+    C = data.close
+    H = data.high
+    L = data.low
+    O = data.open
+    VOL = data.volume
+    VAR2 = CLOSE * VOL
+    VAR3 = EMA((EMA(VAR2, 3) / EMA(VOL, 3) + EMA(VAR2, 6) / EMA(VOL, 6)
+                + EMA(VAR2, 12) / EMA(VOL, 12) + EMA(VAR2, 24) / EMA(VOL, 24)) / 4, 13)
+    白线 = 1.06 * VAR3
+    MA4 = MA(C, 4)
+    # MA24 = MA(C, 24)
+    # C1 = C >= MA4
+    # C2 = C < MA4
+    #
+    # # IF(MA4 >= REF(MA4, 1), MA4, DRAWNULL), COLORRED, LINETHICK2;
+    JJ = (3 * C + H + L + O) / 6
+    VAR1 = (8 * JJ + 7 * REF(JJ, 1) + 6 * REF(JJ, 2) + 5 * REF(JJ, 3) + 4 * REF(JJ, 4)
+            + 3 * REF(JJ, 5) + 2 * REF(JJ, 6) + REF(JJ, 8)) / 36
+    TJ2 = IFAND4(VOL == HHV(VOL, 10), VOL > 2 * REF(VOL, 1), CLOSE > VAR1, C > REF(C, 1), True, False)
+    # LJL = FILTER(TJ1, 5)
+    TJ1 = (JJ-白线) /白线 * 100
+
+    # MACDTJ
+    SHORT =12
+    LONG = 26
+    MID = 9
+    EMASHORT = EMA(CLOSE, SHORT)
+    EMALONG = EMA(CLOSE, LONG)
+    DIF = EMASHORT - EMALONG
+    DEA = EMA(DIF, MID)
+    MACD = (DIF-DEA) * 2
+    MACDTJ = IFAND4(MACD>0, DIF > 0, DEA > 0, CROSS(DIF, DEA), True, False)
+
+    # B_1 = IFAND3(TJ1 >= 0, REF(TJ1,1) < 0, MACDTJ, 1, 0)
+    # B_1 = IFAND(TJ1 >= 0, REF(TJ1, 1) < 0, 1, 0)
+    B_1 = IFAND3(TJ1 > 0, REF(TJ1, 1) < 0, TJ2, 1, 0)
+    S_1 = IFAND(TJ1 < 0, REF(TJ1, 1) > 0, 1, 0)
+    # return B_1, B_1, False
+    # return B_1, -1, False
+    return B_1, S_1, False

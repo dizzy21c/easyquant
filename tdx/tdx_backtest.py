@@ -32,7 +32,7 @@ max_hold_days = 20
 pool_size = cpu_count()
 
 # print("pool size=%d" % pool_size)
-def tdx_base_func(data, func_name, code_list = None):
+def tdx_base_func(code, data, func_name, code_list = None):
     """
     准备数据
     """
@@ -45,14 +45,15 @@ def tdx_base_func(data, func_name, code_list = None):
         # print(func_name)
         # tdx_func_result, next_buy = tdx_fscd(data)
         # tdx_func_result, next_buy = tdx_swl(data)
-        tdx_func_result, next_buy = eval(func_name)(data)
+        tdx_func_result, tdx_func_result2, next_buy = eval(func_name)(data)
     # 斜率
     except:
-        tdx_func_result, next_buy = False, False
+        tdx_func_result, tdx_func_result2, next_buy = 0, 0, False
 
     data = data.copy()
     # data['bflg'] = IF(REF(后炮,1) > 0, 1, 0)
     data['bflg'] = tdx_func_result
+    data['sflg'] = tdx_func_result2
     # print("code=%s, bflg=%s" % (code, data['bflg'].iloc[-1]))
     # data['beta'] = 0
     # data['R2'] = 0
@@ -87,10 +88,10 @@ def tdx_base_func(data, func_name, code_list = None):
     #
     # # 右偏标准分
     # data['beta_right'] = data.RSRS_R2 * data.beta
-    # if code == '000732':
+    # if code == '002003':
     #     print(data.tail(22))
     # print(data)
-    return do_buy_sell_fun(data, next_buy = next_buy)
+    return do_buy_sell_fun(code, data, next_buy = next_buy)
     # return data
 
 def tdx_func(datam, func_name, code_list = None):
@@ -105,7 +106,7 @@ def tdx_func(datam, func_name, code_list = None):
         code_list = datam.index.levels[1]
     for code in code_list:
         data=datam.query("code=='%s'" % code)
-        data = tdx_base_func(data, func_name)
+        data = tdx_base_func(code, data, func_name)
         if len(dataR) == 0:
             dataR = data
         else:
@@ -155,7 +156,7 @@ def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
     price = datam.query("code=='%s'" % code)
     # data = price.copy()
     data = price.copy()
-    return do_buy_sell_fun(data)
+    return do_buy_sell_fun(code, data)
 
 def buy_action(data, next_buy, col_pos_tup, i):
     (flag_col, position_col, hold_price_col, close_col, open_col) = col_pos_tup
@@ -212,7 +213,7 @@ def sell_action(data, col_pos_tup, i, sell_pct):
     sflg = 0
     return position, sflg
 
-def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
+def do_buy_sell_fun(code, data, next_buy = False, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
@@ -226,6 +227,7 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
     data['win_flg'] = 0  # 盈利标记
     data['sell_flg'] = 0  # 盈利标记
     bflag = data.columns.get_loc('bflg')
+    sflag = data.columns.get_loc('sflg')
     # beta = data.columns.get_loc('beta')
     flag_col = data.columns.get_loc('flag')
     position_col = data.columns.get_loc('position')
@@ -268,8 +270,13 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
             #     data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
                 # pass
         # 平仓
+        elif data.iat[i, sflag] > 0 and position == 1:
+            # cprice = data.iat[i, close_col]
+            # hold_price = data.iat[i, hold_price_col]
+            sell_action_param = (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col, close_col)
+            position, sflg = sell_action(data, sell_action_param, i, 999)
         # elif data.iat[i, bflag] == S2 and position == 1:
-        elif data.iat[i, position_col] > 0 and position == 1:
+        elif data.iat[i, sflag] == -1 and data.iat[i, position_col] > 0 and position == 1:
             cprice = data.iat[i, close_col]
             hold_price = data.iat[i, hold_price_col]
             if cprice < hold_price * 0.93:# or oprice < hold_price * 0.95:
@@ -334,6 +341,10 @@ def do_buy_sell_fun(data, next_buy = False, S1=1.0, S2=0.8):
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
 
     data['nav'] = (1+data.close.pct_change(1).fillna(0) * data.position).cumprod() - 1
+
+    # if code == '002003':
+    #     data.to_csv("%s.csv" % code)
+
     return data
 
 def backtest(indices_DataFrame):
@@ -350,7 +361,8 @@ def backtest(indices_DataFrame):
         for x in df_prices.index:
             print(df_prices.loc[x].name[0])
             row_data = df_prices.loc[x]
-            task_list.append(executor.submit(do_buy_sell_fun, row_data, x))
+            code="***"
+            task_list.append(executor.submit(do_buy_sell_fun, code, row_data, x))
         # data = price.copy()
         # data = price.copy()
         # codes =
