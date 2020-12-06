@@ -32,7 +32,7 @@ max_hold_days = 20
 pool_size = cpu_count()
 
 # print("pool size=%d" % pool_size)
-def tdx_base_func(code, data, func_name, code_list = None):
+def tdx_base_func(code, data, func_name, mongo_np, code_list = None):
     """
     准备数据
     """
@@ -91,7 +91,7 @@ def tdx_base_func(code, data, func_name, code_list = None):
     # if code == '002003':
     #     print(data.tail(22))
     # print(data)
-    return do_buy_sell_fun(code, data, next_buy = next_buy)
+    return do_buy_sell_fun(mongo_np, func_name, code, data, next_buy = next_buy)
     # return data
 
 def tdx_func(datam, func_name, code_list = None):
@@ -101,12 +101,13 @@ def tdx_func(datam, func_name, code_list = None):
     # highs = data.high
     start_t = datetime.datetime.now()
     print("begin-tdx_func:", start_t)
+    mongo_np = MongoIo()
     dataR = pd.DataFrame()
     if code_list is None:
         code_list = datam.index.levels[1]
     for code in code_list:
         data=datam.query("code=='%s'" % code)
-        data = tdx_base_func(code, data, func_name)
+        data = tdx_base_func(code, data, func_name, mongo_np)
         if len(dataR) == 0:
             dataR = data
         else:
@@ -158,7 +159,7 @@ def buy_sell_fun(datam, code, S1=1.0, S2=0.8):
     data = price.copy()
     return do_buy_sell_fun(code, data)
 
-def buy_action(data, next_buy, col_pos_tup, i):
+def buy_action(mongo_np, func_name, code, data, next_buy, col_pos_tup, i):
     (flag_col, position_col, hold_price_col, close_col, open_col) = col_pos_tup
     if next_buy:
         if i == len(data) - 1:
@@ -167,11 +168,14 @@ def buy_action(data, next_buy, col_pos_tup, i):
         if data.iat[i+1, open_col] / data.iat[i, close_col] > 1.095 \
                 or data.iat[i+1, open_col] / data.iat[i, close_col] < 0.88:
             return 0, 0
+        dateObj = data.iloc[i+1].name[0]
+        nowPrice = data.iat[i+1, close_col]
+        _profi = mongo_np.upd_order(func_name, dateObj, code, nowPrice)
+
         data.iat[i + 1, flag_col] = 1
         data.iat[i + 1, position_col] = 1
         data.iat[i + 1, hold_price_col] = data.iat[i+1, open_col]
-        print("buy  : date=%s code=%s price=%.2f" %
-              (data.iloc[i+1].name[0], data.iloc[i+1].name[1], data.iat[i+1, close_col]))
+        print("buy  : date=%s code=%s price=%.2f" % (dateObj, code, nowPrice))
         if i < len(data) - 2:
             data.iat[i + 2, position_col] = 1
             data.iat[i + 2, hold_price_col] = data.iat[i + 1, hold_price_col]
@@ -180,11 +184,14 @@ def buy_action(data, next_buy, col_pos_tup, i):
         if data.iat[i, close_col] / data.iat[i - 1, close_col] > 1.095 \
                 or data.iat[i, close_col] / data.iat[i - 1, close_col] < 0.88:
             return 0, 0
+        dateObj = data.iloc[i].name[0]
+        nowPrice = data.iat[i, close_col]
+        _profi = mongo_np.upd_order(func_name, dateObj, code, nowPrice)
+
         data.iat[i, flag_col] = 1
         data.iat[i, position_col] = 1
         data.iat[i, hold_price_col] = data.iat[i, close_col]
-        print("buy  : date=%s code=%s price=%.2f" %
-              (data.iloc[i].name[0], data.iloc[i].name[1], data.iat[i, close_col]))
+        print("buy  : date=%s code=%s price=%.2f" % (dateObj, code, nowPrice))
         if i < len(data) - 1:
             data.iat[i + 1, position_col] = 1
             data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]
@@ -193,7 +200,7 @@ def buy_action(data, next_buy, col_pos_tup, i):
     hdays = 0
     return position, hdays
 
-def sell_action(data, col_pos_tup, i, sell_pct):
+def sell_action(mongo_np, func_name, code, data, col_pos_tup, i, sell_pct):
     (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col, close_col) = col_pos_tup
     data.iat[i, flag_col] = -1
     data.iat[i, sell_flg_col] = 1
@@ -205,7 +212,11 @@ def sell_action(data, col_pos_tup, i, sell_pct):
     data.iat[i + 1, hold_price_col] = 0
     # print("sell 60 : date=%s code=%s  price=%.2f, hold-price=%.2f" % (data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
     # logout_out(data, 1, i, sell_pct)
-    print("pct=", sell_pct, ", sell : date=%s code=%s  price=%.2f hold-price=%.2f" %
+    dateObj = data.iloc[i].name[0]
+    nowPrice = data.iat[i, close_col]
+    profi = mongo_np.upd_sell_order(func_name, code, nowPrice, dateObj)
+
+    print("pct=", profi, ", sell : date=%s code=%s  price=%.2f hold-price=%.2f" %
           (data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
     # 持仓标记
     position = 0
@@ -213,7 +224,7 @@ def sell_action(data, col_pos_tup, i, sell_pct):
     sflg = 0
     return position, sflg
 
-def do_buy_sell_fun(code, data, next_buy = False, S1=1.0, S2=0.8):
+def do_buy_sell_fun(mongo_np, func_name, code, data, next_buy = False, S1=1.0, S2=0.8):
     """
     斜率指标交易策略标准分策略
     """
@@ -263,7 +274,7 @@ def do_buy_sell_fun(code, data, next_buy = False, S1=1.0, S2=0.8):
             #         and buy_ctl_check(data.iloc[i].name[0], buy_ctl_dict, share_lock):
             # 去除涨停
             # if data.iat[i, close_col] / data.iat[i - 1, close_col] < 1.095:
-            position, hdays = buy_action(data, next_buy, (flag_col, position_col, hold_price_col, close_col, open_col), i)
+            position, hdays = buy_action(mongo_np, func_name, code, data, next_buy, (flag_col, position_col, hold_price_col, close_col, open_col), i)
             # else:
             #     # data.iat[i, position_col] = 0
             #     data.iat[i + 1, position_col] = data.iat[i, position_col]
@@ -274,7 +285,7 @@ def do_buy_sell_fun(code, data, next_buy = False, S1=1.0, S2=0.8):
             # cprice = data.iat[i, close_col]
             # hold_price = data.iat[i, hold_price_col]
             sell_action_param = (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col, close_col)
-            position, sflg = sell_action(data, sell_action_param, i, 999)
+            position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 999)
         # elif data.iat[i, bflag] == S2 and position == 1:
         elif data.iat[i, sflag] == -1 and data.iat[i, position_col] > 0 and position == 1:
             cprice = data.iat[i, close_col]
@@ -310,27 +321,27 @@ def do_buy_sell_fun(code, data, next_buy = False, S1=1.0, S2=0.8):
                 high_price = data.iat[i, high_col]
             sell_action_param = (flag_col, position_col, hold_price_col, win_flg_col, sell_flg_col, close_col)
             if sflg < 0:# or cprice > hprice * 1.2:
-                position, sflg = sell_action(data, sell_action_param, i, -5)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, -5)
             elif sflg == 9 and high_price / cprice > 1.15:
-                position, sflg = sell_action(data, sell_action_param, i, 90)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 90)
             elif sflg == 8 and high_price / cprice > 1.12:
-                position, sflg = sell_action(data, sell_action_param, i, 80)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 80)
             elif sflg == 7 and high_price / cprice > 1.1:
-                position, sflg = sell_action(data, sell_action_param, i, 70)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 70)
             elif sflg == 6 and high_price / cprice > 1.1:
-                position, sflg = sell_action(data, sell_action_param, i, 60)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 60)
             elif sflg == 5 and high_price / cprice > 1.09:
-                position, sflg = sell_action(data, sell_action_param, i, 50)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 50)
             elif sflg == 4 and high_price / cprice > 1.08:
-                position, sflg = sell_action(data, sell_action_param, i, 40)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 40)
             elif sflg == 3 and high_price / cprice > 1.06:
-                position, sflg = sell_action(data, sell_action_param, i, 30)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 30)
             elif sflg == 2 and high_price / cprice > 1.05:
-                position, sflg = sell_action(data, sell_action_param, i, 20)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 20)
             elif sflg == 1 and high_price / cprice > 1.04:
-                position, sflg = sell_action(data, sell_action_param, i, 10)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 10)
             elif sflg == 0 and hdays > max_hold_days:
-                position, sflg = sell_action(data, sell_action_param, i, 0)
+                position, sflg = sell_action(mongo_np, func_name, code, data, sell_action_param, i, 0)
             else:
                 data.iat[i + 1, position_col] = data.iat[i, position_col]
                 data.iat[i + 1, hold_price_col] = data.iat[i, hold_price_col]

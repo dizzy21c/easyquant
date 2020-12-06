@@ -441,6 +441,24 @@ class MongoIo(object):
 
         return profi
 
+    def upd_sell_order(self, func_name, code, price, upd_date):
+        table = 'st_orders-%s' % func_name
+        tax_comm = 1.003
+        datas = self.db[table].find({'code': code})
+        dc = datas.count()
+        i = 0
+        profi = 0.0
+        for data in datas:
+            i = i + 1
+            if i == dc:
+                data['upd-date'] = upd_date
+                # data['buy-time'] = data['buy-date'][11:]
+                data['cur-price'] = price
+                data['pct-price'] = (price - data['buy-price'] * tax_comm) / data['buy-price'] * 100
+                profi = data['pct-price']
+                self.db[table].replace_one({'_id': data['_id']}, data, True)
+        return profi
+
     def upd_order_hist(self, func_name, code, price, openPrice, upd_date):
         table = 'st_orders-%s' % func_name
         tax_comm = 1.003
