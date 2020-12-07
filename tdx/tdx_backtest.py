@@ -216,8 +216,8 @@ def sell_action(mongo_np, func_name, code, data, col_pos_tup, i, sell_pct):
     nowPrice = data.iat[i, close_col]
     profi = mongo_np.upd_sell_order(func_name, code, nowPrice, dateObj)
 
-    print("pct=", profi, ", sell : date=%s code=%s  price=%.2f hold-price=%.2f" %
-          (data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
+    print("pct=%.2f, sell : date=%s code=%s  price=%.2f hold-price=%.2f" %
+          (profi, data.iloc[i].name[0], data.iloc[i].name[1], close_price, hold_price))
     # 持仓标记
     position = 0
     # 盈亏标记
