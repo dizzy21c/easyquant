@@ -1171,7 +1171,7 @@ def tdx_bjmm(data):
     # B_1 = IFAND(TJ1 >= 0, REF(TJ1, 1) < 0, 1, 0)
     # B_1 = IFAND4(TJ1 > 0, REF(TJ1, 1) < 0, TJ2, MACDTJ, 1, 0)
     B_1 = IFAND3(TJ1 > 0, REF(TJ1, 1) < 0, TJ2, 1, 0)
-    S_1 = IFAND(TJ1 < 0, REF(TJ1, 1) > 0, 1, 0)
+    S_1 = IFAND(TJ1 < 0, REF(TJ1, 1) > 0, 1, -1)
     # return B_1, B_1, False
     # return B_1, -1, False
     return B_1, S_1, False
@@ -1246,3 +1246,49 @@ def tdx_bjmm_yhzc(data):
     B_1 = IFAND5(TJ1 > 0, REF(TJ1, 1) < 0, TJ2, 用户注册, MACDTJ, 1, 0)
     return B_1, S_1, False
 
+
+def tdx_bjmm_new(data):
+    # AMOUNT = data.amount
+    VOL = data.volume
+    CLOSE = data.close
+    C = data.close
+    H = data.high
+    L = data.low
+    O = data.open
+    VAR2 = CLOSE * VOL
+    VAR3 = EMA((EMA(VAR2, 3) / EMA(VOL, 3) + EMA(VAR2, 6) / EMA(VOL, 6)
+                + EMA(VAR2, 12) / EMA(VOL, 12) + EMA(VAR2, 24) / EMA(VOL, 24)) / 4, 13)
+    白线 = 1.06 * VAR3
+    MA4 = MA(C, 4)
+    MA24 = MA(C, 24)
+    # C1 = C >= MA4
+    # C2 = C < MA4
+    #
+    # # IF(MA4 >= REF(MA4, 1), MA4, DRAWNULL), COLORRED, LINETHICK2;
+    JJ = (3 * C + H + L + O) / 6
+    VAR1 = (8 * JJ + 7 * REF(JJ, 1) + 6 * REF(JJ, 2) + 5 * REF(JJ, 3) + 4 * REF(JJ, 4)
+            + 3 * REF(JJ, 5) + 2 * REF(JJ, 6) + REF(JJ, 8)) / 36
+    TJ2 = IFAND4(VOL == HHV(VOL, 10), VOL > 2 * REF(VOL, 1), CLOSE > VAR1, C > REF(C, 1), True, False)
+    # LJL = FILTER(TJ2, 5)
+    TJ1 = (JJ-白线) /白线 * 100
+
+    # MACDTJ
+    SHORT =12
+    LONG = 26
+    MID = 9
+    EMASHORT = EMA(CLOSE, SHORT)
+    EMALONG = EMA(CLOSE, LONG)
+    DIF = EMASHORT - EMALONG
+    DEA = EMA(DIF, MID)
+    MACD = (DIF-DEA) * 2
+    # MACDTJ = IFAND4(MACD>0, DIF > 0, DEA > 0, CROSS(DIF, DEA), True, False)
+    MACDTJ = IFAND3(MACD > 0, DIF > 0, DEA > 0, True, False)
+    TJ3 = IFAND4(C>白线, C>MA24, REF(C,1) < REF(白线,1), REF(C,1) < REF(MA24,1), True, False)
+    # B_1 = IFAND3(TJ1 >= 0, REF(TJ1,1) < 0, MACDTJ, 1, 0)
+    # B_1 = IFAND(TJ1 >= 0, REF(TJ1, 1) < 0, 1, 0)
+    # B_1 = IFAND4(TJ1 > 0, REF(TJ1, 1) < 0, TJ2, MACDTJ, 1, 0)
+    B_1 = IFAND4(TJ1 > 0, REF(TJ1, 1) < 0, TJ2, TJ3, 1, 0)
+    S_1 = IFAND(TJ1 < 0, REF(TJ1, 1) > 0, 1, -1)
+    # return B_1, B_1, False
+    # return B_1, -1, False
+    return B_1, S_1, False
