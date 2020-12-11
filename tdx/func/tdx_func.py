@@ -405,7 +405,7 @@ def tdx_buerfameng(data):
     # DRAWICON(CROSS(C,罪恶滔天) ,L*0.988,1)
     # XG = CROSS(C,罪恶滔天)
     XG = IFAND(CROSS(C, 罪恶滔天), (X_6 + 1) > 0.9, 1, 0)
-    return XG, False
+    return XG, -1, False
 
 def tdx_a06_zsd(data):
     # {A06.钻石底}
@@ -1143,7 +1143,7 @@ def tdx_bjmm(data):
                 + EMA(VAR2, 12) / EMA(VOL, 12) + EMA(VAR2, 24) / EMA(VOL, 24)) / 4, 13)
     白线 = 1.06 * VAR3
     MA4 = MA(C, 4)
-    # MA24 = MA(C, 24)
+    MA24 = MA(C, 24)
     # C1 = C >= MA4
     # C2 = C < MA4
     #
@@ -1171,7 +1171,8 @@ def tdx_bjmm(data):
     # B_1 = IFAND(TJ1 >= 0, REF(TJ1, 1) < 0, 1, 0)
     # B_1 = IFAND4(TJ1 > 0, REF(TJ1, 1) < 0, TJ2, MACDTJ, 1, 0)
     B_1 = IFAND3(TJ1 > 0, REF(TJ1, 1) < 0, TJ2, 1, 0)
-    S_1 = IFAND(TJ1 < 0, REF(TJ1, 1) > 0, 1, 0)
+    S_1 = IFAND(TJ1 < 0, REF(TJ1, 1) > 0, 1, -1)
+    # S_1 = IFAND(C < MA24, REF(C,1) > REF(MA24,1), 1, -1)
     # return B_1, B_1, False
     # return B_1, -1, False
     return B_1, S_1, False
