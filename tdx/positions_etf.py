@@ -65,7 +65,7 @@ def do_main_work(code, data, log, positions):
     df_day = data_buf_day[code]
     df_day = new_df(df_day, data, now_price)
     m5 = MA(df_day.close, 5)
-    xg, nbFlg = tdx_buerfameng(df_day)
+    xg, sell_flg, nbFlg = tdx_buerfameng(df_day)
     chag_pct = (data['now'] - data['close']) / data['close'] * 100
     log.info("code=%s bf=%d now=%6.3f pct=%6.2f m5=%6.3f, high=%6.3f, low=%6.3f" % (code, xg.iloc[-1], now_price, chag_pct, m5.iloc[-1], data['high'], data['low']))
 
