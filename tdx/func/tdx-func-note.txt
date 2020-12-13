@@ -2346,3 +2346,60 @@ DRAWTEXT_FIX(CURRBARSCOUNT=1,0,0.28,0,27),COLORRED;
 DRAWTEXT_FIX(CURRBARSCOUNT=1,0,0.08,0,26),COLORGREEN;
 DRAWTEXT_FIX(CURRBARSCOUNT=1,0,0.13,0,2),COLORYELLOW;
 
+=======================
+这是个非常简单但效果很不错的指标，可以结合常用指标MACD一起使用，指标用得多了，你会越来越喜欢比较简洁的指标，我现在也是用比较简单的指标，之前发的那些都是出于兴趣收集的。当然，从复杂到简单中间需要一个过度，所以，接下来我还是会继续发我收集来的指标。
+关于MACD的使用网上的说法很多，分为0轴上 0轴下 轴上金叉 死叉  红绿柱 顶底背离 而且每个说法又再次细分多种不同的情况，差不多可以出本书了。
+我用MACD 的理由跟这个指标一样，只分轴上和轴下两种情况就OK了，其它的中间情况可以直接忽略。
+
+这个指标和MACD的差别在于设置周期的不同，比MACD较为滞后，但更为稳定，还有一个特点是多加了一个平滑的K线图，在判断背离是更为直观。
+
+
+A1:EMA(C,20)-EMA(C,60),COLORSTICK;
+A2:=C-EMA(C,60);
+A3:EMA(A2,5);
+A4:EMA(A3,3);
+DRAWKLINE(A2,REF(A2,1),REF(A2,1),A2);
+XG:=A1>0 AND REF(A3,1)<REF(A3,2) AND A3>REF(A3,1);
+
+
+==========================
+这是个副图辅助指标，可以结合前面的白金买一起使用。我把白金买多余的线去掉，只留下白粗线和绿线。
+
+冲破天（副图）
+B:=EMA(REF(CLOSE,1),4);
+红色启动:=(SMA(MAX(CLOSE-B,0),6,1)/SMA(ABS(CLOSE-B),6,1)*100);
+天线:50,COLORGREEN,LINETHICK2;DIFF:=EMA(CLOSE,12)-EMA(CLOSE,26);
+DEA:=EMA(DIFF,9);
+MACD:=2000* (2*(DIFF-DEA))/EMA(C,30),LINETHICK0;
+A:STICKLINE(MACD>=0 AND MACD>REF(MACD,1),0,MACD,3,0),COLORRED;
+
+
+
+简化白金买（主图）
+
+VAR2:=CLOSE*VOL;
+VAR3:=EMA((EMA(VAR2,3)/EMA(VOL,3)+EMA(VAR2,6)/EMA(VOL,6)
++EMA(VAR2,12)/EMA(VOL,12)+EMA(VAR2,24)/EMA(VOL,24))/4,13);
+白线:1.06*VAR3,COLORWHITE,LINETHICK2;
+MA4:MA(C,4),COLORWHITE,LINETHICK0;
+MA24:MA(C,24), COLORGREEN,LINETHICK1;
+IF(MA4>=REF(MA4,1),MA4,DRAWNULL),COLORRED,LINETHICK0;
+C1:=C>=MA4;C2:=C<MA4;
+
+JJ:=(3*C+H+L+O)/6; VAR1:=(8*JJ+7*REF(JJ,1)+6*REF(JJ,2)+5*REF(JJ,3)+4*REF(JJ,4)+3*REF(JJ,5)+2*REF(JJ,6)+REF(JJ,8))/36;
+TJ1:=VOL=HHV(VOL,10) AND VOL>2*REF(VOL,1) AND CLOSE>VAR1 AND C>REF(C,1);
+LJL:=FILTER(TJ1,5);
+黄金柱:=(CLOSE,REF(CLOSE,BARSLAST(LJL)),REF(CLOSE,BARSLAST(LJL)),6,0);
+WWW1:=C>MA(C,63);{WWW.55188.COM}
+黄金!:=C>黄金柱 AND WWW1 AND (C>HHV(MA((LOW+HIGH+CLOSE)/3,5),60)) AND (C>1.06*(EMA((EMA(CLOSE*VOL,3)/EMA(VOL,3)+EMA(CLOSE*VOL,6)/EMA(VOL,6)
++EMA(CLOSE*VOL,12)/EMA(VOL,12)+EMA(CLOSE*VOL,24)/EMA(VOL,24))/4,13))) AND C>REF(C,1);
+
+STICKLINE(LJL,OPEN,CLOSE,3,0),COLORYELLOW;{K线上下划线};
+DRAWKLINE(H,O,L,C);
+
+使用说明
+（副）红柱子开始出现时，同时主图K线突破白线可以尝试买入，当红柱子开始衰竭时减仓或清仓。
+（主）关于白金买的使用大家可以参考前面（白金买的帖子）。
+
+
+
