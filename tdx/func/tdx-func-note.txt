@@ -2402,4 +2402,44 @@ DRAWKLINE(H,O,L,C);
 （主）关于白金买的使用大家可以参考前面（白金买的帖子）。
 
 
+=================================
+指标源码思路来自于缠中说禅1 2  3类买点的升级版本，了解缠中说禅的买点基本懂买点信号的缘由，该源码比1  2  3类买点来的更稳定点，信号第一次出来可以不进场（对于保守型交易者或者资金大除外）下次出来的买点可能是一个新的信号点，或者是放量过前信号的最高价进场或者加仓
+指标不是万能的，他就是把个人的交易思路用图片和信号的方式表达出来的一种工具罢了，好和坏都在于用的人本身的理解和领悟能力问题。缠中说禅就是千人千缠，但是通了的人基本上就是一种通用的缠了。
+
+{MACD回拉买点}
+DIF:EMA(CLOSE,12)-EMA(CLOSE,26) COLORRED;
+DEA:EMA(DIF,9) COLORGREEN;
+MACD:(DIF-DEA)*2,COLORSTICK;
+买线1:=LLV(MA(((C+L+O+H)/4),10),5);
+卖线:=HHV(MA(((C+L+O+H)/4),5),5);
+倍:=(卖线+买线1)/2;
+涨停价:=ZTPRICE(REF(C,1),0.1) NODRAW;
+跌停价:=DTPRICE(REF(C,1),0.1) NODRAW;
+注:=CROSS(C,倍) NODRAW;
+
+
+试:=H>=倍 AND C<倍 AND (C>=O OR C>=REF(CLOSE,1)) NODRAW;
+价:(卖线+买线1)/2 NODRAW;
+涨停:=CLOSE/REF(CLOSE,1)>=1.095;
+STICKLINE(注=1,0,MACD,0.2,0),COLORYELLOW;
+STICKLINE(H>=倍 AND C<倍,0,MACD,0.2,0),COLORWHITE;
+DRAWTEXT(注=1 AND 涨停,0,'妖'),COLORGREEN,LINETHICK2;
+
+STICKLINE(注=1 AND C>=MA(C,30),0,MACD,0.7,0),COLORRED;
+
+
+
+A1:=BARSLAST(REF(CROSS(DIF,DEA),1));
+A11:=BARSLAST(REF(CROSS(DIF,DEA),1));
+金叉价:=REF(C,BARSLAST(CROSS(DIF,DEA)));
+金叉量:=REF(V,BARSLAST(CROSS(DIF,DEA)));
+水上条件:C>=金叉价*0.98 AND 注=1 AND C>=MA(C,20) AND DIF>0 AND DEA>0;
+水下条件:C>=金叉价*0.98 AND 注=1 AND C>=MA(C,20) AND DIF<0 AND DEA<0;
+
+水上条件S:C>=金叉价*0.98 AND C>=MA(C,20) AND DIF>0 AND DEA>0 AND DIF>REF(DIF,1) AND DIF<=DEA;
+水下条件S:C>=金叉价*0.98 AND C>=MA(C,20) AND DIF<0 AND DEA<0 AND DIF>REF(DIF,1) AND DIF<=DEA;
+DRAWTEXT(水上条件=1,MACD,'上'),COLORRED;
+DRAWTEXT(水上条件S=1,MACD,'上S'),COLORRED;
+DRAWTEXT(水下条件=1,MACD,'下'),COLORRED;
+DRAWTEXT(水下条件S=1,MACD,'下S'),COLORRED;
 
