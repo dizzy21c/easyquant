@@ -1293,3 +1293,23 @@ def tdx_bjmm_new(data):
     # return B_1, B_1, False
     # return B_1, -1, False
     return B_1, S_1, False
+
+def tdx_sxjm(data):
+    # AMOUNT = data.amount
+    # VOL = data.volume
+    # CLOSE = data.close
+    C = data.close
+    # H = data.high
+    # L = data.low
+    # O = data.open
+    A1 = EMA(C, 20) - EMA(C, 60)
+    A2 = C - EMA(C, 60)
+    A3 = EMA(A2, 5)
+    A4 = EMA(A3, 3)
+    MA24 = MA(C, 24)
+    # XG = A1 > 0 and REF(A3, 1) < REF(A3, 2) and A3 > REF(A3, 1)
+    XG1 = IFAND3(A1 > 0, REF(A3, 1) < REF(A3, 2), A3 > REF(A3, 1), 1, 0)
+    # XG1 = IFAND3(A1 > 0, REF(A3, 1) > REF(A3, 2), A3 > REF(A3, 1), 1, 0)
+    XG2 = IFAND4(XG1 > 0, A4 > REF(A4, 1), C > MA24, REF(C,1) < REF(MA24,1), 1, 0)
+
+    return XG2, -1, False
