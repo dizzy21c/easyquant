@@ -532,10 +532,10 @@ def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
             continue
         
         data=datam.query("code=='%s'" % code)
-        # pb_value = pba_calc(code)
-        # if not pb_value:
-        #     print("pb < 0 code=%s" % code)
-        #     continue
+        pb_value = pba_calc(code)
+        if not pb_value:
+            # print("pb < 0 code=%s" % code)
+            continue
         try:
             if type == 'B':
                 newdata0 = newdatas.query("code=='%s'" % code)
@@ -546,6 +546,10 @@ def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
                     continue
             else:
                 newdata = newdatas[code]
+            sname = newdata['name']
+            if sname[0:1] == '*' or sname[0:2] == "*ST":
+                print("name is ST, %s, %s" % ( code, sname))
+                continue
             now_price = newdata['now']
             # if (code == '003001'):
             #     print(data)
@@ -556,9 +560,10 @@ def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
             # tdx_base_func(data.copy(), "tdx_dhmcl", code)
             # tdx_base_func(data, "tdx_sxp", code)
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
-            dao = dao = tdx_dqe_cfc_A1(data)
+            # dao = tdx_dqe_cfc_A1(data)
+            dao = eval(func_name)(data)
             # if dao > 0:
-            data={'code':code, 'price':now_price, 'dao':dao}
+            data={'code': code, 'name': sname, 'price': now_price, 'dao': dao, 'pct':'%6.2f' % 15.12345 }
             dataR = dataR.append(data,ignore_index=True)
         except:
             print("error code=%s" % code)
