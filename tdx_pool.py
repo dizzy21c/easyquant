@@ -35,6 +35,7 @@ data_codes = Manager().dict()
 data_buf_day = Manager().dict()
 data_buf_stockinfo = Manager().dict()
 databuf_mongo = Manager().dict()
+databuf_mongo_day = Manager().dict()
 databuf_mongo_1 = Manager().dict()
 databuf_mongo_5 = Manager().dict()
 databuf_mongo_15 = Manager().dict()
@@ -161,11 +162,13 @@ def do_main_work(code, data):
     #     print("calc code=%s now=%6.2f TPCQPZ" % (code, now_price))
 
 
-def do_get_data_mp(key, codelist, st_start, st_end):
+def do_get_data_mp(key, codelist, st_start, st_end, back_time, c_type):
     mongo_mp = MongoIo()
     # start_t = datetime.datetime.now()
     # print("begin-get_data do_get_data_mp: key=%s, time=%s" %( key,  start_t))
     databuf_mongo[key] = mongo_mp.get_stock_day(codelist, st_start=st_start, st_end=st_end)
+    if c_type == 'B':
+        databuf_mongo_day[key] = mongo_mp.get_stock_day(codelist, st_start=back_time, st_end=back_time)
     # end_t = datetime.datetime.now()
     # print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
     for code in codelist:
@@ -198,7 +201,7 @@ def do_get_data_mp_min(key, codelist, st_start, freq):
         # end_t = datetime.datetime.now()
     # print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
 
-def get_data(st_start, st_end):
+def get_data(st_start, st_end, back_time, c_type):
     start_t = datetime.datetime.now()
     print("begin-get_data:", start_t)
     # ETF/股票代码，如果选股以后：我们假设有这些代码
@@ -254,7 +257,7 @@ def get_data(st_start, st_end):
         else:
             code_dict[str(i)] = codelist[i * subcode_len:]
 
-        pool.apply_async(do_get_data_mp, args=(i, code_dict[str(i)], st_start, st_end))
+        pool.apply_async(do_get_data_mp, args=(i, code_dict[str(i)], st_start, st_end, back_time, c_type))
 
     pool.close()
     pool.join()
@@ -445,7 +448,7 @@ def tdx_func_mp(func_name, type='', backTime=''):
     # pool = Pool(cpu_count())
     for key in range(pool_size):
         # tdx_func(databuf_mongo[key])
-        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key], newdatas, func_name, type=type))
+        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key], newdatas, databuf_mongo_day[key], func_name, type=type))
     # pool.close()
     # pool.join()
 
@@ -516,7 +519,7 @@ def tdx_func_upd_hist_order(func_name):
     # return dataR
 
 
-def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
+def tdx_func(datam, newdatas, lastday_data, func_name, code_list = None, type=''):
     """
     准备数据
     """
@@ -537,17 +540,27 @@ def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
             # print("pb < 0 code=%s" % code)
             continue
         try:
+            price_pct = 0.0
+            now_price = 0.0
             if type == 'B':
                 newdata0 = newdatas.query("code=='%s'" % code)
+                lastdata = lastday_data.query("code=='%s'" % code)
                 if len(newdata0) > 0:
                     newdata = newdata0.iloc[-1]
+                    now_price = newdata['now']
+                    last_price = lastdata.iloc[-1].close
+                    try:
+                        price_pct = (last_price - now_price) / now_price * 100
+                    except:
+                        print("calc pct error code=%s" % code)
                 else:
                     print("data-len=0, code=", code)
                     continue
+                
             else:
                 newdata = newdatas[code]
             sname = newdata['name']
-            if sname[0:1] == '*' or sname[0:2] == "*ST":
+            if sname[0:1] == '*' or sname[0:2] == "ST":
                 print("name is ST, %s, %s" % ( code, sname))
                 continue
             now_price = newdata['now']
@@ -562,9 +575,10 @@ def tdx_func(datam, newdatas, func_name, code_list = None, type=''):
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
             # dao = tdx_dqe_cfc_A1(data)
             dao = eval(func_name)(data)
-            # if dao > 0:
-            data={'code': code, 'name': sname, 'price': now_price, 'dao': dao, 'pct':'%6.2f' % 15.12345 }
-            dataR = dataR.append(data,ignore_index=True)
+            if dao > 0:
+                # data={'code': code, 'name': sname, 'price': now_price, 'dao': dao, 'pct':'%6.2f' % 15.12345 }
+                data={'code': code, 'price': now_price, 'dao': dao, 'pct':'%5.2f' % price_pct }
+                dataR = dataR.append(data,ignore_index=True)
         except:
             print("error code=%s" % code)
             # return
@@ -659,7 +673,7 @@ if __name__ == '__main__':
 
     # st_start, st_end, func = main_param(sys.argv)
     # print("input", st_start, st_end, func)
-    st_start, st_end, func, type, back_time = main_param(sys.argv)
+    st_start, st_end, func, c_type, back_time = main_param(sys.argv)
     # st_start = "2019-01-01"
     # func = "test"
     print("input st-start=%s, st-end=%s, func=%s, type=%s, back-time=%s" % (st_start, st_end, func, type, back_time))
@@ -669,7 +683,7 @@ if __name__ == '__main__':
     # print(data_day)
     # indices_rsrsT = tdx_func(data_day)
     # if type != 'R':
-    get_data(st_start, st_end)
+    get_data(st_start, st_end, back_time, c_type)
 
     # 2, 计算公式（多进程，读取缓冲）
     while True:
@@ -684,17 +698,17 @@ if __name__ == '__main__':
             time.sleep(10)
             print("log:sleep PM")
             continue
-        # if datetime.time(11, 30, 10) < nowtime < datetime.time(12, 59, 50):
-        #     time.sleep(10)
-        #     print("log:sleep AM")
-        #     continue
+        if datetime.time(11, 30, 10) < nowtime < datetime.time(12, 59, 50):
+            time.sleep(10)
+            print("log:sleep AM")
+            continue
 
-        # if nowtime > datetime.time(15,0,30):
-        #     print("end trade time.")
-        #     time.sleep(3600)
-        #     # break
-        # print("*** loop calc begin ***")
-        tdx_func_mp(func, type=type, backTime=back_time)
+        if nowtime > datetime.time(15,0,30):
+            print("end trade time.")
+            time.sleep(3600)
+            # break
+        print("*** loop calc begin ***")
+        tdx_func_mp(func, type=c_type, backTime=back_time)
 
-        # if type == 'B':
-        input()
+        if type == 'B':
+            input()
