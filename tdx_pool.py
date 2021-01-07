@@ -469,7 +469,8 @@ def tdx_func_mp(func_name, type='', backTime=''):
             dataR = dataR.append(task.result())
     
     # dataR=dataR.sort(columns = ['dao'],axis = 0,ascending = False)
-    dataR=dataR.sort_values(by = 'dao',axis = 0,ascending = False)
+    if len(dataR) > 0:
+        dataR=dataR.sort_values(by = 'dao',axis = 0,ascending = False)
     
     dataR.to_csv("dqe-%s.csv" % backTime)
     # print("dataR=", len(dataR))
@@ -692,21 +693,21 @@ if __name__ == '__main__':
         #     input()
         #     break
 
-    #  if type == 'T':
-        nowtime = datetime.datetime.now().time()
-        if nowtime < datetime.time(9, 25, 50):
-            time.sleep(10)
-            print("log:sleep PM")
-            continue
-        if datetime.time(11, 30, 10) < nowtime < datetime.time(12, 59, 50):
-            time.sleep(10)
-            print("log:sleep AM")
-            continue
+        if type == 'T':
+            nowtime = datetime.datetime.now().time()
+            if nowtime < datetime.time(9, 25, 50):
+                time.sleep(10)
+                print("log:sleep PM")
+                continue
+            if datetime.time(11, 30, 10) < nowtime < datetime.time(12, 59, 50):
+                time.sleep(10)
+                print("log:sleep AM")
+                continue
 
-        if nowtime > datetime.time(15,0,30):
-            print("end trade time.")
-            time.sleep(3600)
-            # break
+            if nowtime > datetime.time(15,0,30):
+                print("end trade time.")
+                time.sleep(3600)
+                # break
         print("*** loop calc begin ***")
         tdx_func_mp(func, type=c_type, backTime=back_time)
 
