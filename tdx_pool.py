@@ -169,6 +169,8 @@ def do_get_data_mp(key, codelist, st_start, st_end, back_time, c_type):
     databuf_mongo[key] = mongo_mp.get_stock_day(codelist, st_start=st_start, st_end=st_end)
     if c_type == 'B':
         databuf_mongo_day[key] = mongo_mp.get_stock_day(codelist, st_start=back_time, st_end=back_time)
+    else:
+        databuf_mongo_day[key] = pd.DataFrame()
     # end_t = datetime.datetime.now()
     # print(end_t, 'get_data do_get_data_mp spent:{}'.format((end_t - start_t)))
     for code in codelist:
@@ -430,8 +432,10 @@ def tdx_func_mp(func_name, type='', backTime=''):
     if type == 'B':
         mongo = MongoIo()
         newdatas = mongo.get_realtime(backTime)
+        newdatas2 = fetch_quotation_data(source="sina")
     else:
         newdatas = fetch_quotation_data(source="sina")
+        newdatas2 = None
 
     end_t = datetime.datetime.now()
     print(end_t, 'read web data-spent:{}'.format((end_t - start_t)))
@@ -448,7 +452,7 @@ def tdx_func_mp(func_name, type='', backTime=''):
     # pool = Pool(cpu_count())
     for key in range(pool_size):
         # tdx_func(databuf_mongo[key])
-        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key], newdatas, databuf_mongo_day[key], func_name, type=type))
+        task_list.append(executor_func.submit(tdx_func, databuf_mongo[key], newdatas, newdatas2, databuf_mongo_day[key], func_name, type=type))
     # pool.close()
     # pool.join()
 
@@ -474,7 +478,7 @@ def tdx_func_mp(func_name, type='', backTime=''):
     
     dataR.to_csv("dqe-%s.csv" % backTime)
     # print("dataR=", len(dataR))
-    print(dataR.head(10))
+    print(dataR.head(20))
     # dataR.sort_index()
     # todo end
 
@@ -520,7 +524,7 @@ def tdx_func_upd_hist_order(func_name):
     # return dataR
 
 
-def tdx_func(datam, newdatas, lastday_data, func_name, code_list = None, type=''):
+def tdx_func(datam, newdatas, newdatas2, lastday_data, func_name, code_list = None, type=''):
     """
     准备数据
     """
@@ -542,18 +546,23 @@ def tdx_func(datam, newdatas, lastday_data, func_name, code_list = None, type=''
             continue
         try:
             price_pct = 0.0
-            now_price = 0.0
             if type == 'B':
                 newdata0 = newdatas.query("code=='%s'" % code)
-                lastdata = lastday_data.query("code=='%s'" % code)
+                if len(lastday_data) > 0:
+                    lastdata = lastday_data.query("code=='%s'" % code)
+                    last_price = lastdata.iloc[-1].close
+                else:
+                    lastdata = newdatas2[code]
+                    last_price = lastdata['now']
+
                 if len(newdata0) > 0:
                     newdata = newdata0.iloc[-1]
                     now_price = newdata['now']
-                    last_price = lastdata.iloc[-1].close
-                    try:
+                    if now_price > 0:
                         price_pct = (last_price - now_price) / now_price * 100
-                    except:
-                        print("calc pct error code=%s" % code)
+                    else:
+                        print("calc newprice = 0,  code=%s" % code)
+                        continue
                 else:
                     print("data-len=0, code=", code)
                     continue
@@ -577,8 +586,8 @@ def tdx_func(datam, newdatas, lastday_data, func_name, code_list = None, type=''
             # dao = tdx_dqe_cfc_A1(data)
             dao = eval(func_name)(data)
             if dao > 0:
-                # data={'code': code, 'name': sname, 'price': now_price, 'dao': dao, 'pct':'%6.2f' % 15.12345 }
-                data={'code': code, 'price': now_price, 'dao': dao, 'pct':'%5.2f' % price_pct }
+                data={'code': code, 'name': sname, 'price': now_price, 'dao': dao, 'pct':'%6.2f' % price_pct }
+                # data={'code': code, 'price': now_price, 'dao': dao, 'pct':'%5.2f' % price_pct }
                 dataR = dataR.append(data,ignore_index=True)
         except:
             print("error code=%s" % code)
@@ -677,7 +686,7 @@ if __name__ == '__main__':
     st_start, st_end, func, c_type, back_time = main_param(sys.argv)
     # st_start = "2019-01-01"
     # func = "test"
-    print("input st-start=%s, st-end=%s, func=%s, type=%s, back-time=%s" % (st_start, st_end, func, type, back_time))
+    print("input st-start=%s, st-end=%s, func=%s, type=%s, back-time=%s" % (st_start, st_end, func, c_type, back_time))
     # 1, 读取数据（多进程，读入缓冲）
     # 开始日期
     # data_day = get_data(st_start)
@@ -711,5 +720,5 @@ if __name__ == '__main__':
         print("*** loop calc begin ***")
         tdx_func_mp(func, type=c_type, backTime=back_time)
 
-        if type == 'B':
-            input()
+        if c_type == 'B':
+            break
