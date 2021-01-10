@@ -206,50 +206,50 @@ def do_get_data_mp_min(key, codelist, st_start, freq):
 def get_data(st_start, st_end, back_time, c_type):
     start_t = datetime.datetime.now()
     print("begin-get_data:", start_t)
-    # ETF/股票代码，如果选股以后：我们假设有这些代码
-    codelist = ['512690', '510900', '513100', '510300',
-                '512980', '512170', '515000', '512800',
-                '159941', '159994', '515050', '159920',
-                '159952', '159987', '159805', '159997',
-                '159919',]
-
-    codelist = ['510300']
-
-    # 获取ETF/股票中文名称，只是为了看得方便，交易策略并不需要ETF/股票中文名称
-    #stock_names = QA.QA_fetch_etf_name(codelist)
-    #codename = [stock_names.at[code, 'name'] for code in codelist]
-
-    ## 读取 ETF基金 日线，存在index_day中
-    #data_day = QA.QA_fetch_index_day_adv(codelist,
-    #    start='2010-01-01',
-    #    end='{}'.format(datetime.date.today()))
-
-    # codelist = ['600519']
-    #codelist = ['600239']
-    #codelist = ['600338']
-    codelist = ['600095','600822','600183']
-    codelist = ["600109", "600551", "600697", "601066", "000732", "000905", "002827","600338","002049","300620"]
-    # codelist = ['600380','600822']
-
-    code_file = "config/stock_list.json"
+    # # ETF/股票代码，如果选股以后：我们假设有这些代码
+    # codelist = ['512690', '510900', '513100', '510300',
+    #             '512980', '512170', '515000', '512800',
+    #             '159941', '159994', '515050', '159920',
+    #             '159952', '159987', '159805', '159997',
+    #             '159919',]
+    #
+    # codelist = ['510300']
+    #
+    # # 获取ETF/股票中文名称，只是为了看得方便，交易策略并不需要ETF/股票中文名称
+    # #stock_names = QA.QA_fetch_etf_name(codelist)
+    # #codename = [stock_names.at[code, 'name'] for code in codelist]
+    #
+    # ## 读取 ETF基金 日线，存在index_day中
+    # #data_day = QA.QA_fetch_index_day_adv(codelist,
+    # #    start='2010-01-01',
+    # #    end='{}'.format(datetime.date.today()))
+    #
+    # # codelist = ['600519']
+    # #codelist = ['600239']
+    # #codelist = ['600338']
+    # codelist = ['600095','600822','600183']
+    # codelist = ["600109", "600551", "600697", "601066", "000732", "000905", "002827","600338","002049","300620"]
+    # # codelist = ['600380','600822']
+    #
+    # code_file = "config/stock_list.json"
     codelist = []
     limit_len = 0
-
-    with open(code_file, 'r') as f:
-        data = json.load(f)
-        for d in data['code']:
-            if len(d) > 6:
-                d = d[len(d) - 6:len(d)]
-            # if d[0:3] == '300' or d[0:3] == '301' or d[0:3] == '688' or d[0:3] == '002':
-            #     continue
-            # if d[0:3] != '600' and d[0:3] != '602' and d[0:3] != '603':
-            # if d[0:3] != '300':
-            # if d[0:3] != '002':
-            #     continue
-            codelist.append(d)
-            limit_len = limit_len + 1
-            # if limit_len > 20:
-            #     break
+    codelist=QA.QA_fetch_stock_block_adv().code
+    # with open(code_file, 'r') as f:
+    #     data = json.load(f)
+    #     for d in data['code']:
+    #         if len(d) > 6:
+    #             d = d[len(d) - 6:len(d)]
+    #         # if d[0:3] == '300' or d[0:3] == '301' or d[0:3] == '688' or d[0:3] == '002':
+    #         #     continue
+    #         # if d[0:3] != '600' and d[0:3] != '602' and d[0:3] != '603':
+    #         # if d[0:3] != '300':
+    #         # if d[0:3] != '002':
+    #         #     continue
+    #         codelist.append(d)
+    #         limit_len = limit_len + 1
+    #         # if limit_len > 20:
+    #         #     break
     subcode_len = int(len(codelist) / pool_size)
     code_dict = {}
     pool = Pool(cpu_count())
@@ -541,9 +541,9 @@ def tdx_func(datam, newdatas, newdatas2, lastday_data, func_name, code_list = No
         
         data=datam.query("code=='%s'" % code)
         pb_value = pba_calc(code)
-        if not pb_value:
-            # print("pb < 0 code=%s" % code)
-            continue
+        # if not pb_value:
+        #     # print("pb < 0 code=%s" % code)
+        #     continue
         try:
             price_pct = 0.0
             if type == 'B':
@@ -585,10 +585,10 @@ def tdx_func(datam, newdatas, newdatas2, lastday_data, func_name, code_list = No
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
             # dao = tdx_dqe_cfc_A1(data)
             dao = eval(func_name)(data)
-            if dao > 0:
-                data={'code': code, 'name': sname, 'price': now_price, 'dao': dao, 'pct':'%6.2f' % price_pct }
-                # data={'code': code, 'price': now_price, 'dao': dao, 'pct':'%5.2f' % price_pct }
-                dataR = dataR.append(data,ignore_index=True)
+            # if dao > 0:
+            data={'code': code, 'name': sname, 'price': now_price, 'dao': dao, 'pct':'%6.2f' % price_pct }
+            # data={'code': code, 'price': now_price, 'dao': dao, 'pct':'%5.2f' % price_pct }
+            dataR = dataR.append(data,ignore_index=True)
         except:
             print("error code=%s" % code)
             # return
