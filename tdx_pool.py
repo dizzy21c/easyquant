@@ -177,11 +177,12 @@ def do_get_data_mp(key, codelist, st_start, st_end, back_time, c_type):
         data_buf_stockinfo[code] = mongo_mp.get_stock_info(code)
 
 def pba_calc(code):
-    try:
-        stockinfo = data_buf_stockinfo[code]
-        return stockinfo.jinglirun[0] > 0
-    except:
-        return False
+    return True
+    #try:
+    #    stockinfo = data_buf_stockinfo[code]
+    #    return stockinfo.jinglirun[0] > 0
+    #except:
+    #    return False
 
 def do_get_data_mp_min(key, codelist, st_start, freq):
     mongo_mp = MongoIo()
@@ -702,7 +703,7 @@ if __name__ == '__main__':
         #     input()
         #     break
 
-        if type == 'T':
+        if c_type == 'T':
             nowtime = datetime.datetime.now().time()
             if nowtime < datetime.time(9, 25, 50):
                 time.sleep(10)
