@@ -474,15 +474,17 @@ def tdx_func_mp(func_name, type='', backTime=''):
             dataR = dataR.append(task.result())
     
     # dataR=dataR.sort(columns = ['dao'],axis = 0,ascending = False)
-    if len(dataR) > 0:
-        dataR=dataR.sort_values(by = 'dao',axis = 0,ascending = False)
+    mtype_list = [6,3,0,8]
+    for mtype in mtype_list:
+        print('calc market type=', mtype)
+        if len(dataR) > 0:
+            dataM=dataR.query("mtype==%d" % mtype)
+            if len(dataM) > 0:
+                dataM=dataM.sort_values(by = 'calc',axis = 0,ascending = False)
     
-    dataR.to_csv("dqe-%s.csv" % backTime)
-    # print("dataR=", len(dataR))
-    print(dataR.head(20))
-    # dataR.sort_index()
-    # todo end
-
+            dataM.to_csv("%s-%d-%s.csv" % (func_name, mtype, backTime))
+            # print("dataR=", len(dataR))
+            print(dataM.head(20))
 
     end_t = datetime.datetime.now()
     print(end_t, 'tdx_func_mp spent:{}'.format((end_t - start_t)))
@@ -537,8 +539,14 @@ def tdx_func(datam, newdatas, newdatas2, lastday_data, func_name, code_list = No
     if code_list is None:
         code_list = datam.index.levels[1]
     for code in code_list:
-        if code[0:3] != '300':
-            continue
+        mtype = 6
+        if code[0:3] == '300':
+            mtype = 3
+        elif code[0:2] == '00':
+            mtype = 0
+        elif code[0:3] == '688':
+            mtype = 8
+            # continue
         
         data=datam.query("code=='%s'" % code)
         pb_value = pba_calc(code)
@@ -585,10 +593,10 @@ def tdx_func(datam, newdatas, newdatas2, lastday_data, func_name, code_list = No
             # tdx_base_func(data, "tdx_sxp", code)
             # tdx_base_func(data.copy(), "tdx_hmdr", code)
             # dao = tdx_dqe_cfc_A1(data)
-            dao = eval(func_name)(data)
+            fun_result, _a, _b = eval(func_name)(data)
             # if dao > 0:
-            data={'code': code, 'name': sname, 'price': now_price, 'dao': dao, 'pct':'%6.2f' % price_pct }
-            # data={'code': code, 'price': now_price, 'dao': dao, 'pct':'%5.2f' % price_pct }
+            data={'code': code, 'name': sname, 'price': now_price, 'calc': fun_result[-1], 'mtype': mtype, 'pct':'%6.2f' % price_pct }
+            #data={'code': code, 'price': now_price, 'calc': dao, 'mtype': mtype, 'pct':'%6.2f' % price_pct }
             dataR = dataR.append(data,ignore_index=True)
         except:
             print("error code=%s" % code)

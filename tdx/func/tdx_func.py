@@ -36,7 +36,7 @@ def tdx_czhs(data):
     卖 = IFAND(COUNT(花 >= 神, 5)==4, 花 < 神,1,0)
     钻石 = IFAND(CROSS(花, 神), CLOSE / REF(CLOSE, 1) > 1.03, 1, 0)
     买股 = IFAND(买, 钻石,1,0)
-    return 买股, False
+    return 买股, -1, False
 
 def tdx_hm(data):
     # A1 := ABS(((3.48 * CLOSE + HIGH + LOW) / 4 - EMA(CLOSE, 23)) / EMA(CLOSE, 23));
@@ -57,7 +57,7 @@ def tdx_hm(data):
     金线王 = EMA(A2, 200) * 1.118
     条件 = (C - REF(C, 1)) / REF(C, 1) * 100 > 8
     金K线 = IFAND(CROSS(C, 金线王), 条件, True, False)
-    return 金K线, False
+    return 金K线, -1, False
 # 大黑马出笼
 def tdx_dhmcl(data):
     CLOSE = data.close
@@ -120,7 +120,7 @@ def tdx_dhmcl(data):
     HMTJ2 = IFAND3(HMTJ1, REF(IF(B5, 1, 0), 1) > 0, B9, True, False)
     # 大黑马出笼= C > O and B1 and B6 and B7 and B8 and REF(B5, 1) and B9 OR ZZ
     大黑马出笼 = IFOR(HMTJ2, ZZ, 1, 0)
-    return 大黑马出笼, False
+    return 大黑马出笼, -1, False
 
 def tdx_sxp(data):
     CLOSE=data.close
@@ -130,7 +130,7 @@ def tdx_sxp(data):
     小阴小阳1 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
     时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
     后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
-    return 后炮, True
+    return 后炮, -1, True
 
 # 黑马大肉
 def tdx_hmdr(data):
@@ -183,7 +183,7 @@ def tdx_hmdr(data):
     条件 = (C - REF(C, 1)) / REF(C, 1) * 100 > 8
     金K线 = IFAND3(CROSS(C, 金线王), 条件, 有肉肉, 1, 0)
     # return 金K线, False
-    return 大肉, False
+    return 大肉, -1, False
 
 def tdx_tpcqpz(data, N = 55, M = 34):
     C = data.close
@@ -194,7 +194,7 @@ def tdx_tpcqpz(data, N = 55, M = 34):
     HCV = (HHV(C, N) - LLV(C, N)) / LLV(C, N) * 100
     TJN = REF(H, 1) < REF(HHV(H, N), 1)
     XG = IFAND3(REF(HCV, 1) <= M, CLOSE > REF(HHV(HIGH, N), 1), TJN, 1, 0)
-    return XG, False
+    return XG, -1, False
 
 def tdx_A01(data):
     C = data.close
@@ -212,7 +212,7 @@ def tdx_A01(data):
     X08 = IF(O == LLV(O, 30), True, False)
     XG1 = IFAND5(X01 , X02 , X03 , X04 , X05 , X06, True, False)
     率土之滨XG = IFAND3(XG1, X07, X08, 1, 0)
-    return 率土之滨XG, False
+    return 率土之滨XG, -1, False
 
 def tdx_jmmm(data):
     # 今买明卖
@@ -237,7 +237,7 @@ def tdx_jmmm(data):
     F = X < (0)
     XQ=IFAND(F , RSVV<VARB2-2, True, False)
     XG =IFAND(买点 , XQ, 1, 0)
-    return XG, False
+    return XG, -1, False
 
 # {诺曼底登陆}
 def tdx_nmddl(data):
@@ -270,7 +270,7 @@ def tdx_nmddl(data):
     # STICKLINE(Q,诺曼底防线,Q,1,0),COLOR00CCEE;
     # STICKLINE(Q,诺曼底防线,Q,0.1,0),COLOR00FFFF;
     # DRAWTEXT(Q,诺曼底防线,'建'),COLOR0000FF;
-    return 建仓, False
+    return 建仓, -1, False
 
 def tdx_swl(data):
     # {A42.耍无赖}
@@ -296,7 +296,7 @@ def tdx_swl(data):
     JS3 = IFAND(JS2 <= 5, C < REF(C, JS2), True, False)
     TJ = IFOR(SJ6, JS3, True, False)
     耍无赖XG: IFAND(TJ == 0,   REF(TJ==1, 1), 1, 0)
-    return 耍无赖XG, False
+    return 耍无赖XG, -1, False
 
 def tdx_func1(data):
     C = data.close
@@ -316,7 +316,7 @@ def tdx_func1(data):
     XG1 = IFOR(CROSS(22.50, MA1), CROSS(24.5, MA1), True, False)
     XG2 = IFAND5(XG1, COUNT(CROSS(0, DEA), 6) == 1 , AA > BB ,  BB > REF(BB, 1) , C / REF(C, 1) < 1.016, True, False)
     XG = IFAND3(XG2, C / REF(C, 1) > 0.993, AA > CC, 1, 0)
-    return XG, False
+    return XG, -1, False
 
 def tdx_yaogu(data):
     ##妖股公式
@@ -344,7 +344,7 @@ def tdx_yaogu(data):
     # FLTP = (CROSS(VAR0,VAR1) AND VAR4) AND VAR9,COLORRED,LINETHICK2
     # result['FLTP'] = result.apply(lambda x : x['cross'] > 0 and x['var4'] and x['var9'], axis=1)
     XG2 = IFAND3(CROSS(VAR0, VAR1), VAR4, VAR9, True, False)
-    return IFOR(XG1, XG2, 1, 0), False
+    return IFOR(XG1, XG2, 1, 0), -1, False
 
 def tdx_niugu(data, n1 = 36, n2 = 30, n3 = 25):
     C = data.close
@@ -378,7 +378,7 @@ def tdx_niugu(data, n1 = 36, n2 = 30, n3 = 25):
     # return JD OR DR
     RTN=IFOR(JD, AAA, 1, 0)
     # lrtn = len(RTN)
-    return RTN, False
+    return RTN, -1, False
 
 # 不二法门
 def tdx_buerfameng(data):
@@ -436,7 +436,7 @@ def tdx_a06_zsd(data):
     Q2 = 超卖区 < -20
     钻石底XG = IFAND4(Q1, Q2, C > REF(C, 1) * 0.91, C < REF(C, 1), True, False)
     XG = IFAND(钻石底XG, INDEXC(data) < REF(INDEXC(data), 1) ,  REF(C > REF(C, 1), 1), 1, 0)
-    return XG, False
+    return XG, -1, False
 
 def tdx_a12_zsd(data):
     # {A12.短线黑马}
@@ -581,7 +581,7 @@ def tdx_yaoguqidong(data):
     BIAS = (BIAS1 + 2 * BIAS2 + 3 * BIAS3) / 6
     乖离 = MA(BIAS, 3)
     妖股启动 = IFAND(买进==8 , COUNT(乖离 < -12, 10) >= 1, 1, 0)
-    return 妖股启动, False
+    return 妖股启动, -1, False
 
 def tdx_zyyj_5min(data):
     # {自用的5分钟预警}
@@ -679,7 +679,7 @@ def tdx_ygqd_test(data):
     BS1 = IFOR(CONF11, CONF13, True, False)
     BS2 = IFAND3(CONF21, CONF22, CONF23, True, False)
     XG = IFAND4(EXIST(CONF1, 5), EXIST(CONF5, 3), BS1, BS2, 1, 0)
-    return XG, True
+    return XG, -1, True
 
 def tdx_blftxg(data):
     # 暴利副图选股
@@ -729,7 +729,7 @@ def tdx_blftxg(data):
     LL = VAR3 * 0.91
     # 见龙 = IFAND(CROSS(LL, HL), 主力买卖, 1, 0)
     见龙 = IF(CROSS(LL, HL), True, False)
-    return IFOR(暴利, 见龙, 1, 0), False
+    return IFOR(暴利, 见龙, 1, 0), -1, False
 
 def tdx_cptlzt(data):
     # 操盘铁律主图
@@ -1007,7 +1007,7 @@ def tdx_dqe_cfc_A1(data, sort=False):
     else:
         刀 = (MC - JC) / JC * 1000 * 附加条件
 
-    return 刀[-1]
+    return 刀, -1, False
 
 def tdx_dqe_cfc_A11(data, sort=False):
     # 选择／排序
@@ -1034,7 +1034,7 @@ def tdx_dqe_cfc_A11(data, sort=False):
     else:
         刀 = (MC - JC) / JC * 1000 * 附加条件 * 限量 * 多头
 
-    return 刀[-1]
+    return 刀, -1, False
 
 def tdx_dqe_cfc_A2(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     C = data.close
@@ -1059,7 +1059,7 @@ def tdx_dqe_cfc_A2(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     多头 = IFAND(O > REF(MA(C, 5), 1),  O > REF(MA(C, 10), 1), True, False)
     # 去ST and 去停牌 and 大小 and 上市天数 and 涨幅 and 跳空 and 去连板 and 限量 and 多头;
     # pass
-    return IFAND4(涨幅, 跳空, 限量, 多头, 1, 0)
+    return IFAND4(涨幅, 跳空, 限量, 多头, 1, 0), -1, False
 
 def tdx_dqe_cfc_A(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     C = data.close
@@ -1090,7 +1090,7 @@ def tdx_dqe_cfc_A(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
 
     dao = 刀[-1]
     if dao <= 0:
-        return 0
+        return 刀, -1, False
 
     涨幅T = 竞价涨幅/100 #(O - REF(C,1)) / REF(C,1)
     涨幅T2 = REF(C, 1) / REF(C, 2)
@@ -1104,7 +1104,7 @@ def tdx_dqe_cfc_A(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     多头 = IFAND(O > REF(MA(C, 5), 1),  O > REF(MA(C, 10), 1), True, False)
     TJ1 = IFAND4(涨幅, 跳空, 限量, 多头, dao, 0)        
 
-    return TJ1[-1]
+    return TJ1, -1, False
 
 
 def tdx_pool_qsfb(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
@@ -1132,7 +1132,7 @@ def tdx_pool_qsfb(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     TJ0=IFOR4(XG1, XG2, XG3, XG4, True, False)
     TJ2=IFOR(TJ0, XG5, 1, 0)
     if TJ2[-1] == 0:
-        return 0
+        return [0], -1, False
     
     JC =IF(ISLASTBAR(C), O, C)
     MC = (0.3609454219 * JC - 0.03309329629 * REF(C, 1) - 0.04241822779 * REF(C, 2) - 0.026737249 * REF(C, 3) \
@@ -1146,7 +1146,8 @@ def tdx_pool_qsfb(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     # # 停牌 := (DYNAINFO(4)=0);
     # #
     # # 附加条件 := (not (ST) and not (S) and NOT(停牌)) * (竞价涨幅 < 9.85) * (竞价涨幅 > (0));
-    附加条件 = IFAND(竞价涨幅 < 9.85, 竞价涨幅 > 0, 1, 0)
+    # 附加条件 = IFAND(竞价涨幅 < 9.85, 竞价涨幅 > 0, 1, 0)
+    附加条件 = IFAND(竞价涨幅 < zf1, 竞价涨幅 > zf2, 1, 0)
     # # if sort:
     # #     刀 = (MC - JC) / JC * 1000
     # # else:
@@ -1168,7 +1169,7 @@ def tdx_pool_qsfb(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     多头 = IFAND(O > REF(MA(C, 5), 1),  O > REF(MA(C, 10), 1), True, False)
     TJ1 = IFAND4(涨幅, 跳空, 限量, 多头, dao, 0)        
 
-    return TJ1[-1]
+    return TJ1, -1, False
     
     
 def tdx_dqe_cfc_A3(data):
@@ -1200,7 +1201,7 @@ def tdx_sxp_yhzc(data):
     小阴小阳1 = ABS(C - REF(C, 1)) / REF(C, 1) * 100 < 9
     时间限制 = IFAND(COUNT(前炮, 30) == 1, BARSLAST(前炮) > 5, True, False)
     后炮 = IFAND(REF(IFAND(小阴小阳, 时间限制, 1, 0), 1) , 前炮, 1, 0)
-    return 后炮, True
+    return 后炮, -1, True
     # # 用户注册
     # # pass
     # # C = data.close
