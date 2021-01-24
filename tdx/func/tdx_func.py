@@ -1107,6 +1107,62 @@ def tdx_dqe_cfc_A(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     return TJ1, -1, False
 
 
+def tdx_dqe_cfc_KA(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
+    C = data.close
+    O = data.open
+    # C = data.close
+    # O = data.open
+    V = data.volume
+    H = data.high
+    L = data.low
+
+    JC = IF(ISLASTBAR(C), O, C)
+    MC = (0.3609454219 * JC - 0.03309329629 * REF(C, 1) - 0.04241822779 * REF(C, 2) - 0.026737249 * REF(C, 3) \
+          - 0.007010041271 * REF(C, 4) - 0.002652859952 * REF(C, 5) - 0.0008415042966 * REF(C, 6) \
+          - 0.0002891931964 * REF(C, 7) - 0.0000956265934 * REF(C, 8) - 0.0000321286052 * REF(C, 9) \
+          - 0.0000106773454 * REF(C, 10) - 0.0000035457562 * REF(C, 11) - - 0.0000011670713 * REF(C, 12)) / (
+                     1 - 0.7522406533)
+    # 竞价涨幅 := (DYNAINFO(4) / DYNAINFO(3) - 1) * 100;
+    竞价涨幅 = (JC / REF(C, 1) - 1) * 100
+    # ST := STRFIND(stkname, 'ST', 1) > 0;
+    # S := STRFIND(stkname, 'S', 1) > 0;
+    # 停牌 := (DYNAINFO(4)=0);
+    #
+    # 附加条件 := (not (ST) and not (S) and NOT(停牌)) * (竞价涨幅 < 9.85) * (竞价涨幅 > (0));
+    附加条件 = IFAND(竞价涨幅 < 9.85, 竞价涨幅 > 0, 1, 0)
+    # if sort:
+    #     刀 = (MC - JC) / JC * 1000
+    # else:
+    刀 = (MC - JC) / JC * 1000 * 附加条件
+
+    dao = 刀[-1]
+    if dao <= 0:
+        return 刀, -1, False
+
+    涨幅T = 竞价涨幅 / 100  # (O - REF(C,1)) / REF(C,1)
+    涨幅T2 = REF(C, 1) / REF(C, 2)
+    涨幅 = IFAND(涨幅T * 100 < zf1, 涨幅T * 100 > zf2, True, False)
+    跳空 = COUNT(IFAND(O > REF(H, 1), L > REF(H, 1), 1, 0), 10) > 0
+    # 去连板 := NOT((REF(O, 1) < REF(C, 1) OR REF(L, 1) / REF(O, 1) > 0.95) and REF(C, 1) / REF(C, 2) >= 1.097 and (
+    #             REF(C, 2) / REF(C, 3) >= 1.097));
+    去连板 = IFAND3(IFOR(REF(O, 1) < REF(C, 1), REF(L, 1) / REF(O, 1) > lbzf1, True, False), 涨幅T2 >= lbzf2, \
+                 REF(涨幅T2, 1) >= lbzf2, False, True)
+    限量 = COUNT(REF(V, 1) / REF(V, 2) > 6, 10) == 0
+    多头 = IFAND(O > REF(MA(C, 5), 1), O > REF(MA(C, 10), 1), True, False)
+
+    LOWV = LLV(L, 9)
+    HIGHV = HHV(H, 9)
+    RSV = EMA((C - LOWV) / (HIGHV - LOWV) * 100, 3)
+    K1 = EMA(RSV, 3)
+    D1 = MA(K1, 3)
+    TJ10 = REF(IFAND(CROSS(K1,D1), K1 < 50, True, False), 1)
+
+    TJ1 = IFAND5(涨幅, 跳空, 限量, 多头, TJ10, dao, 0)
+
+
+    return TJ1, -1, False
+
+
 def tdx_pool_qsfb(data, zf1=6, zf2=-3, lbzf1=0.95, lbzf2=1.097):
     CLOSE = data.close
     C = data.close

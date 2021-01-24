@@ -484,7 +484,7 @@ def tdx_func_mp(func_name, type='', backTime=''):
     
             dataM.to_csv("%s-%d-%s.csv" % (func_name, mtype, backTime))
             # print("dataR=", len(dataR))
-            print(dataM.head(20))
+            print(dataM.head(5))
 
     end_t = datetime.datetime.now()
     print(end_t, 'tdx_func_mp spent:{}'.format((end_t - start_t)))
@@ -570,17 +570,17 @@ def tdx_func(datam, newdatas, newdatas2, lastday_data, func_name, code_list = No
                     if now_price > 0:
                         price_pct = (last_price - now_price) / now_price * 100
                     else:
-                        print("calc newprice = 0,  code=%s" % code)
+                        # print("calc newprice = 0,  code=%s" % code)
                         continue
                 else:
-                    print("data-len=0, code=", code)
+                    # print("data-len=0, code=", code)
                     continue
                 
             else:
                 newdata = newdatas[code]
             sname = newdata['name']
             if sname[0:1] == '*' or sname[0:2] == "ST":
-                print("name is ST, %s, %s" % ( code, sname))
+                # print("name is ST, %s, %s" % ( code, sname))
                 continue
             now_price = newdata['now']
             # if (code == '003001'):
