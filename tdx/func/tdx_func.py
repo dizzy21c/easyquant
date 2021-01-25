@@ -1518,3 +1518,40 @@ def tdx_ltt(data, N=120):## 龙抬头
     W5=C/REF(C,1)>1.05
     XG=IFAND3(W4, W5, COUNT(W4,5)==1, 1, 0)
     return XG, -1, False 
+
+def tdx_blft(data):
+    CLOSE = data.CLOSE
+    HIGH = data.high
+    LOW = data.low
+    OPEN = data.open
+    VOL = data.volume
+    
+    X_1=MA(CLOSE,5)
+    X_2=MA(CLOSE,10)
+    X_3=MA(CLOSE,20)
+    X_4=MA(CLOSE,30)
+    X_5=MA(CLOSE,60)
+    X_6=MA(CLOSE,120)
+    X_7=MA(CLOSE,240)
+    X_8=(REF(CLOSE,3)-CLOSE)/REF(CLOSE,3)*100>5
+    X_9=FILTER(X_8,10)
+    X_10=BARSLAST(X_9)
+    X_11=REF(HIGH,X_10+2)
+    X_12=REF(HIGH,X_10+1)
+    X_13=REF(HIGH,X_10)
+    X_14=MAX(X_11,X_12)
+    X_15=MAX(X_14,X_13)
+    X_16=(CLOSE-REF(CLOSE,1))/REF(CLOSE,1)*100>5
+    X_17=X_10<150
+    X_18=(OPEN-X_15)/X_15*100<30
+    X_19=(CLOSE-LLV(LOW,X_10))/LLV(LOW,X_10)*100<50
+    X_20=(CLOSE-REF(OPEN,5))/REF(OPEN,5)*100<30
+    X_21=VOL/MA(VOL,5)<3.5
+    X_22=(CLOSE-REF(CLOSE,89))/REF(CLOSE,89)*100<80
+    X_23=(CLOSE-REF(CLOSE,1))/REF(CLOSE,1)*100>=5, (CLOSE-OPEN)/(HIGH-CLOSE)>3, VOL/MA(VOL,5)>1.3
+
+    X_251 =IFAND5(X_16, X_17, X_18, X_19, X_20, True, False)
+    X_25 = IFAND3(X_251, X_21, X_22, True, False) 
+    暴利=IF(FILTER(X_25, 15), 1, 0)
+    return 暴利, -1, False
+    
