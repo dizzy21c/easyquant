@@ -55,6 +55,11 @@ def EMA(Series, N):
     res = talib.EMA(Series.values, N)
     return pd.Series(res, index=Series.index)
 
+def EXPMA(Series, N):
+    # return pd.Series.ewm(Series, span=N, min_periods=N - 1, adjust=True).mean()
+    Series = Series.fillna(0)
+    res = talib.EMA(Series.values, N)
+    return pd.Series(res, index=Series.index)
 
 def MA(Series, N):
     return pd.Series.rolling(Series, N).mean()
