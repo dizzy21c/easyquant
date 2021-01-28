@@ -484,7 +484,7 @@ def tdx_func_mp(func_name, type='', backTime=''):
     
             dataM.to_csv("%s-%d-%s.csv" % (func_name, mtype, backTime))
             # print("dataR=", len(dataR))
-            print(dataM.head(5))
+            print(dataM.head(10))
 
     end_t = datetime.datetime.now()
     print(end_t, 'tdx_func_mp spent:{}'.format((end_t - start_t)))
@@ -731,3 +731,4 @@ if __name__ == '__main__':
 
         if c_type == 'B':
             break
+
